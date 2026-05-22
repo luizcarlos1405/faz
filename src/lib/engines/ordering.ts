@@ -1,3 +1,5 @@
+import { TASK_STATUS } from '$lib/types';
+
 export function computeInsertBeforeDone(
   items: Array<{ stepOrder?: number | null; status: string }>,
 ): {
@@ -13,8 +15,8 @@ export function computeInsertBeforeDone(
   }));
   indexed.sort((a, b) => (a.stepOrder ?? Infinity) - (b.stepOrder ?? Infinity));
 
-  const todos = indexed.filter((x) => x.status === 'TODO');
-  const dones = indexed.filter((x) => x.status === 'DONE');
+  const todos = indexed.filter((x) => x.status === TASK_STATUS.TODO.value);
+  const dones = indexed.filter((x) => x.status === TASK_STATUS.DONE.value);
   const newStepOrder = todos.length;
 
   const reindexed: Array<{ index: number; stepOrder: number }> = [];

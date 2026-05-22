@@ -1,5 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 import type { TaskDoc, TaskPlan, CareDoc, DurationLike } from '$lib/types';
+import { TASK_STATUS } from '$lib/types';
 
 export function evaluateTaskPlan(
   plan: TaskPlan,
@@ -47,7 +48,7 @@ export function evaluateIntervalAfterDone(
   const r = plan.recurrence;
   if (r.type !== 'INTERVAL' || r.subtype !== 'AFTER_DONE') return null;
 
-  const hasActive = existingTasks.some((t) => t.status === 'TODO');
+  const hasActive = existingTasks.some((t) => t.status === TASK_STATUS.TODO.value);
   if (hasActive) return null;
 
   let doAt: Temporal.PlainDate;
@@ -139,7 +140,7 @@ function makeTask(plan: TaskPlan, doAt: string): TaskDoc {
     type: 'Task',
     title: plan.title,
     doAt,
-    status: 'TODO',
+    status: TASK_STATUS.TODO.value,
     careId: undefined,
     taskPlanId: plan._id,
     createdAt: Temporal.Now.instant().toString(),

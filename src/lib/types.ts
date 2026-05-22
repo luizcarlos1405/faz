@@ -1,4 +1,9 @@
-export type TaskStatus = 'TODO' | 'DONE';
+export const TASK_STATUS = {
+  TODO: { value: 'TODO' },
+  DONE: { value: 'DONE' },
+} as const;
+
+export type TaskStatus = (typeof TASK_STATUS)[keyof typeof TASK_STATUS]['value'];
 
 export type GoalStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'REVIEW' | 'COMPLETED';
 

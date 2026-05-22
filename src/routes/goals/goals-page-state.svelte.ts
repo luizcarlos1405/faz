@@ -24,7 +24,7 @@ import { getToastState } from '$lib/components/toast-state.svelte';
 import { calculateGoalStatus } from '$lib/engines/goal-engine';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
-import type { GoalDoc, TaskDoc } from '$lib/types';
+import { TASK_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
   return Temporal.Now.plainDateISO().toString();
@@ -104,8 +104,8 @@ export function getGoalsPageState() {
 
 function sortWithDoneAtEnd(list: TaskDoc[]): TaskDoc[] {
   return list.toSorted((a, b) => {
-    if (a.status === 'DONE' && b.status !== 'DONE') return 1;
-    if (a.status !== 'DONE' && b.status === 'DONE') return -1;
+    if (a.status === TASK_STATUS.DONE.value && b.status !== TASK_STATUS.DONE.value) return 1;
+    if (a.status !== TASK_STATUS.DONE.value && b.status === TASK_STATUS.DONE.value) return -1;
     return (a.stepOrder ?? 0) - (b.stepOrder ?? 0);
   });
 }
@@ -150,7 +150,7 @@ export function getGoalDetailState(goalId: string) {
   async function toggleTask(taskId: string) {
     const task = tasks.find((t) => t._id === taskId);
     if (!task) return;
-    if (task.status === 'TODO') {
+    if (task.status === TASK_STATUS.TODO.value) {
       await completeTask(taskId);
     } else {
       await uncompleteTask(taskId);

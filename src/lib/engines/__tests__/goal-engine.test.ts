@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateGoalStatus } from '../goal-engine';
-import type { GoalDoc, TaskDoc } from '$lib/types';
+import { TASK_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function makeGoal(status: GoalDoc['status'] = 'NOT_STARTED'): GoalDoc {
   return {
@@ -13,7 +13,10 @@ function makeGoal(status: GoalDoc['status'] = 'NOT_STARTED'): GoalDoc {
   };
 }
 
-function makeTask(status: TaskDoc['status'] = 'TODO', overrides: Partial<TaskDoc> = {}): TaskDoc {
+function makeTask(
+  status: TaskDoc['status'] = TASK_STATUS.TODO.value,
+  overrides: Partial<TaskDoc> = {},
+): TaskDoc {
   return {
     _id: 'task_1',
     type: 'Task',
@@ -33,22 +36,22 @@ describe('calculateGoalStatus', () => {
   });
 
   it('returns IN_PROGRESS when some tasks are not done', () => {
-    const tasks = [makeTask('TODO'), makeTask('DONE')];
+    const tasks = [makeTask(TASK_STATUS.TODO.value), makeTask(TASK_STATUS.DONE.value)];
     expect(calculateGoalStatus(makeGoal(), tasks)).toBe('IN_PROGRESS');
   });
 
   it('returns IN_PROGRESS when all tasks are TODO', () => {
-    const tasks = [makeTask('TODO'), makeTask('TODO')];
+    const tasks = [makeTask(TASK_STATUS.TODO.value), makeTask(TASK_STATUS.TODO.value)];
     expect(calculateGoalStatus(makeGoal(), tasks)).toBe('IN_PROGRESS');
   });
 
   it('returns REVIEW when all tasks are DONE', () => {
-    const tasks = [makeTask('DONE'), makeTask('DONE')];
+    const tasks = [makeTask(TASK_STATUS.DONE.value), makeTask(TASK_STATUS.DONE.value)];
     expect(calculateGoalStatus(makeGoal(), tasks)).toBe('REVIEW');
   });
 
   it('returns IN_PROGRESS when adding TODO task to COMPLETED goal', () => {
-    const tasks = [makeTask('TODO')];
+    const tasks = [makeTask(TASK_STATUS.TODO.value)];
     expect(calculateGoalStatus(makeGoal('COMPLETED'), tasks)).toBe('IN_PROGRESS');
   });
 

@@ -7,7 +7,7 @@ import {
   evaluateTaskPlan,
   runScheduler,
 } from '../care-engine';
-import type { TaskPlan, TaskDoc, CareDoc } from '$lib/types';
+import { TASK_STATUS, type TaskPlan, type TaskDoc, type CareDoc } from '$lib/types';
 
 function makePlan(
   overrides: Partial<TaskPlan['recurrence']> & { type: TaskPlan['recurrence']['type'] },
@@ -28,7 +28,7 @@ function makeTask(overrides: Partial<TaskDoc>): TaskDoc {
     type: 'Task',
     title: 'T',
     doAt: '2026-01-01',
-    status: 'TODO',
+    status: TASK_STATUS.TODO.value,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     ...overrides,
@@ -96,7 +96,7 @@ describe('evaluateIntervalAfterDone', () => {
       startDate: '2026-01-01',
     });
     const today = Temporal.PlainDate.from('2026-01-10');
-    const existing = [makeTask({ taskPlanId: 'tp_test', status: 'TODO' })];
+    const existing = [makeTask({ taskPlanId: 'tp_test', status: TASK_STATUS.TODO.value })];
     const result = evaluateIntervalAfterDone(plan, today, existing);
     expect(result).toBeNull();
   });
@@ -136,7 +136,7 @@ describe('evaluateIntervalAfterDone', () => {
     });
     plan.lastDoneDate = '2026-01-05';
     const today = Temporal.PlainDate.from('2026-01-08');
-    const existing = [makeTask({ taskPlanId: 'tp_test', status: 'DONE' })];
+    const existing = [makeTask({ taskPlanId: 'tp_test', status: TASK_STATUS.DONE.value })];
     const result = evaluateIntervalAfterDone(plan, today, existing);
     expect(result).not.toBeNull();
     expect(result!.doAt).toBe('2026-01-08');
@@ -151,7 +151,7 @@ describe('evaluateIntervalAfterDone', () => {
     });
     plan.lastDoneDate = '2026-05-12';
     const today = Temporal.PlainDate.from('2026-05-12');
-    const existing = [makeTask({ taskPlanId: 'tp_test', status: 'DONE' })];
+    const existing = [makeTask({ taskPlanId: 'tp_test', status: TASK_STATUS.DONE.value })];
     const result = evaluateIntervalAfterDone(plan, today, existing);
     expect(result).not.toBeNull();
     expect(result!.doAt).toBe('2026-05-16');
@@ -332,7 +332,7 @@ describe('runScheduler', () => {
 
     expect(result.tasks.length).toBe(1);
     expect(result.tasks[0].doAt).toBe('2026-01-15');
-    expect(result.tasks[0].status).toBe('TODO');
+    expect(result.tasks[0].status).toBe(TASK_STATUS.TODO.value);
     expect(result.tasks[0].taskPlanId).toBe('tp_new');
     expect(result.tasks[0].careId).toBe('care_1');
   });
@@ -363,7 +363,7 @@ describe('runScheduler', () => {
 
     expect(result.tasks.length).toBe(1);
     expect(result.tasks[0].doAt).toBe('2026-01-12');
-    expect(result.tasks[0].status).toBe('TODO');
+    expect(result.tasks[0].status).toBe(TASK_STATUS.TODO.value);
   });
 
   it('sets careId on generated tasks', () => {
@@ -464,7 +464,7 @@ describe('runScheduler', () => {
     };
     const today = Temporal.PlainDate.from('2026-01-10');
     const result = runScheduler([care], today, () => [
-      makeTask({ taskPlanId: 'tp_ad', status: 'TODO' }),
+      makeTask({ taskPlanId: 'tp_ad', status: TASK_STATUS.TODO.value }),
     ]);
     expect(result.tasks.length).toBe(0);
     expect(result.updatedPlans.size).toBe(0);

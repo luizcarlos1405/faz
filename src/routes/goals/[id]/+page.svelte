@@ -19,6 +19,7 @@
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { flip } from 'svelte/animate';
+  import { TASK_STATUS } from '$lib/types';
 
   const goalId = page.params.id!;
   const ctrl = getGoalDetailState(goalId);
@@ -171,7 +172,7 @@
         {#each ctrl.tasks as task (task._id)}
           <li class="list-row bg-base-100" animate:flip={{ duration: 200 }}>
             <button class="btn btn-ghost btn-sm" onclick={() => ctrl.toggleTask(task._id)}>
-              {#if task.status === 'DONE'}
+              {#if task.status === TASK_STATUS.DONE.value}
                 <SquareCheckBig class="size-5 text-success" />
               {:else}
                 <Square class="size-5" />
@@ -186,7 +187,7 @@
                 if (e.key === 'Enter') ctrl.openEdit(task._id);
               }}
             >
-              <div class={task.status === 'DONE' ? 'line-through opacity-60' : ''}>
+              <div class={task.status === TASK_STATUS.DONE.value ? 'line-through opacity-60' : ''}>
                 {task.title}
               </div>
               <div class="text-xs text-base-content/50">{formatFriendlyDate(task.doAt)}</div>

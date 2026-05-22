@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder, computeInsertBeforeDone } from '$lib/engines/ordering';
-import type { TaskDoc } from '$lib/types';
+import { TASK_STATUS, type TaskDoc } from '$lib/types';
 
 export async function createTask(data: {
   title: string;
@@ -40,7 +40,7 @@ export async function createTask(data: {
     type: 'Task',
     title: data.title,
     doAt: data.doAt,
-    status: 'TODO',
+    status: TASK_STATUS.TODO.value,
     goalId: data.goalId,
     stepOrder,
     originInboxItemId: data.originInboxItemId,
@@ -90,7 +90,7 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
   const result = await db.find({
     selector: {
       type: 'Task',
-      status: 'TODO',
+      status: TASK_STATUS.TODO.value,
       doAt: { $lte: today },
       createdAt: { $gt: null },
     },
@@ -103,7 +103,7 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
 export async function getDoneToday(todayDate: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const allDone = await db.find({
-    selector: { type: 'Task', status: 'DONE' },
+    selector: { type: 'Task', status: TASK_STATUS.DONE.value },
     limit: FIND_LIMIT_ALL,
   });
   return (allDone.docs as TaskDoc[]).filter((t) => {
@@ -150,7 +150,7 @@ export async function getNextTaskForGoals(goalIds: string[]): Promise<Map<string
   const result = await db.find({
     selector: {
       type: 'Task',
-      status: 'TODO',
+      status: TASK_STATUS.TODO.value,
       goalId: { $in: goalIds },
     },
     sort: [{ type: 'asc' }, { status: 'asc' }, { goalId: 'asc' }, { stepOrder: 'asc' }],
@@ -168,7 +168,7 @@ export async function getNextTaskForGoals(goalIds: string[]): Promise<Map<string
 export async function getActiveTasksForPlan(taskPlanId: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Task', taskPlanId, status: 'TODO' },
+    selector: { type: 'Task', taskPlanId, status: TASK_STATUS.TODO.value },
     limit: FIND_LIMIT_ALL,
   });
   return result.docs as TaskDoc[];
@@ -176,14 +176,14 @@ export async function getActiveTasksForPlan(taskPlanId: string): Promise<TaskDoc
 
 export async function completeTask(id: string): Promise<TaskDoc> {
   const doc = await getTask(id);
-  doc.status = 'DONE';
+  doc.status = TASK_STATUS.DONE.value;
   doc.completedAt = Temporal.Now.instant().toString();
   return updateTask(doc);
 }
 
 export async function uncompleteTask(id: string): Promise<TaskDoc> {
   const doc = await getTask(id);
-  doc.status = 'TODO';
+  doc.status = TASK_STATUS.TODO.value;
   delete doc.completedAt;
   return updateTask(doc);
 }

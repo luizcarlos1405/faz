@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { nextOrder, byListOrder, computeInsertBeforeDone } from '../ordering';
+import { TASK_STATUS } from '$lib/types';
 
 describe('nextOrder', () => {
   it('returns 0 for empty array', () => {
@@ -124,8 +125,8 @@ describe('computeInsertBeforeDone', () => {
 
   it('places new task after all TODO items when no DONE items', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: 0, status: 'TODO' },
-      { stepOrder: 1, status: 'TODO' },
+      { stepOrder: 0, status: TASK_STATUS.TODO.value },
+      { stepOrder: 1, status: TASK_STATUS.TODO.value },
     ]);
     expect(result.newStepOrder).toBe(2);
     expect(result.reindexed).toEqual([]);
@@ -133,8 +134,8 @@ describe('computeInsertBeforeDone', () => {
 
   it('places new task before all DONE items when no TODO items', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: 0, status: 'DONE' },
-      { stepOrder: 1, status: 'DONE' },
+      { stepOrder: 0, status: TASK_STATUS.DONE.value },
+      { stepOrder: 1, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(0);
     expect(result.reindexed).toEqual([
@@ -145,10 +146,10 @@ describe('computeInsertBeforeDone', () => {
 
   it('places new task between TODO and DONE items', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: 0, status: 'TODO' },
-      { stepOrder: 1, status: 'TODO' },
-      { stepOrder: 2, status: 'DONE' },
-      { stepOrder: 3, status: 'DONE' },
+      { stepOrder: 0, status: TASK_STATUS.TODO.value },
+      { stepOrder: 1, status: TASK_STATUS.TODO.value },
+      { stepOrder: 2, status: TASK_STATUS.DONE.value },
+      { stepOrder: 3, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(2);
     expect(result.reindexed).toEqual([
@@ -159,30 +160,30 @@ describe('computeInsertBeforeDone', () => {
 
   it('only returns items whose stepOrder actually changed', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: 0, status: 'TODO' },
-      { stepOrder: 2, status: 'DONE' },
-      { stepOrder: 3, status: 'DONE' },
+      { stepOrder: 0, status: TASK_STATUS.TODO.value },
+      { stepOrder: 2, status: TASK_STATUS.DONE.value },
+      { stepOrder: 3, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(1);
     expect(result.reindexed).toEqual([]);
   });
 
   it('handles single DONE item', () => {
-    const result = computeInsertBeforeDone([{ stepOrder: 0, status: 'DONE' }]);
+    const result = computeInsertBeforeDone([{ stepOrder: 0, status: TASK_STATUS.DONE.value }]);
     expect(result.newStepOrder).toBe(0);
     expect(result.reindexed).toEqual([{ index: 0, stepOrder: 1 }]);
   });
 
   it('handles single TODO item', () => {
-    const result = computeInsertBeforeDone([{ stepOrder: 0, status: 'TODO' }]);
+    const result = computeInsertBeforeDone([{ stepOrder: 0, status: TASK_STATUS.TODO.value }]);
     expect(result.newStepOrder).toBe(1);
     expect(result.reindexed).toEqual([]);
   });
 
   it('treats undefined stepOrder as Infinity for sorting', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: undefined, status: 'TODO' },
-      { stepOrder: 0, status: 'DONE' },
+      { stepOrder: undefined, status: TASK_STATUS.TODO.value },
+      { stepOrder: 0, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(1);
     expect(result.reindexed).toEqual([
@@ -193,8 +194,8 @@ describe('computeInsertBeforeDone', () => {
 
   it('treats null stepOrder as Infinity for sorting', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: null, status: 'TODO' },
-      { stepOrder: 0, status: 'DONE' },
+      { stepOrder: null, status: TASK_STATUS.TODO.value },
+      { stepOrder: 0, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(1);
     expect(result.reindexed).toEqual([
@@ -205,8 +206,8 @@ describe('computeInsertBeforeDone', () => {
 
   it('does not mutate the input array', () => {
     const input = [
-      { stepOrder: 0, status: 'TODO' },
-      { stepOrder: 1, status: 'DONE' },
+      { stepOrder: 0, status: TASK_STATUS.TODO.value },
+      { stepOrder: 1, status: TASK_STATUS.DONE.value },
     ];
     const copy = input.map((i) => ({ ...i }));
     computeInsertBeforeDone(input);
@@ -215,8 +216,8 @@ describe('computeInsertBeforeDone', () => {
 
   it('handles items with gaps in stepOrder', () => {
     const result = computeInsertBeforeDone([
-      { stepOrder: 5, status: 'TODO' },
-      { stepOrder: 10, status: 'DONE' },
+      { stepOrder: 5, status: TASK_STATUS.TODO.value },
+      { stepOrder: 10, status: TASK_STATUS.DONE.value },
     ]);
     expect(result.newStepOrder).toBe(1);
     expect(result.reindexed).toEqual([

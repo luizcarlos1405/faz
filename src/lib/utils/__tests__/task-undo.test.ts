@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { TaskDoc } from '$lib/types';
+import { TASK_STATUS, type TaskDoc } from '$lib/types';
 
 function snapshotTask(task: TaskDoc): TaskDoc {
   return { ...task };
@@ -12,7 +12,7 @@ function makeTask(overrides: Partial<TaskDoc> = {}): TaskDoc {
     type: 'Task',
     title: 'Test task',
     doAt: '2026-04-19',
-    status: 'TODO',
+    status: TASK_STATUS.TODO.value,
     goalId: 'goal_1',
     stepOrder: 2,
     originInboxItemId: 'inbox_1',

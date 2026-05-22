@@ -13,7 +13,7 @@ import {
 } from '$lib/db/task-repo';
 import { createGoal, getGoal } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
-import type { TaskDoc } from '$lib/types';
+import { TASK_STATUS, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
 
@@ -121,7 +121,7 @@ export function getTasksPageState() {
   async function toggleComplete(id: string) {
     const task = allTasks.find((t) => t._id === id) || doneTodayList.find((t) => t._id === id);
     if (!task) return;
-    if (task.status === 'TODO') {
+    if (task.status === TASK_STATUS.TODO.value) {
       await completeTask(id);
       if (task.taskPlanId) {
         await markPlanDone(task.taskPlanId, getToday());
