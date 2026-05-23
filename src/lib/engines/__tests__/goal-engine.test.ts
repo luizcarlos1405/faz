@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { calculateGoalStatus } from '../goal-engine';
-import { TASK_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function makeGoal(status: GoalDoc['status'] = 'NOT_STARTED'): GoalDoc {
   return {
     _id: 'goal_1',
-    type: 'Goal',
+    type: DOC_TYPE.GOAL.value,
     title: 'Test Goal',
     status,
     createdAt: '2026-01-01T00:00:00Z',
@@ -19,7 +19,7 @@ function makeTask(
 ): TaskDoc {
   return {
     _id: 'task_1',
-    type: 'Task',
+    type: DOC_TYPE.TASK.value,
     title: 'T',
     doAt: '2026-01-01',
     status,

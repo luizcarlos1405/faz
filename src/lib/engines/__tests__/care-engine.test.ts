@@ -7,7 +7,7 @@ import {
   evaluateTaskPlan,
   runScheduler,
 } from '../care-engine';
-import { TASK_STATUS, type TaskPlan, type TaskDoc, type CareDoc } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, type TaskPlan, type TaskDoc, type CareDoc } from '$lib/types';
 
 function makePlan(
   overrides: Partial<TaskPlan['recurrence']> & { type: TaskPlan['recurrence']['type'] },
@@ -25,7 +25,7 @@ function makePlan(
 function makeTask(overrides: Partial<TaskDoc>): TaskDoc {
   return {
     _id: 'task_1',
-    type: 'Task',
+    type: DOC_TYPE.TASK.value,
     title: 'T',
     doAt: '2026-01-01',
     status: TASK_STATUS.TODO.value,
@@ -321,7 +321,7 @@ describe('runScheduler', () => {
     };
     const care: CareDoc = {
       _id: 'care_1',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Work',
       taskPlans: [plan],
       createdAt: '2026-01-15T00:00:00Z',
@@ -352,7 +352,7 @@ describe('runScheduler', () => {
     };
     const care: CareDoc = {
       _id: 'care_2',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Home',
       taskPlans: [plan],
       createdAt: '2026-01-01T00:00:00Z',
@@ -381,7 +381,7 @@ describe('runScheduler', () => {
     };
     const care: CareDoc = {
       _id: 'care_1',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Plants',
       taskPlans: [plan],
       createdAt: '2026-01-01T00:00:00Z',
@@ -420,7 +420,7 @@ describe('runScheduler', () => {
     };
     const care1: CareDoc = {
       _id: 'care_1',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Work',
       taskPlans: [planA],
       createdAt: '2026-01-01T00:00:00Z',
@@ -428,7 +428,7 @@ describe('runScheduler', () => {
     };
     const care2: CareDoc = {
       _id: 'care_2',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Home',
       taskPlans: [planB],
       createdAt: '2026-01-01T00:00:00Z',
@@ -456,7 +456,7 @@ describe('runScheduler', () => {
     };
     const care: CareDoc = {
       _id: 'care_1',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Test',
       taskPlans: [plan],
       createdAt: '2026-01-01T00:00:00Z',
@@ -485,7 +485,7 @@ describe('runScheduler', () => {
     };
     const care: CareDoc = {
       _id: 'care_1',
-      type: 'Care',
+      type: DOC_TYPE.CARE.value,
       title: 'Test',
       taskPlans: [plan],
       createdAt: '2026-01-01T00:00:00Z',

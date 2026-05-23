@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
-import type { CareDoc, TaskPlan } from '$lib/types';
+import { DOC_TYPE, type CareDoc, type TaskPlan } from '$lib/types';
 
 export async function createCare(
   title: string,
@@ -12,8 +12,8 @@ export async function createCare(
   const now = Temporal.Now.instant().toString();
   const existing = await getAllCares();
   const doc: CareDoc = {
-    _id: `care_${nanoid()}`,
-    type: 'Care',
+    _id: `${DOC_TYPE.CARE.idPrefix}${nanoid()}`,
+    type: DOC_TYPE.CARE.value,
     title,
     taskPlans: taskPlans.map((tp) => ({
       ...tp,
@@ -54,7 +54,7 @@ export async function removeCare(id: string): Promise<void> {
 export async function getAllCares(): Promise<CareDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Care', createdAt: { $gt: null } },
+    selector: { type: DOC_TYPE.CARE.value, createdAt: { $gt: null } },
     sort: [{ type: 'asc' }, { createdAt: 'desc' }],
     limit: FIND_LIMIT_ALL,
   });

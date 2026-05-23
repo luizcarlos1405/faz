@@ -1,12 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
-import type { InboxItemDoc } from '$lib/types';
+import { DOC_TYPE, type InboxItemDoc } from '$lib/types';
 
 export async function createInboxItem(title: string): Promise<InboxItemDoc> {
   const doc: InboxItemDoc = {
-    _id: `inbox_${nanoid()}`,
-    type: 'InboxItem',
+    _id: `${DOC_TYPE.INBOX_ITEM.idPrefix}${nanoid()}`,
+    type: DOC_TYPE.INBOX_ITEM.value,
     title,
     isProcessed: false,
     createdAt: Temporal.Now.instant().toString(),
@@ -33,7 +33,7 @@ export async function updateInboxItem(doc: InboxItemDoc): Promise<InboxItemDoc> 
 export async function getUnprocessed(): Promise<InboxItemDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'InboxItem', isProcessed: false, createdAt: { $gt: null } },
+    selector: { type: DOC_TYPE.INBOX_ITEM.value, isProcessed: false, createdAt: { $gt: null } },
     sort: [{ type: 'asc' }, { isProcessed: 'asc' }, { createdAt: 'desc' }],
     limit: FIND_LIMIT_ALL,
   });
@@ -43,7 +43,7 @@ export async function getUnprocessed(): Promise<InboxItemDoc[]> {
 export async function getProcessed(): Promise<InboxItemDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'InboxItem', isProcessed: true, createdAt: { $gt: null } },
+    selector: { type: DOC_TYPE.INBOX_ITEM.value, isProcessed: true, createdAt: { $gt: null } },
     sort: [{ type: 'asc' }, { isProcessed: 'asc' }, { createdAt: 'desc' }],
     limit: FIND_LIMIT_ALL,
   });

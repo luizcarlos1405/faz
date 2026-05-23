@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { DOC_TYPE, TASK_STATUS } from '$lib/types';
 import type { TaskDoc, TaskPlan, CareDoc, DurationLike } from '$lib/types';
-import { TASK_STATUS } from '$lib/types';
 
 export function evaluateTaskPlan(
   plan: TaskPlan,
@@ -136,8 +136,8 @@ function addDuration(date: Temporal.PlainDate, duration: DurationLike): Temporal
 
 function makeTask(plan: TaskPlan, doAt: string): TaskDoc {
   return {
-    _id: `task_gen_${plan._id}_${doAt}`,
-    type: 'Task',
+    _id: `${DOC_TYPE.TASK.idPrefix}gen_${plan._id}_${doAt}`,
+    type: DOC_TYPE.TASK.value,
     title: plan.title,
     doAt,
     status: TASK_STATUS.TODO.value,

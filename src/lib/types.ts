@@ -1,3 +1,10 @@
+export const DOC_TYPE = {
+  INBOX_ITEM: { value: 'InboxItem', idPrefix: 'inbox_' },
+  TASK: { value: 'Task', idPrefix: 'task_' },
+  GOAL: { value: 'Goal', idPrefix: 'goal_' },
+  CARE: { value: 'Care', idPrefix: 'care_' },
+} as const;
+
 export const TASK_STATUS = {
   TODO: { value: 'TODO' },
   DONE: { value: 'DONE' },
@@ -63,7 +70,7 @@ export type Recurrence =
 export interface InboxItemDoc {
   _id: string;
   _rev?: string;
-  type: 'InboxItem';
+  type: typeof DOC_TYPE.INBOX_ITEM.value;
   title: string;
   isProcessed: boolean;
   createdAt: string;
@@ -72,7 +79,7 @@ export interface InboxItemDoc {
 export interface TaskDoc {
   _id: string;
   _rev?: string;
-  type: 'Task';
+  type: typeof DOC_TYPE.TASK.value;
   title: string;
   doAt: string;
   status: TaskStatus;
@@ -90,7 +97,7 @@ export interface TaskDoc {
 export interface GoalDoc {
   _id: string;
   _rev?: string;
-  type: 'Goal';
+  type: typeof DOC_TYPE.GOAL.value;
   title: string;
   status: GoalStatus;
   goalsListOrder?: number;
@@ -112,7 +119,7 @@ export interface TaskPlan {
 export interface CareDoc {
   _id: string;
   _rev?: string;
-  type: 'Care';
+  type: typeof DOC_TYPE.CARE.value;
   title: string;
   taskPlans: TaskPlan[];
   caresListOrder?: number;

@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder, computeInsertBeforeDone } from '$lib/engines/ordering';
-import { TASK_STATUS, type TaskDoc } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 
 export async function createTask(data: {
   title: string;
@@ -29,15 +29,15 @@ export async function createTask(data: {
   if (tasksListOrder == null) {
     const db = await getDb();
     const result = await db.find({
-      selector: { type: 'Task' },
+      selector: { type: DOC_TYPE.TASK.value },
       fields: ['tasksListOrder'],
       limit: FIND_LIMIT_ALL,
     });
     tasksListOrder = nextOrder((result.docs as TaskDoc[]).map((t) => t.tasksListOrder));
   }
   const doc: TaskDoc = {
-    _id: `task_${nanoid()}`,
-    type: 'Task',
+    _id: `${DOC_TYPE.TASK.idPrefix}${nanoid()}`,
+    type: DOC_TYPE.TASK.value,
     title: data.title,
     doAt: data.doAt,
     status: TASK_STATUS.TODO.value,
@@ -89,7 +89,7 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
     selector: {
-      type: 'Task',
+      type: DOC_TYPE.TASK.value,
       status: TASK_STATUS.TODO.value,
       doAt: { $lte: today },
       createdAt: { $gt: null },
@@ -103,7 +103,7 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
 export async function getDoneToday(todayDate: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const allDone = await db.find({
-    selector: { type: 'Task', status: TASK_STATUS.DONE.value },
+    selector: { type: DOC_TYPE.TASK.value, status: TASK_STATUS.DONE.value },
     limit: FIND_LIMIT_ALL,
   });
   return (allDone.docs as TaskDoc[]).filter((t) => {
@@ -116,7 +116,7 @@ export async function getDoneToday(todayDate: string): Promise<TaskDoc[]> {
 export async function getTasksByGoal(goalId: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Task', goalId, doAt: { $gt: null } },
+    selector: { type: DOC_TYPE.TASK.value, goalId, doAt: { $gt: null } },
     sort: [{ type: 'asc' }, { goalId: 'asc' }, { doAt: 'asc' }],
     limit: FIND_LIMIT_ALL,
   });
@@ -128,7 +128,7 @@ export async function getTasksByGoal(goalId: string): Promise<TaskDoc[]> {
 export async function getTasksByCare(careId: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Task', careId, doAt: { $gt: null } },
+    selector: { type: DOC_TYPE.TASK.value, careId, doAt: { $gt: null } },
     sort: [{ type: 'asc' }, { careId: 'asc' }, { doAt: 'asc' }],
     limit: FIND_LIMIT_ALL,
   });
@@ -138,7 +138,7 @@ export async function getTasksByCare(careId: string): Promise<TaskDoc[]> {
 export async function getTasksByTaskPlan(taskPlanId: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Task', taskPlanId },
+    selector: { type: DOC_TYPE.TASK.value, taskPlanId },
     limit: FIND_LIMIT_ALL,
   });
   return result.docs as TaskDoc[];
@@ -149,7 +149,7 @@ export async function getNextTaskForGoals(goalIds: string[]): Promise<Map<string
   const db = await getDb();
   const result = await db.find({
     selector: {
-      type: 'Task',
+      type: DOC_TYPE.TASK.value,
       status: TASK_STATUS.TODO.value,
       goalId: { $in: goalIds },
     },
@@ -168,7 +168,7 @@ export async function getNextTaskForGoals(goalIds: string[]): Promise<Map<string
 export async function getActiveTasksForPlan(taskPlanId: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Task', taskPlanId, status: TASK_STATUS.TODO.value },
+    selector: { type: DOC_TYPE.TASK.value, taskPlanId, status: TASK_STATUS.TODO.value },
     limit: FIND_LIMIT_ALL,
   });
   return result.docs as TaskDoc[];

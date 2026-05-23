@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getInboxProcessorState, type CreatedEntity } from './inbox-processor-state.svelte';
+  import { DOC_TYPE } from '$lib/types';
   import type { InboxItemDoc, Recurrence } from '$lib/types';
   import { Temporal } from '@js-temporal/polyfill';
   import SquareCheckBig from 'lucide-svelte/icons/square-check-big';
@@ -67,9 +68,9 @@
     care: Heart,
   };
   const entityLabel: Record<string, string> = {
-    task: 'Task',
-    goal: 'Goal',
-    care: 'Care',
+    task: DOC_TYPE.TASK.value,
+    goal: DOC_TYPE.GOAL.value,
+    care: DOC_TYPE.CARE.value,
   };
 </script>
 

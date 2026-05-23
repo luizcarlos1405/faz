@@ -2,14 +2,14 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
-import type { GoalDoc } from '$lib/types';
+import { DOC_TYPE, type GoalDoc } from '$lib/types';
 
 export async function createGoal(title: string, originInboxItemId?: string): Promise<GoalDoc> {
   const now = Temporal.Now.instant().toString();
   const existing = await getAllGoals();
   const doc: GoalDoc = {
-    _id: `goal_${nanoid()}`,
-    type: 'Goal',
+    _id: `${DOC_TYPE.GOAL.idPrefix}${nanoid()}`,
+    type: DOC_TYPE.GOAL.value,
     title,
     status: 'NOT_STARTED',
     goalsListOrder: nextOrder(existing.map((g) => g.goalsListOrder)),
@@ -45,7 +45,7 @@ export async function removeGoal(id: string): Promise<void> {
 export async function getAllGoals(): Promise<GoalDoc[]> {
   const db = await getDb();
   const result = await db.find({
-    selector: { type: 'Goal', createdAt: { $gt: null } },
+    selector: { type: DOC_TYPE.GOAL.value, createdAt: { $gt: null } },
     sort: [{ type: 'asc' }, { createdAt: 'desc' }],
     limit: FIND_LIMIT_ALL,
   });

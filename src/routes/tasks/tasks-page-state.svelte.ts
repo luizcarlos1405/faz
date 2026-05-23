@@ -13,7 +13,7 @@ import {
 } from '$lib/db/task-repo';
 import { createGoal, getGoal } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
-import { TASK_STATUS, type TaskDoc } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
 
@@ -77,11 +77,11 @@ export function getTasksPageState() {
     const entries = await Promise.all(
       [...ids].map(async (id) => {
         try {
-          if (id.startsWith('goal_')) {
+          if (id.startsWith(DOC_TYPE.GOAL.idPrefix)) {
             const doc = await getGoal(id);
             return [id, doc.title] as const;
           }
-          if (id.startsWith('care_')) {
+          if (id.startsWith(DOC_TYPE.CARE.idPrefix)) {
             const doc = await getCare(id);
             return [id, doc.title] as const;
           }
