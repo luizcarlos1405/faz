@@ -188,6 +188,12 @@ export async function uncompleteTask(id: string): Promise<TaskDoc> {
   return updateTask(doc);
 }
 
+export async function markTaskMissed(id: string): Promise<TaskDoc> {
+  const doc = await getTask(id);
+  doc.status = TASK_STATUS.MISSED.value;
+  return updateTask(doc);
+}
+
 export async function reorderGoalTasks(goalId: string, taskIds: string[]): Promise<void> {
   const db = await getDb();
   for (let i = 0; i < taskIds.length; i++) {
