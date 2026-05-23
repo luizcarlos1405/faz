@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { DOC_TYPE, TASK_STATUS } from '$lib/types';
-import type { TaskDoc, TaskPlan, CareDoc, DurationLike } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, OVERDUE_BEHAVIOR } from '$lib/types';
+import type { TaskDoc, TaskPlan, CareDoc, DurationLike, OverdueBehavior } from '$lib/types';
 
 export function evaluateTaskPlan(
   plan: TaskPlan,
@@ -104,14 +104,30 @@ export function runScheduler(
   cares: CareDoc[],
   today: Temporal.PlainDate,
   getTasksForPlan: (planId: string) => TaskDoc[],
-): { tasks: TaskDoc[]; updatedPlans: Map<string, TaskPlan> } {
+): {
+  tasks: TaskDoc[];
+  updatedPlans: Map<string, TaskPlan>;
+  missedTasks: TaskDoc[];
+  discardedTaskIds: string[];
+} {
   const generatedTasks: TaskDoc[] = [];
   const updatedPlans = new Map<string, TaskPlan>();
+  const missedTasks: TaskDoc[] = [];
+  const discardedTaskIds: string[] = [];
 
   for (const care of cares) {
     for (const plan of care.taskPlans) {
       const existingTasks = getTasksForPlan(plan._id);
-      const task = evaluateTaskPlan(plan, today, existingTasks);
+
+      const overdue = applyOverdueBehavior(plan, today, existingTasks);
+      missedTasks.push(...overdue.missedTasks);
+      discardedTaskIds.push(...overdue.discardedTaskIds);
+
+      const filtered = existingTasks.filter(
+        (t) => !overdue.discardedTaskIds.includes(t._id) && t.status === TASK_STATUS.TODO.value,
+      );
+
+      const task = evaluateTaskPlan(plan, today, filtered);
       if (task) {
         task.careId = care._id;
         generatedTasks.push(task);
@@ -121,7 +137,37 @@ export function runScheduler(
     }
   }
 
-  return { tasks: generatedTasks, updatedPlans };
+  return { tasks: generatedTasks, updatedPlans, missedTasks, discardedTaskIds };
+}
+
+export function applyOverdueBehavior(
+  plan: TaskPlan,
+  today: Temporal.PlainDate,
+  tasks: TaskDoc[],
+): { missedTasks: TaskDoc[]; discardedTaskIds: string[] } {
+  const behavior: OverdueBehavior = plan.overdueBehavior ?? OVERDUE_BEHAVIOR.KEEP.value;
+
+  const overdueTodo = tasks.filter(
+    (t) =>
+      t.status === TASK_STATUS.TODO.value &&
+      Temporal.PlainDate.compare(Temporal.PlainDate.from(t.doAt), today) < 0,
+  );
+
+  if (behavior === OVERDUE_BEHAVIOR.MISSED.value) {
+    return {
+      missedTasks: overdueTodo.map((t) => ({ ...t, status: TASK_STATUS.MISSED.value })),
+      discardedTaskIds: [],
+    };
+  }
+
+  if (behavior === OVERDUE_BEHAVIOR.DISCARD.value) {
+    return {
+      missedTasks: [],
+      discardedTaskIds: overdueTodo.map((t) => t._id),
+    };
+  }
+
+  return { missedTasks: [], discardedTaskIds: [] };
 }
 
 function addDuration(date: Temporal.PlainDate, duration: DurationLike): Temporal.PlainDate {
