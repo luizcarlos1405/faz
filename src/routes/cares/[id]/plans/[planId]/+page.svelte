@@ -7,7 +7,7 @@
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
   import Save from 'lucide-svelte/icons/save';
-  import type { Recurrence } from '$lib/types';
+  import type { Recurrence, OverdueBehavior } from '$lib/types';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import IntervalPicker from '$lib/components/interval-picker.svelte';
@@ -37,6 +37,7 @@
   let wheelMonth: string | number = $state(1);
   let wheelDay: string | number = $state(1);
   let planStartDate: string = $state('');
+  let planOverdueBehavior: OverdueBehavior = $state('KEEP');
   let initialized = $state(false);
 
   onMount(() => ctrl.load());
@@ -48,6 +49,7 @@
       title = plan.title;
       selectedCareId = careId;
       planStartDate = plan.recurrence.startDate;
+      planOverdueBehavior = plan.overdueBehavior ?? 'KEEP';
 
       if (plan.recurrence.type === 'INTERVAL' && plan.recurrence.subtype === 'FIXED') {
         planType = 'INTERVAL_FIXED';
@@ -143,7 +145,10 @@
   }
 
   async function handleSave() {
-    await ctrl.saveAndMove({ title: title.trim(), recurrence: buildRecurrence() }, selectedCareId);
+    await ctrl.saveAndMove(
+      { title: title.trim(), recurrence: buildRecurrence(), overdueBehavior: planOverdueBehavior },
+      selectedCareId,
+    );
     goto(resolve(`/cares/${careId}`));
   }
 
@@ -332,6 +337,15 @@
           <span class="label-text">Start date</span>
         </label>
         <input id="plan-start-date" type="date" class="input input-sm" bind:value={planStartDate} />
+
+        <label class="label" for="plan-overdue">
+          <span class="label-text">If the date passes</span>
+        </label>
+        <select id="plan-overdue" class="select select-sm" bind:value={planOverdueBehavior}>
+          <option value="KEEP">Keep it</option>
+          <option value="MISSED">Mark missed</option>
+          <option value="DISCARD">Discard</option>
+        </select>
 
         <div class="flex justify-end mt-2">
           <button class="btn btn-primary btn-sm" disabled={!canSave()} onclick={handleSave}>

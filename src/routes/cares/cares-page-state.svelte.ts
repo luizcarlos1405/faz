@@ -165,7 +165,11 @@ export function getTaskPlanEditState(careId: string, planId: string) {
     loading = false;
   }
 
-  async function update(updates: { title: string; recurrence: Recurrence }) {
+  async function update(updates: {
+    title: string;
+    recurrence: Recurrence;
+    overdueBehavior?: OverdueBehavior;
+  }) {
     await updateTaskPlanRepo(careId, planId, updates);
     await load();
     await runSchedulerNow();
@@ -173,7 +177,7 @@ export function getTaskPlanEditState(careId: string, planId: string) {
   }
 
   async function saveAndMove(
-    updates: { title: string; recurrence: Recurrence },
+    updates: { title: string; recurrence: Recurrence; overdueBehavior?: OverdueBehavior },
     newCareId: string,
   ): Promise<string> {
     if (newCareId === careId) {
