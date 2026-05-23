@@ -13,7 +13,7 @@ import {
 import { updateTasksCareForPlan } from '$lib/db/task-repo';
 import { Temporal } from '@js-temporal/polyfill';
 import { reorderItems } from '$lib/utils/reorderItems';
-import type { CareDoc, TaskPlan, Recurrence } from '$lib/types';
+import type { CareDoc, TaskPlan, Recurrence, OverdueBehavior } from '$lib/types';
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 
@@ -94,7 +94,11 @@ export function getCareDetailState(careId: string) {
     await load();
   }
 
-  async function addTaskPlan(plan: { title: string; recurrence: Recurrence }) {
+  async function addTaskPlan(plan: {
+    title: string;
+    recurrence: Recurrence;
+    overdueBehavior?: OverdueBehavior;
+  }) {
     const doc = await getCare(careId);
     const now = Temporal.Now.instant().toString();
     const { nanoid } = await import('nanoid');
@@ -102,6 +106,7 @@ export function getCareDetailState(careId: string) {
       _id: `tp_${nanoid()}`,
       title: plan.title,
       recurrence: plan.recurrence,
+      overdueBehavior: plan.overdueBehavior,
       createdAt: now,
       updatedAt: now,
     });

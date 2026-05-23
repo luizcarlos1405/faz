@@ -11,7 +11,7 @@
   import Pencil from 'lucide-svelte/icons/pencil';
   import Check from 'lucide-svelte/icons/check';
   import { tick } from 'svelte';
-  import type { Recurrence } from '$lib/types';
+  import type { Recurrence, OverdueBehavior } from '$lib/types';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import { Temporal } from '@js-temporal/polyfill';
@@ -77,6 +77,7 @@
   let wheelMonth: string | number = $state(1);
   let wheelDay: string | number = $state(1);
   let planStartDate: string = $state(Temporal.Now.plainDateISO().toString());
+  let planOverdueBehavior: OverdueBehavior = $state('KEEP');
 
   const monthNames = [
     '',
@@ -135,6 +136,7 @@
     planDaysOfMonth = [];
     planYearDates = [];
     planStartDate = Temporal.Now.plainDateISO().toString();
+    planOverdueBehavior = 'KEEP';
     intervalPickerOpen = false;
     wheelOpen = false;
   }
@@ -201,7 +203,11 @@
   }
 
   async function handleCreate() {
-    await ctrl.addTaskPlan({ title: newPlanTitle.trim(), recurrence: buildRecurrence() });
+    await ctrl.addTaskPlan({
+      title: newPlanTitle.trim(),
+      recurrence: buildRecurrence(),
+      overdueBehavior: planOverdueBehavior,
+    });
     resetWizard();
   }
 
@@ -427,6 +433,17 @@
             />
           {/if}
 
+          {#if planStep >= 5}
+            <label class="label" for="plan-overdue">
+              <span class="label-text">If the date passes</span>
+            </label>
+            <select id="plan-overdue" class="select select-sm" bind:value={planOverdueBehavior}>
+              <option value="KEEP">Keep it</option>
+              <option value="MISSED">Mark missed</option>
+              <option value="DISCARD">Discard</option>
+            </select>
+          {/if}
+
           <div class="flex gap-2 mt-2">
             <button
               class="btn btn-ghost btn-sm"
@@ -439,7 +456,7 @@
             {#if planStep > 0}
               <button class="btn btn-ghost btn-sm" onclick={() => planStep--}>Back</button>
             {/if}
-            {#if planStep < 4}
+            {#if planStep < 5}
               <button
                 class="btn btn-sm"
                 onclick={() => {
@@ -448,7 +465,7 @@
                 }}>Next</button
               >
             {/if}
-            {#if planStep === 4}
+            {#if planStep === 5}
               <button class="btn btn-primary btn-sm" disabled={!canCreate()} onclick={handleCreate}>
                 Add
               </button>
