@@ -8,9 +8,18 @@ export const DOC_TYPE = {
 export const TASK_STATUS = {
   TODO: { value: 'TODO' },
   DONE: { value: 'DONE' },
+  MISSED: { value: 'MISSED' },
 } as const;
 
 export type TaskStatus = (typeof TASK_STATUS)[keyof typeof TASK_STATUS]['value'];
+
+export const OVERDUE_BEHAVIOR = {
+  KEEP: { value: 'KEEP' },
+  MISSED: { value: 'MISSED' },
+  DISCARD: { value: 'DISCARD' },
+} as const;
+
+export type OverdueBehavior = (typeof OVERDUE_BEHAVIOR)[keyof typeof OVERDUE_BEHAVIOR]['value'];
 
 export const GOAL_STATUS = {
   NOT_STARTED: { value: 'NOT_STARTED' },
@@ -117,6 +126,7 @@ export interface TaskPlan {
   _id: string;
   title: string;
   recurrence: Recurrence;
+  overdueBehavior?: OverdueBehavior;
   lastDoAtDate?: string;
   lastDoneDate?: string;
   createdAt: string;
