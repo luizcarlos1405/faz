@@ -6,8 +6,16 @@ import {
   evaluateFixedDays,
   evaluateTaskPlan,
   runScheduler,
+  applyOverdueBehavior,
 } from '../care-engine';
-import { DOC_TYPE, TASK_STATUS, type TaskPlan, type TaskDoc, type CareDoc } from '$lib/types';
+import {
+  DOC_TYPE,
+  TASK_STATUS,
+  OVERDUE_BEHAVIOR,
+  type TaskPlan,
+  type TaskDoc,
+  type CareDoc,
+} from '$lib/types';
 
 function makePlan(
   overrides: Partial<TaskPlan['recurrence']> & { type: TaskPlan['recurrence']['type'] },
@@ -615,5 +623,292 @@ describe('evaluateFixedDays edge cases', () => {
     const result = evaluateFixedDays(plan, today, []);
     expect(result.length).toBe(1);
     expect(result[0].doAt).toBe('2024-02-29');
+  });
+});
+
+describe('applyOverdueBehavior', () => {
+  it('returns empty for KEEP behavior', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.KEEP.value;
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('defaults to KEEP when overdueBehavior is undefined', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('marks overdue TODO tasks as MISSED when behavior is MISSED', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks.length).toBe(1);
+    expect(result.missedTasks[0].status).toBe(TASK_STATUS.MISSED.value);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('discards overdue TODO tasks when behavior is DISCARD', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.DISCARD.value;
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds.length).toBe(1);
+    expect(result.discardedTaskIds[0]).toBe(tasks[0]._id);
+  });
+
+  it('does not touch tasks with doAt equal to today', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-15', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('does not touch tasks with doAt in the future', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-20', status: TASK_STATUS.TODO.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('does not touch DONE tasks even if overdue', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.DONE.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+
+  it('does not touch MISSED tasks already processed', () => {
+    const plan = makePlan({
+      type: 'INTERVAL',
+      subtype: 'FIXED',
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const tasks = [
+      makeTask({ taskPlanId: 'tp_test', doAt: '2026-01-10', status: TASK_STATUS.MISSED.value }),
+    ];
+    const result = applyOverdueBehavior(plan, today, tasks);
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+  });
+});
+
+describe('runScheduler with overdue behavior', () => {
+  it('marks overdue tasks as MISSED and still generates new tasks', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_1',
+      title: 'Water plants',
+      recurrence: {
+        type: 'INTERVAL',
+        subtype: 'FIXED',
+        interval: { days: 7 },
+        startDate: '2026-01-01',
+      },
+      overdueBehavior: OVERDUE_BEHAVIOR.MISSED.value,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Plants',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const existingOverdue = makeTask({
+      _id: 'task_overdue',
+      taskPlanId: 'tp_1',
+      doAt: '2026-01-10',
+      status: TASK_STATUS.TODO.value,
+    });
+    const result = runScheduler([care], today, () => [existingOverdue]);
+
+    expect(result.missedTasks.length).toBe(1);
+    expect(result.missedTasks[0]._id).toBe('task_overdue');
+    expect(result.missedTasks[0].status).toBe(TASK_STATUS.MISSED.value);
+    expect(result.tasks.length).toBe(1);
+    expect(result.tasks[0].doAt).toBe('2026-01-22');
+  });
+
+  it('discards overdue tasks and still generates new tasks', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_1',
+      title: 'Water plants',
+      recurrence: {
+        type: 'INTERVAL',
+        subtype: 'FIXED',
+        interval: { days: 7 },
+        startDate: '2026-01-01',
+      },
+      overdueBehavior: OVERDUE_BEHAVIOR.DISCARD.value,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Plants',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const existingOverdue = makeTask({
+      _id: 'task_overdue',
+      taskPlanId: 'tp_1',
+      doAt: '2026-01-10',
+      status: TASK_STATUS.TODO.value,
+    });
+    const result = runScheduler([care], today, () => [existingOverdue]);
+
+    expect(result.discardedTaskIds.length).toBe(1);
+    expect(result.discardedTaskIds[0]).toBe('task_overdue');
+    expect(result.tasks.length).toBe(1);
+    expect(result.tasks[0].doAt).toBe('2026-01-22');
+  });
+
+  it('defaults to KEEP when overdueBehavior is not set', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_1',
+      title: 'Water plants',
+      recurrence: {
+        type: 'INTERVAL',
+        subtype: 'FIXED',
+        interval: { days: 7 },
+        startDate: '2026-01-01',
+      },
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Plants',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-20');
+    const existingOverdue = makeTask({
+      _id: 'task_overdue',
+      taskPlanId: 'tp_1',
+      doAt: '2026-01-10',
+      status: TASK_STATUS.TODO.value,
+    });
+    const result = runScheduler([care], today, () => [existingOverdue]);
+
+    expect(result.missedTasks).toEqual([]);
+    expect(result.discardedTaskIds).toEqual([]);
+    expect(result.tasks.length).toBe(1);
+  });
+
+  it('AFTER_DONE treats MISSED tasks as non-active and generates new task', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_ad',
+      title: 'Recurring',
+      recurrence: {
+        type: 'INTERVAL',
+        subtype: 'AFTER_DONE',
+        interval: { days: 3 },
+        startDate: '2026-01-01',
+      },
+      overdueBehavior: OVERDUE_BEHAVIOR.MISSED.value,
+      lastDoneDate: '2026-01-07',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Test',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const existingMissed = makeTask({
+      taskPlanId: 'tp_ad',
+      doAt: '2026-01-10',
+      status: TASK_STATUS.MISSED.value,
+    });
+    const result = runScheduler([care], today, () => [existingMissed]);
+
+    expect(result.missedTasks).toEqual([]);
+    expect(result.tasks.length).toBe(1);
+    expect(result.tasks[0].doAt).toBe('2026-01-10');
   });
 });
