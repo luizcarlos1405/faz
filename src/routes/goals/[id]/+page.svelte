@@ -174,6 +174,8 @@
             <button class="btn btn-ghost btn-sm" onclick={() => ctrl.toggleTask(task._id)}>
               {#if task.status === TASK_STATUS.DONE.value}
                 <SquareCheckBig class="size-5 text-success" />
+              {:else if task.status === TASK_STATUS.MISSED.value}
+                <Square class="size-5 text-warning" />
               {:else}
                 <Square class="size-5" />
               {/if}
@@ -187,7 +189,12 @@
                 if (e.key === 'Enter') ctrl.openEdit(task._id);
               }}
             >
-              <div class={task.status === TASK_STATUS.DONE.value ? 'line-through opacity-60' : ''}>
+              <div
+                class={task.status === TASK_STATUS.DONE.value ||
+                task.status === TASK_STATUS.MISSED.value
+                  ? 'line-through opacity-60'
+                  : ''}
+              >
                 {task.title}
               </div>
               <div class="text-xs text-base-content/50">{formatFriendlyDate(task.doAt)}</div>

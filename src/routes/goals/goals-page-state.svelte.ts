@@ -106,6 +106,8 @@ function sortWithDoneAtEnd(list: TaskDoc[]): TaskDoc[] {
   return list.toSorted((a, b) => {
     if (a.status === TASK_STATUS.DONE.value && b.status !== TASK_STATUS.DONE.value) return 1;
     if (a.status !== TASK_STATUS.DONE.value && b.status === TASK_STATUS.DONE.value) return -1;
+    if (a.status === TASK_STATUS.MISSED.value && b.status === TASK_STATUS.TODO.value) return 1;
+    if (a.status === TASK_STATUS.TODO.value && b.status === TASK_STATUS.MISSED.value) return -1;
     return (a.stepOrder ?? 0) - (b.stepOrder ?? 0);
   });
 }
@@ -151,6 +153,8 @@ export function getGoalDetailState(goalId: string) {
     const task = tasks.find((t) => t._id === taskId);
     if (!task) return;
     if (task.status === TASK_STATUS.TODO.value) {
+      await completeTask(taskId);
+    } else if (task.status === TASK_STATUS.MISSED.value) {
       await completeTask(taskId);
     } else {
       await uncompleteTask(taskId);
