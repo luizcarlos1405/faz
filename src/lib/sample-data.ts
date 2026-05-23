@@ -4,6 +4,7 @@ import { createGoal, updateGoal } from './db/goal-repo';
 import { createTask, completeTask, updateTask } from './db/task-repo';
 import { createCare, updateCare } from './db/care-repo';
 import { runSchedulerNow } from './scheduler';
+import { GOAL_STATUS } from './types';
 
 function daysAgo(n: number): string {
   return Temporal.Now.plainDateISO().subtract({ days: n }).toString();
@@ -65,7 +66,7 @@ export async function addSampleData() {
   await createTask({ title: 'Complete week 4 long run', doAt: todayStr(), goalId: goal1._id });
   summary.tasks++;
 
-  goal1.status = 'IN_PROGRESS';
+  goal1.status = GOAL_STATUS.IN_PROGRESS.value;
   await updateGoal(goal1);
 
   // Goal 2: "Organize home office" — REVIEW (all tasks done)
@@ -92,7 +93,7 @@ export async function addSampleData() {
   await completeAndBackdate(g2t3._id, 2);
   summary.tasks++;
 
-  goal2.status = 'REVIEW';
+  goal2.status = GOAL_STATUS.REVIEW.value;
   await updateGoal(goal2);
 
   // Goal 3: "Learn Spanish basics" — IN_PROGRESS
@@ -120,7 +121,7 @@ export async function addSampleData() {
   });
   summary.tasks++;
 
-  goal3.status = 'IN_PROGRESS';
+  goal3.status = GOAL_STATUS.IN_PROGRESS.value;
   await updateGoal(goal3);
 
   // Goal 4: "Plan summer vacation" — NOT_STARTED, no tasks

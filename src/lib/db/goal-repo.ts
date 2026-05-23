@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
-import { DOC_TYPE, type GoalDoc } from '$lib/types';
+import { DOC_TYPE, GOAL_STATUS, type GoalDoc } from '$lib/types';
 
 export async function createGoal(title: string, originInboxItemId?: string): Promise<GoalDoc> {
   const now = Temporal.Now.instant().toString();
@@ -11,7 +11,7 @@ export async function createGoal(title: string, originInboxItemId?: string): Pro
     _id: `${DOC_TYPE.GOAL.idPrefix}${nanoid()}`,
     type: DOC_TYPE.GOAL.value,
     title,
-    status: 'NOT_STARTED',
+    status: GOAL_STATUS.NOT_STARTED.value,
     goalsListOrder: nextOrder(existing.map((g) => g.goalsListOrder)),
     originInboxItemId,
     createdAt: now,

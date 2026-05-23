@@ -12,7 +12,14 @@ export const TASK_STATUS = {
 
 export type TaskStatus = (typeof TASK_STATUS)[keyof typeof TASK_STATUS]['value'];
 
-export type GoalStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'REVIEW' | 'COMPLETED';
+export const GOAL_STATUS = {
+  NOT_STARTED: { value: 'NOT_STARTED' },
+  IN_PROGRESS: { value: 'IN_PROGRESS' },
+  REVIEW: { value: 'REVIEW' },
+  COMPLETED: { value: 'COMPLETED' },
+} as const;
+
+export type GoalStatus = (typeof GOAL_STATUS)[keyof typeof GOAL_STATUS]['value'];
 
 export type RecurrenceType = 'INTERVAL' | 'FIXED_DAYS';
 export type IntervalSubtype = 'FIXED' | 'AFTER_DONE';

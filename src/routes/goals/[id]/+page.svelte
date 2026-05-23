@@ -19,7 +19,7 @@
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { flip } from 'svelte/animate';
-  import { TASK_STATUS } from '$lib/types';
+  import { TASK_STATUS, GOAL_STATUS } from '$lib/types';
 
   const goalId = page.params.id!;
   const ctrl = getGoalDetailState(goalId);
@@ -131,7 +131,7 @@
       <span class="badge {statusBadge[ctrl.goal.status]}">{statusLabel[ctrl.goal.status]}</span>
     </div>
 
-    {#if ctrl.goal.status === 'REVIEW'}
+    {#if ctrl.goal.status === GOAL_STATUS.REVIEW.value}
       <button class="btn btn-success btn-sm mb-4" onclick={ctrl.markCompleted}> Mark done </button>
     {/if}
 

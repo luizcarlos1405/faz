@@ -24,7 +24,7 @@ import { getToastState } from '$lib/components/toast-state.svelte';
 import { calculateGoalStatus } from '$lib/engines/goal-engine';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
-import { TASK_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
+import { TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
   return Temporal.Now.plainDateISO().toString();
@@ -60,7 +60,7 @@ export function getGoalsPageState() {
 
   async function markCompleted(id: string) {
     const goal = await getGoal(id);
-    goal.status = 'COMPLETED';
+    goal.status = GOAL_STATUS.COMPLETED.value;
     await updateGoal(goal);
     await load();
   }
@@ -162,7 +162,7 @@ export function getGoalDetailState(goalId: string) {
 
   async function markCompleted() {
     const goalDoc = await getGoal(goalId);
-    goalDoc.status = 'COMPLETED';
+    goalDoc.status = GOAL_STATUS.COMPLETED.value;
     await updateGoal(goalDoc);
     await load();
   }
