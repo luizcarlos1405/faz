@@ -1,4 +1,5 @@
 import type { Recurrence, TaskPlan } from '$lib/types';
+import { RECURRENCE_TYPE, INTERVAL_SUBTYPE, FIXED_DAYS_SUBTYPE } from '$lib/types';
 
 export interface GoogleInterval {
   daily?: Record<string, unknown>;
@@ -73,15 +74,15 @@ export function translateSchedule(recurrence: GoogleRecurrence): Recurrence | nu
     const { month, day } = interval.yearly.date_of_year;
     if (multiplier === 1) {
       return {
-        type: 'FIXED_DAYS',
-        subtype: 'YEARDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
         dates: [{ month, day }],
         startDate,
       };
     }
     return {
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { years: multiplier },
       startDate,
     };
@@ -90,15 +91,15 @@ export function translateSchedule(recurrence: GoogleRecurrence): Recurrence | nu
   if (interval.monthly?.day_of_month !== undefined) {
     if (multiplier === 1) {
       return {
-        type: 'FIXED_DAYS',
-        subtype: 'MONTHDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
         daysOfMonth: [interval.monthly.day_of_month],
         startDate,
       };
     }
     return {
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { months: multiplier },
       startDate,
     };
@@ -107,15 +108,15 @@ export function translateSchedule(recurrence: GoogleRecurrence): Recurrence | nu
   if (interval.weekly) {
     if (interval.weekly.days_of_week && interval.weekly.days_of_week.length > 0) {
       return {
-        type: 'FIXED_DAYS',
-        subtype: 'WEEKDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
         daysOfWeek: interval.weekly.days_of_week,
         startDate,
       };
     }
     return {
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { weeks: multiplier },
       startDate,
     };
@@ -123,8 +124,8 @@ export function translateSchedule(recurrence: GoogleRecurrence): Recurrence | nu
 
   if (interval.daily !== undefined) {
     return {
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: multiplier },
       startDate,
     };

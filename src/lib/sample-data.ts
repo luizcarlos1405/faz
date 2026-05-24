@@ -4,7 +4,7 @@ import { createGoal, updateGoal } from './db/goal-repo';
 import { createTask, completeTask, updateTask } from './db/task-repo';
 import { createCare, updateCare } from './db/care-repo';
 import { runSchedulerNow } from './scheduler';
-import { GOAL_STATUS } from './types';
+import { GOAL_STATUS, RECURRENCE_TYPE, INTERVAL_SUBTYPE, FIXED_DAYS_SUBTYPE } from './types';
 
 function daysAgo(n: number): string {
   return Temporal.Now.plainDateISO().subtract({ days: n }).toString();
@@ -153,8 +153,8 @@ export async function addSampleData() {
     {
       title: 'Water plants',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 3 },
         startDate: daysAgo(14),
       },
@@ -168,8 +168,8 @@ export async function addSampleData() {
     {
       title: 'Feed the cat',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'AFTER_DONE',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
         interval: { days: 1 },
         startDate: daysAgo(30),
       },
@@ -177,8 +177,8 @@ export async function addSampleData() {
     {
       title: 'Clean litter box',
       recurrence: {
-        type: 'FIXED_DAYS',
-        subtype: 'WEEKDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
         daysOfWeek: [3, 6],
         startDate: daysAgo(30),
       },
@@ -191,8 +191,8 @@ export async function addSampleData() {
     {
       title: 'Check tire pressure',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { weeks: 2 },
         startDate: daysAgo(60),
       },
@@ -201,8 +201,8 @@ export async function addSampleData() {
     {
       title: 'Oil change',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'AFTER_DONE',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
         interval: { months: 6 },
         startDate: daysAgo(240),
       },

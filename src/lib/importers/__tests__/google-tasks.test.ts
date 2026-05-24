@@ -8,6 +8,7 @@ import {
   type GoogleTaskList,
   type GoogleTask,
 } from '../google-tasks';
+import { RECURRENCE_TYPE, INTERVAL_SUBTYPE, FIXED_DAYS_SUBTYPE } from '$lib/types';
 
 function makeRecurrence(
   overrides: Partial<GoogleRecurrence> & { schedule: GoogleRecurrence['schedule'] },
@@ -67,8 +68,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 3 },
       startDate: '2026-01-01',
     });
@@ -84,8 +85,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-16',
     });
@@ -101,8 +102,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [4],
       startDate: '2026-03-04',
     });
@@ -118,8 +119,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { months: 3 },
       startDate: '2026-01-04',
     });
@@ -138,8 +139,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'FIXED_DAYS',
-      subtype: 'YEARDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
       dates: [{ month: 1, day: 1 }],
       startDate: '2025-01-01',
     });
@@ -158,8 +159,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { years: 2 },
       startDate: '2025-01-01',
     });
@@ -175,8 +176,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1, 3, 5],
       startDate: '2026-01-05',
     });
@@ -192,8 +193,8 @@ describe('translateSchedule', () => {
     });
     const result = translateSchedule(rec)!;
     expect(result).toEqual({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { weeks: 2 },
       startDate: '2026-01-05',
     });

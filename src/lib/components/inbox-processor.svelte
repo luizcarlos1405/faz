@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getInboxProcessorState, type CreatedEntity } from './inbox-processor-state.svelte';
-  import { DOC_TYPE } from '$lib/types';
+  import { DOC_TYPE, RECURRENCE_TYPE, INTERVAL_SUBTYPE } from '$lib/types';
   import type { InboxItemDoc, Recurrence } from '$lib/types';
   import { Temporal } from '@js-temporal/polyfill';
   import SquareCheckBig from 'lucide-svelte/icons/square-check-big';
@@ -52,8 +52,8 @@
     const total = interval.years + interval.months + interval.weeks + interval.days;
     if (!carePlanTitle.trim() || total <= 0) return;
     const recurrence: Recurrence = {
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval,
       startDate: Temporal.Now.plainDateISO().toString(),
     };
