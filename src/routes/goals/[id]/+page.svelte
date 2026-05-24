@@ -55,10 +55,14 @@
   onMount(() => ctrl.load());
 
   async function addTaskAndScroll() {
-    await ctrl.addTask();
+    const newId = await ctrl.addTask();
     await tick();
-    const last = taskList?.lastElementChild;
-    last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (newId) {
+      taskList?.querySelector(`[data-task-id="${newId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -170,7 +174,7 @@
         })}
       >
         {#each ctrl.tasks as task (task._id)}
-          <li class="list-row bg-base-100" animate:flip={{ duration: 200 }}>
+          <li class="list-row bg-base-100" data-task-id={task._id} animate:flip={{ duration: 200 }}>
             <button class="btn btn-ghost btn-sm" onclick={() => ctrl.toggleTask(task._id)}>
               {#if task.status === TASK_STATUS.DONE.value}
                 <SquareCheckBig class="size-5 text-success" />

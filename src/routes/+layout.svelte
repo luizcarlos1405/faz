@@ -55,14 +55,14 @@
   <title>Faz</title>
 </svelte:head>
 
-<div id="layout" class="flex flex-col h-full max-w-md mx-auto relative shadow-lg bg-base-100">
+<div id="layout" class="flex flex-col h-full max-w-md mx-auto shadow-lg bg-base-100">
   <TopBar />
 
-  <main class="flex-1 overflow-y-auto pt-14 pb-20">
+  <main class="flex-1 overflow-y-auto">
     {@render children()}
   </main>
 
-  <nav class="dock dock-md absolute bottom-0 left-0 right-0 z-50">
+  <nav class="dock dock-md static z-50">
     {#each navItems as item (item.href)}
       <a href={resolve(item.href)} class:dock-active={page.url.hash.startsWith(`#${item.href}`)}>
         <item.icon class="size-5" />

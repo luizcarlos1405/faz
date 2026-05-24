@@ -96,9 +96,7 @@
   }
 </script>
 
-<div
-  class="navbar absolute top-0 px-4 left-0 right-0 z-50 bg-base-100 backdrop-blur border-b border-base-300"
->
+<div class="navbar px-4 z-50 bg-base-100 backdrop-blur border-b border-base-300">
   <div class="navbar-start gap-2">
     <div
       class="h-6 w-6 bg-primary"
