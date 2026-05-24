@@ -20,10 +20,14 @@
   let taskList: HTMLUListElement | undefined = $state();
 
   async function addAndScroll() {
-    await ctrl.add();
+    const newId = await ctrl.add();
     await tick();
-    const last = taskList?.lastElementChild;
-    last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (newId) {
+      taskList?.querySelector(`[data-task-id="${newId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -80,7 +84,11 @@
       >
         {#each ctrl.tasks as task (task._id)}
           {@const origin = ctrl.getOriginInfo(task)}
-          <li class="list-row bg-base-100 w-full" animate:flip={{ duration: 200 }}>
+          <li
+            class="list-row bg-base-100 w-full"
+            data-task-id={task._id}
+            animate:flip={{ duration: 200 }}
+          >
             <SwipeableItem
               class="list-col-grow"
               onswipe={(direction) => {

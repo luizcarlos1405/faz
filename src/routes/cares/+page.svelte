@@ -18,10 +18,14 @@
   onMount(() => ctrl.load());
 
   async function addAndScroll() {
-    await ctrl.add();
+    const newId = await ctrl.add();
     await tick();
-    const last = careList?.lastElementChild;
-    last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (newId) {
+      careList?.querySelector(`[data-care-id="${newId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -75,7 +79,11 @@
       })}
     >
       {#each ctrl.cares as care (care._id)}
-        <li class="list-row bg-base-100 w-full" animate:flip={{ duration: 200 }}>
+        <li
+          class="list-row bg-base-100 w-full"
+          data-care-id={care._id}
+          animate:flip={{ duration: 200 }}
+        >
           <a href={resolve(`/cares/${care._id}`)} class="list-col-grow">
             <div class="font-semibold">{care.title}</div>
             <div class="text-xs text-base-content/50">

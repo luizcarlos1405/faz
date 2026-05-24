@@ -12,12 +12,13 @@ export function getInboxPageState() {
     loading = false;
   }
 
-  async function add() {
+  async function add(): Promise<string | undefined> {
     const title = newTitle.trim();
-    if (!title) return;
-    await createInboxItem(title);
+    if (!title) return undefined;
+    const created = await createInboxItem(title);
     newTitle = '';
     await load();
+    return created._id;
   }
 
   function startProcessing(id: string) {

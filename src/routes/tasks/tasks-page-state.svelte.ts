@@ -110,12 +110,13 @@ export function getTasksPageState() {
     return null;
   }
 
-  async function add() {
+  async function add(): Promise<string | undefined> {
     const title = newTitle.trim();
-    if (!title) return;
-    await createTask({ title, doAt: getToday() });
+    if (!title) return undefined;
+    const created = await createTask({ title, doAt: getToday() });
     newTitle = '';
     await load();
+    return created._id;
   }
 
   async function toggleComplete(id: string) {

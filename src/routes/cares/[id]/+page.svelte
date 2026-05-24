@@ -36,6 +36,7 @@
   let editingTitle = $state(false);
   let draftTitle = $state('');
   let titleInput: HTMLInputElement | undefined = $state();
+  let planList: HTMLUListElement | undefined = $state();
 
   async function startEditTitle() {
     if (!ctrl.care) return;
@@ -197,12 +198,19 @@
   }
 
   async function handleCreate() {
-    await ctrl.addTaskPlan({
+    const newPlanId = await ctrl.addTaskPlan({
       title: newPlanTitle.trim(),
       recurrence: buildRecurrence(),
       overdueBehavior: planOverdueBehavior,
     });
     resetWizard();
+    await tick();
+    if (newPlanId) {
+      planList?.querySelector(`[data-plan-id="${newPlanId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 </script>
 
@@ -253,6 +261,7 @@
       <h2 class="text-sm font-semibold text-base-content/60 uppercase mb-2">Task plans</h2>
       <ul
         class="list mb-6"
+        bind:this={planList}
         {@attach orderableChildren({
           startEvents: ['mousedown', 'touchstart'],
           handleSelector: '.drag-handle',
@@ -269,7 +278,11 @@
         })}
       >
         {#each ctrl.care.taskPlans as plan (plan._id)}
-          <li class="list-row bg-base-100 w-full" animate:flip={{ duration: 200 }}>
+          <li
+            class="list-row bg-base-100 w-full"
+            data-plan-id={plan._id}
+            animate:flip={{ duration: 200 }}
+          >
             <a href={resolve(`/cares/${careId}/plans/${plan._id}`)} class="list-col-grow">
               <div class="font-medium">{plan.title}</div>
               <div class="text-xs text-base-content/50">{describeRecurrence(plan.recurrence)}</div>

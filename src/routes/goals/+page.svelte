@@ -18,10 +18,14 @@
   onMount(() => ctrl.load());
 
   async function addAndScroll() {
-    await ctrl.add();
+    const newId = await ctrl.add();
     await tick();
-    const last = goalList?.lastElementChild;
-    last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (newId) {
+      goalList?.querySelector(`[data-goal-id="${newId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -89,7 +93,11 @@
       })}
     >
       {#each ctrl.goals as goal (goal._id)}
-        <li class="list-row bg-base-100 w-full" animate:flip={{ duration: 200 }}>
+        <li
+          class="list-row bg-base-100 w-full"
+          data-goal-id={goal._id}
+          animate:flip={{ duration: 200 }}
+        >
           <a href={resolve(`/goals/${goal._id}`)} class="list-col-grow p-2 -m-2">
             <div class="font-semibold">{goal.title}</div>
             <span class="badge badge-sm {statusBadge[goal.status]}">{statusLabel[goal.status]}</span

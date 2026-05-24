@@ -36,12 +36,13 @@ export function getCaresPageState() {
     loading = false;
   }
 
-  async function add() {
+  async function add(): Promise<string | undefined> {
     const title = newTitle.trim();
-    if (!title) return;
-    await createCare(title, []);
+    if (!title) return undefined;
+    const created = await createCare(title, []);
     newTitle = '';
     await load();
+    return created._id;
   }
 
   function reorder(fromIndex: number, toIndex: number) {
@@ -107,12 +108,13 @@ export function getCareDetailState(careId: string) {
     title: string;
     recurrence: Recurrence;
     overdueBehavior?: OverdueBehavior;
-  }) {
+  }): Promise<string | undefined> {
     const doc = await getCare(careId);
     const now = Temporal.Now.instant().toString();
     const { nanoid } = await import('nanoid');
+    const planId = `tp_${nanoid()}`;
     doc.taskPlans.push({
-      _id: `tp_${nanoid()}`,
+      _id: planId,
       title: plan.title,
       recurrence: plan.recurrence,
       overdueBehavior: plan.overdueBehavior,
@@ -124,6 +126,7 @@ export function getCareDetailState(careId: string) {
     await load();
     await runSchedulerNow();
     bumpTaskRefresh();
+    return planId;
   }
 
   function reorderPlans(fromIndex: number, toIndex: number) {

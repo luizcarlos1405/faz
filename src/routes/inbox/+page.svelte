@@ -14,10 +14,14 @@
   onMount(() => ctrl.load());
 
   async function addAndScroll() {
-    await ctrl.add();
+    const newId = await ctrl.add();
     await tick();
-    const last = itemList?.lastElementChild;
-    last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (newId) {
+      itemList?.querySelector(`[data-item-id="${newId}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -59,7 +63,7 @@
   {:else}
     <ul class="list" bind:this={itemList}>
       {#each ctrl.items as item (item._id)}
-        <li class="list-row">
+        <li class="list-row" data-item-id={item._id}>
           <div class="list-col-grow">
             <div>{item.title}</div>
             <div class="text-xs text-base-content/50">

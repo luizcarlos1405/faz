@@ -50,12 +50,13 @@ export function getGoalsPageState() {
     loading = false;
   }
 
-  async function add() {
+  async function add(): Promise<string | undefined> {
     const title = newTitle.trim();
-    if (!title) return;
-    await createGoal(title);
+    if (!title) return undefined;
+    const created = await createGoal(title);
     newTitle = '';
     await load();
+    return created._id;
   }
 
   async function markCompleted(id: string) {
