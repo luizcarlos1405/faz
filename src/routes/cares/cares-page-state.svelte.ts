@@ -21,6 +21,8 @@ import {
   ISO_WEEKDAYS,
   MONTH_SHORT_NAMES,
 } from '$lib/types';
+
+const DAY_SHORT_NAMES = ['', ...ISO_WEEKDAYS.map((e) => e.name)];
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 
@@ -242,8 +244,7 @@ export function describeRecurrence(r: Recurrence): string {
     r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
     r.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value
   ) {
-    const dayShortNames = ['', ...ISO_WEEKDAYS.map((e) => e.name)];
-    return `Every ${r.daysOfWeek.map((d) => dayShortNames[d]).join(' and ')}`;
+    return `Every ${r.daysOfWeek.map((d) => DAY_SHORT_NAMES[d]).join(' and ')}`;
   }
   if (
     r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&

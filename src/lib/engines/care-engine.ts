@@ -210,6 +210,8 @@ function hasTaskForDate(tasks: TaskDoc[], planId: string, doAt: string): boolean
   return tasks.some((t) => t.taskPlanId === planId && t.doAt === doAt);
 }
 
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+
 function nextWeekday(from: Temporal.PlainDate, dayOfWeek: number): Temporal.PlainDate {
   let d = from;
   for (let i = 0; i < 7; i++) {
@@ -220,11 +222,9 @@ function nextWeekday(from: Temporal.PlainDate, dayOfWeek: number): Temporal.Plai
 }
 
 function nextMonthday(from: Temporal.PlainDate, dayOfMonth: number): Temporal.PlainDate {
-  const maxDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
-
   const clamp = (year: number, month: number, day: number): number => {
     const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    const max = month === 2 && isLeap ? 29 : maxDays[month - 1];
+    const max = month === 2 && isLeap ? 29 : DAYS_IN_MONTH[month - 1];
     return Math.min(day, max);
   };
 
@@ -250,11 +250,9 @@ function nextMonthday(from: Temporal.PlainDate, dayOfMonth: number): Temporal.Pl
 }
 
 function nextYearday(from: Temporal.PlainDate, month: number, day: number): Temporal.PlainDate {
-  const maxDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
-
   const clampDay = (year: number): number => {
     const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    const max = month === 2 && isLeap ? 29 : maxDays[month - 1];
+    const max = month === 2 && isLeap ? 29 : DAYS_IN_MONTH[month - 1];
     return Math.min(day, max);
   };
 
