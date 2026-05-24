@@ -140,13 +140,14 @@ export function getGoalDetailState(goalId: string) {
     );
   }
 
-  async function addTask() {
+  async function addTask(): Promise<string | undefined> {
     const title = newTaskTitle.trim();
-    if (!title) return;
-    await createTask({ title, doAt: getToday(), goalId });
+    if (!title) return undefined;
+    const created = await createTask({ title, doAt: getToday(), goalId });
     newTaskTitle = '';
     await recalcGoalStatus(goalId);
     await load();
+    return created._id;
   }
 
   async function toggleTask(taskId: string) {
