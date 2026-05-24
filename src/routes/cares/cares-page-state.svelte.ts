@@ -14,6 +14,13 @@ import { updateTasksCareForPlan } from '$lib/db/task-repo';
 import { Temporal } from '@js-temporal/polyfill';
 import { reorderItems } from '$lib/utils/reorderItems';
 import type { CareDoc, TaskPlan, Recurrence, OverdueBehavior } from '$lib/types';
+import {
+  RECURRENCE_TYPE,
+  INTERVAL_SUBTYPE,
+  FIXED_DAYS_SUBTYPE,
+  ISO_WEEKDAYS,
+  MONTH_SHORT_NAMES,
+} from '$lib/types';
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 
@@ -222,17 +229,26 @@ export function getTaskPlanEditState(careId: string, planId: string) {
 }
 
 export function describeRecurrence(r: Recurrence): string {
-  if (r.type === 'INTERVAL' && r.subtype === 'FIXED') {
+  if (r.type === RECURRENCE_TYPE.INTERVAL.value && r.subtype === INTERVAL_SUBTYPE.FIXED.value) {
     return describeInterval(r.interval);
   }
-  if (r.type === 'INTERVAL' && r.subtype === 'AFTER_DONE') {
+  if (
+    r.type === RECURRENCE_TYPE.INTERVAL.value &&
+    r.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
+  ) {
     return `${describeInterval(r.interval)} after last time you did it`;
   }
-  if (r.type === 'FIXED_DAYS' && r.subtype === 'WEEKDAYS') {
-    const names = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return `Every ${r.daysOfWeek.map((d) => names[d]).join(' and ')}`;
+  if (
+    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
+    r.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value
+  ) {
+    const dayShortNames = ['', ...ISO_WEEKDAYS.map((e) => e.name)];
+    return `Every ${r.daysOfWeek.map((d) => dayShortNames[d]).join(' and ')}`;
   }
-  if (r.type === 'FIXED_DAYS' && r.subtype === 'MONTHDAYS') {
+  if (
+    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
+    r.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value
+  ) {
     const suffix = (n: number) => {
       if (n === 1 || n === 21 || n === 31) return 'st';
       if (n === 2 || n === 22) return 'nd';
@@ -241,23 +257,11 @@ export function describeRecurrence(r: Recurrence): string {
     };
     return `Every ${r.daysOfMonth.map((d) => `${d}${suffix(d)}`).join(' and ')} of the month`;
   }
-  if (r.type === 'FIXED_DAYS' && r.subtype === 'YEARDAYS') {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return r.dates.map(({ month, day }) => `${months[month]} ${day}`).join(' and ');
+  if (
+    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
+    r.subtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value
+  ) {
+    return r.dates.map(({ month, day }) => `${MONTH_SHORT_NAMES[month]} ${day}`).join(' and ');
   }
   return 'Unknown schedule';
 }

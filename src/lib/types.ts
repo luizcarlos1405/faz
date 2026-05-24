@@ -30,9 +30,62 @@ export const GOAL_STATUS = {
 
 export type GoalStatus = (typeof GOAL_STATUS)[keyof typeof GOAL_STATUS]['value'];
 
-export type RecurrenceType = 'INTERVAL' | 'FIXED_DAYS';
-export type IntervalSubtype = 'FIXED' | 'AFTER_DONE';
-export type FixedDaysSubtype = 'WEEKDAYS' | 'MONTHDAYS' | 'YEARDAYS';
+export const RECURRENCE_TYPE = {
+  INTERVAL: { value: 'INTERVAL' },
+  FIXED_DAYS: { value: 'FIXED_DAYS' },
+} as const;
+
+export type RecurrenceType = (typeof RECURRENCE_TYPE)[keyof typeof RECURRENCE_TYPE]['value'];
+
+export const INTERVAL_SUBTYPE = {
+  FIXED: { value: 'FIXED' },
+  AFTER_DONE: { value: 'AFTER_DONE' },
+} as const;
+
+export type IntervalSubtype = (typeof INTERVAL_SUBTYPE)[keyof typeof INTERVAL_SUBTYPE]['value'];
+
+export const FIXED_DAYS_SUBTYPE = {
+  WEEKDAYS: { value: 'WEEKDAYS' },
+  MONTHDAYS: { value: 'MONTHDAYS' },
+  YEARDAYS: { value: 'YEARDAYS' },
+} as const;
+
+export type FixedDaysSubtype =
+  (typeof FIXED_DAYS_SUBTYPE)[keyof typeof FIXED_DAYS_SUBTYPE]['value'];
+
+export const PLAN_TYPE = {
+  INTERVAL_FIXED: { value: 'INTERVAL_FIXED' },
+  INTERVAL_AFTER_DONE: { value: 'INTERVAL_AFTER_DONE' },
+  FIXED_DAYS: { value: 'FIXED_DAYS' },
+} as const;
+
+export type PlanType = (typeof PLAN_TYPE)[keyof typeof PLAN_TYPE]['value'];
+
+export const ISO_WEEKDAYS = [
+  { iso: 1, name: 'Mon' },
+  { iso: 2, name: 'Tue' },
+  { iso: 3, name: 'Wed' },
+  { iso: 4, name: 'Thu' },
+  { iso: 5, name: 'Fri' },
+  { iso: 6, name: 'Sat' },
+  { iso: 7, name: 'Sun' },
+] as const;
+
+export const MONTH_SHORT_NAMES = [
+  '',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
 
 export interface DurationLike {
   years?: number;

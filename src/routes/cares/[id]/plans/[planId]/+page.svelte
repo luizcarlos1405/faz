@@ -8,6 +8,16 @@
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
   import Save from 'lucide-svelte/icons/save';
   import type { Recurrence, OverdueBehavior } from '$lib/types';
+  import {
+    PLAN_TYPE,
+    RECURRENCE_TYPE,
+    INTERVAL_SUBTYPE,
+    FIXED_DAYS_SUBTYPE,
+    ISO_WEEKDAYS,
+    MONTH_SHORT_NAMES,
+    OVERDUE_BEHAVIOR,
+  } from '$lib/types';
+  import type { PlanType, FixedDaysSubtype } from '$lib/types';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import IntervalPicker from '$lib/components/interval-picker.svelte';
@@ -20,14 +30,14 @@
 
   let title: string = $state('');
   let selectedCareId: string = $state(careId);
-  let planType: 'INTERVAL_FIXED' | 'INTERVAL_AFTER_DONE' | 'FIXED_DAYS' = $state('INTERVAL_FIXED');
+  let planType: PlanType = $state(PLAN_TYPE.INTERVAL_FIXED.value);
   let planInterval: { years: number; months: number; weeks: number; days: number } = $state({
     years: 0,
     months: 0,
     weeks: 0,
     days: 0,
   });
-  let planDaysSubtype: 'WEEKDAYS' | 'MONTHDAYS' | 'YEARDAYS' = $state('WEEKDAYS');
+  let planDaysSubtype: FixedDaysSubtype = $state(FIXED_DAYS_SUBTYPE.WEEKDAYS.value);
   let planDaysOfWeek: number[] = $state([]);
   let planDaysOfMonth: number[] = $state([]);
   let planYearDates: { month: number; day: number }[] = $state([]);
@@ -37,7 +47,7 @@
   let wheelMonth: string | number = $state(1);
   let wheelDay: string | number = $state(1);
   let planStartDate: string = $state('');
-  let planOverdueBehavior: OverdueBehavior = $state('KEEP');
+  let planOverdueBehavior: OverdueBehavior = $state(OVERDUE_BEHAVIOR.KEEP.value);
   let initialized = $state(false);
 
   onMount(() => ctrl.load());
@@ -49,30 +59,36 @@
       title = plan.title;
       selectedCareId = careId;
       planStartDate = plan.recurrence.startDate;
-      planOverdueBehavior = plan.overdueBehavior ?? 'KEEP';
+      planOverdueBehavior = plan.overdueBehavior ?? OVERDUE_BEHAVIOR.KEEP.value;
 
-      if (plan.recurrence.type === 'INTERVAL' && plan.recurrence.subtype === 'FIXED') {
-        planType = 'INTERVAL_FIXED';
+      if (
+        plan.recurrence.type === RECURRENCE_TYPE.INTERVAL.value &&
+        plan.recurrence.subtype === INTERVAL_SUBTYPE.FIXED.value
+      ) {
+        planType = PLAN_TYPE.INTERVAL_FIXED.value;
         planInterval = {
           years: plan.recurrence.interval.years ?? 0,
           months: plan.recurrence.interval.months ?? 0,
           weeks: plan.recurrence.interval.weeks ?? 0,
           days: plan.recurrence.interval.days ?? 0,
         };
-      } else if (plan.recurrence.type === 'INTERVAL' && plan.recurrence.subtype === 'AFTER_DONE') {
-        planType = 'INTERVAL_AFTER_DONE';
+      } else if (
+        plan.recurrence.type === RECURRENCE_TYPE.INTERVAL.value &&
+        plan.recurrence.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
+      ) {
+        planType = PLAN_TYPE.INTERVAL_AFTER_DONE.value;
         planInterval = {
           years: plan.recurrence.interval.years ?? 0,
           months: plan.recurrence.interval.months ?? 0,
           weeks: plan.recurrence.interval.weeks ?? 0,
           days: plan.recurrence.interval.days ?? 0,
         };
-      } else if (plan.recurrence.type === 'FIXED_DAYS') {
-        planType = 'FIXED_DAYS';
+      } else if (plan.recurrence.type === RECURRENCE_TYPE.FIXED_DAYS.value) {
+        planType = PLAN_TYPE.FIXED_DAYS.value;
         planDaysSubtype = plan.recurrence.subtype;
-        if (plan.recurrence.subtype === 'WEEKDAYS') {
+        if (plan.recurrence.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
           planDaysOfWeek = [...plan.recurrence.daysOfWeek];
-        } else if (plan.recurrence.subtype === 'MONTHDAYS') {
+        } else if (plan.recurrence.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
           planDaysOfMonth = [...plan.recurrence.daysOfMonth];
         } else {
           planYearDates = plan.recurrence.dates.map((d: { month: number; day: number }) => ({
@@ -93,41 +109,41 @@
   }
 
   function buildRecurrence(): Recurrence {
-    if (planType === 'INTERVAL_FIXED') {
+    if (planType === PLAN_TYPE.INTERVAL_FIXED.value) {
       return {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: toDurationLike(),
         startDate: planStartDate,
       };
     }
-    if (planType === 'INTERVAL_AFTER_DONE') {
+    if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
       return {
-        type: 'INTERVAL',
-        subtype: 'AFTER_DONE',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
         interval: toDurationLike(),
         startDate: planStartDate,
       };
     }
-    if (planDaysSubtype === 'WEEKDAYS') {
+    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
       return {
-        type: 'FIXED_DAYS',
-        subtype: 'WEEKDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
         daysOfWeek: planDaysOfWeek,
         startDate: planStartDate,
       };
     }
-    if (planDaysSubtype === 'MONTHDAYS') {
+    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
       return {
-        type: 'FIXED_DAYS',
-        subtype: 'MONTHDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
         daysOfMonth: planDaysOfMonth,
         startDate: planStartDate,
       };
     }
     return {
-      type: 'FIXED_DAYS',
-      subtype: 'YEARDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
       dates: planYearDates,
       startDate: planStartDate,
     };
@@ -139,8 +155,8 @@
       const { years, months, weeks, days } = planInterval;
       return years + months + weeks + days > 0;
     }
-    if (planDaysSubtype === 'WEEKDAYS') return planDaysOfWeek.length > 0;
-    if (planDaysSubtype === 'MONTHDAYS') return planDaysOfMonth.length > 0;
+    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) return planDaysOfWeek.length > 0;
+    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) return planDaysOfMonth.length > 0;
     return planYearDates.length > 0;
   }
 
@@ -158,32 +174,6 @@
       goto(resolve(`/cares/${careId}`));
     }
   }
-
-  const dayEntries = [
-    { iso: 1, name: 'Mon' },
-    { iso: 2, name: 'Tue' },
-    { iso: 3, name: 'Wed' },
-    { iso: 4, name: 'Thu' },
-    { iso: 5, name: 'Fri' },
-    { iso: 6, name: 'Sat' },
-    { iso: 7, name: 'Sun' },
-  ];
-
-  const monthNames = [
-    '',
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
 
   function openWheelNew() {
     editIdx = -1;
@@ -271,9 +261,12 @@
             if (planType.startsWith('INTERVAL')) intervalPickerOpen = true;
           }}
         >
-          <option value="INTERVAL_FIXED">Fixed interval (e.g. every 2 weeks)</option>
-          <option value="INTERVAL_AFTER_DONE">After completion (e.g. 3 days after done)</option>
-          <option value="FIXED_DAYS">Specific days (e.g. every wednesday)</option>
+          <option value={PLAN_TYPE.INTERVAL_FIXED.value}>Fixed interval (e.g. every 2 weeks)</option
+          >
+          <option value={PLAN_TYPE.INTERVAL_AFTER_DONE.value}
+            >After completion (e.g. 3 days after done)</option
+          >
+          <option value={PLAN_TYPE.FIXED_DAYS.value}>Specific days (e.g. every wednesday)</option>
         </select>
 
         {#if planType.startsWith('INTERVAL')}
@@ -288,17 +281,17 @@
             class="select select-sm"
             bind:value={planDaysSubtype}
             onchange={() => {
-              if (planDaysSubtype === 'YEARDAYS') openWheelNew();
+              if (planDaysSubtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value) openWheelNew();
             }}
           >
-            <option value="WEEKDAYS">Days of the week</option>
-            <option value="MONTHDAYS">Days of the month</option>
-            <option value="YEARDAYS">Dates of the year</option>
+            <option value={FIXED_DAYS_SUBTYPE.WEEKDAYS.value}>Days of the week</option>
+            <option value={FIXED_DAYS_SUBTYPE.MONTHDAYS.value}>Days of the month</option>
+            <option value={FIXED_DAYS_SUBTYPE.YEARDAYS.value}>Dates of the year</option>
           </select>
 
-          {#if planDaysSubtype === 'WEEKDAYS'}
+          {#if planDaysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value}
             <div class="flex flex-wrap gap-1 mt-1">
-              {#each dayEntries as entry (entry.iso)}
+              {#each ISO_WEEKDAYS as entry (entry.iso)}
                 <button
                   class="btn btn-sm {planDaysOfWeek.includes(entry.iso)
                     ? 'btn-primary'
@@ -315,7 +308,7 @@
                 </button>
               {/each}
             </div>
-          {:else if planDaysSubtype === 'MONTHDAYS'}
+          {:else if planDaysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value}
             <input
               type="text"
               class="input input-sm mt-1"
@@ -332,7 +325,7 @@
             <div class="flex flex-wrap gap-2 items-center mt-1">
               {#each planYearDates as d, i (i)}
                 <button class="btn btn-sm btn-outline" onclick={() => openWheelEdit(i)}>
-                  {monthNames[d.month]}
+                  {MONTH_SHORT_NAMES[d.month]}
                   {d.day}
                 </button>
               {/each}
@@ -352,9 +345,9 @@
           <span class="label-text">If the date passes</span>
         </label>
         <select id="plan-overdue" class="select select-sm" bind:value={planOverdueBehavior}>
-          <option value="KEEP">Keep it</option>
-          <option value="MISSED">Mark missed</option>
-          <option value="DISCARD">Discard</option>
+          <option value={OVERDUE_BEHAVIOR.KEEP.value}>Keep it</option>
+          <option value={OVERDUE_BEHAVIOR.MISSED.value}>Mark missed</option>
+          <option value={OVERDUE_BEHAVIOR.DISCARD.value}>Discard</option>
         </select>
 
         <div class="flex justify-end mt-2">

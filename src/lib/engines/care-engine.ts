@@ -1,5 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { DOC_TYPE, TASK_STATUS, OVERDUE_BEHAVIOR } from '$lib/types';
+import {
+  DOC_TYPE,
+  TASK_STATUS,
+  OVERDUE_BEHAVIOR,
+  RECURRENCE_TYPE,
+  INTERVAL_SUBTYPE,
+  FIXED_DAYS_SUBTYPE,
+} from '$lib/types';
 import type { TaskDoc, TaskPlan, CareDoc, DurationLike, OverdueBehavior } from '$lib/types';
 
 export function evaluateTaskPlan(
@@ -8,13 +15,16 @@ export function evaluateTaskPlan(
   existingTasks: TaskDoc[],
 ): TaskDoc | null {
   const r = plan.recurrence;
-  if (r.type === 'INTERVAL' && r.subtype === 'FIXED') {
+  if (r.type === RECURRENCE_TYPE.INTERVAL.value && r.subtype === INTERVAL_SUBTYPE.FIXED.value) {
     return evaluateIntervalFixed(plan, today);
   }
-  if (r.type === 'INTERVAL' && r.subtype === 'AFTER_DONE') {
+  if (
+    r.type === RECURRENCE_TYPE.INTERVAL.value &&
+    r.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
+  ) {
     return evaluateIntervalAfterDone(plan, today, existingTasks);
   }
-  if (r.type === 'FIXED_DAYS') {
+  if (r.type === RECURRENCE_TYPE.FIXED_DAYS.value) {
     const tasks = evaluateFixedDays(plan, today, existingTasks);
     return tasks.length > 0 ? tasks[0] : null;
   }
@@ -23,7 +33,8 @@ export function evaluateTaskPlan(
 
 export function evaluateIntervalFixed(plan: TaskPlan, today: Temporal.PlainDate): TaskDoc | null {
   const r = plan.recurrence;
-  if (r.type !== 'INTERVAL' || r.subtype !== 'FIXED') return null;
+  if (r.type !== RECURRENCE_TYPE.INTERVAL.value || r.subtype !== INTERVAL_SUBTYPE.FIXED.value)
+    return null;
 
   let candidate: Temporal.PlainDate;
 
@@ -46,7 +57,8 @@ export function evaluateIntervalAfterDone(
   existingTasks: TaskDoc[],
 ): TaskDoc | null {
   const r = plan.recurrence;
-  if (r.type !== 'INTERVAL' || r.subtype !== 'AFTER_DONE') return null;
+  if (r.type !== RECURRENCE_TYPE.INTERVAL.value || r.subtype !== INTERVAL_SUBTYPE.AFTER_DONE.value)
+    return null;
 
   const hasActive = existingTasks.some((t) => t.status === TASK_STATUS.TODO.value);
   if (hasActive) return null;
@@ -67,28 +79,28 @@ export function evaluateFixedDays(
   existingTasks: TaskDoc[],
 ): TaskDoc[] {
   const r = plan.recurrence;
-  if (r.type !== 'FIXED_DAYS') return [];
+  if (r.type !== RECURRENCE_TYPE.FIXED_DAYS.value) return [];
 
   const startDate = Temporal.PlainDate.from(r.startDate);
   const effectiveStart = Temporal.PlainDate.compare(today, startDate) >= 0 ? today : startDate;
 
   const tasks: TaskDoc[] = [];
 
-  if (r.subtype === 'WEEKDAYS') {
+  if (r.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
     for (const dow of r.daysOfWeek) {
       const next = nextWeekday(effectiveStart, dow);
       if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {
         tasks.push(makeTask(plan, next.toString()));
       }
     }
-  } else if (r.subtype === 'MONTHDAYS') {
+  } else if (r.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
     for (const dom of r.daysOfMonth) {
       const next = nextMonthday(effectiveStart, dom);
       if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {
         tasks.push(makeTask(plan, next.toString()));
       }
     }
-  } else if (r.subtype === 'YEARDAYS') {
+  } else if (r.subtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value) {
     for (const { month, day } of r.dates) {
       const next = nextYearday(effectiveStart, month, day);
       if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {

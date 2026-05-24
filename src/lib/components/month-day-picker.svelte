@@ -1,5 +1,6 @@
 <script lang="ts">
   import WheelSelect from '$lib/components/wheel-select.svelte';
+  import { MONTH_SHORT_NAMES } from '$lib/types';
 
   let {
     month = $bindable<string | number>(1),
@@ -17,26 +18,11 @@
     onremove?: () => void;
   } = $props();
 
-  const monthNames = [
-    '',
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
   const monthItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const dayItems = Array.from({ length: 31 }, (_, i) => i + 1);
 
   function formatMonth(v: string | number): string {
-    return monthNames[Number(v)];
+    return MONTH_SHORT_NAMES[Number(v)];
   }
 
   function cancel() {

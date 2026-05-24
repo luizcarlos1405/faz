@@ -12,6 +12,10 @@ import {
   DOC_TYPE,
   TASK_STATUS,
   OVERDUE_BEHAVIOR,
+  RECURRENCE_TYPE,
+  INTERVAL_SUBTYPE,
+  FIXED_DAYS_SUBTYPE,
+  ISO_WEEKDAYS,
   type TaskPlan,
   type TaskDoc,
   type CareDoc,
@@ -46,8 +50,8 @@ function makeTask(overrides: Partial<TaskDoc>): TaskDoc {
 describe('evaluateIntervalFixed', () => {
   it('generates task at startDate when no lastDoAtDate and startDate is today', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-15',
     });
@@ -59,8 +63,8 @@ describe('evaluateIntervalFixed', () => {
 
   it('advances past missed intervals', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -71,8 +75,8 @@ describe('evaluateIntervalFixed', () => {
 
   it('uses lastDoAtDate as anchor when present', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -84,8 +88,8 @@ describe('evaluateIntervalFixed', () => {
 
   it('generates future task when anchor + interval is in the future', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { months: 1 },
       startDate: '2026-01-15',
     });
@@ -98,8 +102,8 @@ describe('evaluateIntervalFixed', () => {
 describe('evaluateIntervalAfterDone', () => {
   it('returns null when an active TODO task exists', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-01',
     });
@@ -111,8 +115,8 @@ describe('evaluateIntervalAfterDone', () => {
 
   it('uses lastDoneDate as anchor when present', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-01',
     });
@@ -125,8 +129,8 @@ describe('evaluateIntervalAfterDone', () => {
 
   it('falls back to startDate when no lastDoneDate', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-10',
     });
@@ -137,8 +141,8 @@ describe('evaluateIntervalAfterDone', () => {
 
   it('returns null when all existing tasks are DONE (no active)', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-01',
     });
@@ -152,8 +156,8 @@ describe('evaluateIntervalAfterDone', () => {
 
   it('uses lastDoneDate + interval, not startDate, after task completion', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 4 },
       startDate: '2026-04-20',
     });
@@ -167,8 +171,8 @@ describe('evaluateIntervalAfterDone', () => {
 
   it('does not reuse startDate when lastDoneDate is set and far ahead', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 4 },
       startDate: '2026-04-20',
     });
@@ -183,8 +187,8 @@ describe('evaluateIntervalAfterDone', () => {
 describe('evaluateFixedDays', () => {
   it('generates tasks for WEEKDAYS', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1, 5],
       startDate: '2026-01-01',
     });
@@ -198,8 +202,8 @@ describe('evaluateFixedDays', () => {
 
   it('generates tasks for MONTHDAYS', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [1, 15],
       startDate: '2026-01-01',
     });
@@ -213,8 +217,8 @@ describe('evaluateFixedDays', () => {
 
   it('clamps day 31 to month length for February', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [31],
       startDate: '2026-01-01',
     });
@@ -226,8 +230,8 @@ describe('evaluateFixedDays', () => {
 
   it('generates tasks for YEARDAYS', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'YEARDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
       dates: [
         { month: 12, day: 25 },
         { month: 7, day: 4 },
@@ -243,8 +247,8 @@ describe('evaluateFixedDays', () => {
 
   it('skips dates where a task already exists', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [1],
       startDate: '2026-01-01',
     });
@@ -256,8 +260,8 @@ describe('evaluateFixedDays', () => {
 
   it('respects startDate as minimum', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1],
       startDate: '2026-01-15',
     });
@@ -276,8 +280,8 @@ describe('evaluateFixedDays', () => {
 describe('evaluateTaskPlan', () => {
   it('dispatches to evaluateIntervalFixed', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-15',
     });
@@ -289,8 +293,8 @@ describe('evaluateTaskPlan', () => {
 
   it('dispatches to evaluateIntervalAfterDone', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-10',
     });
@@ -302,8 +306,8 @@ describe('evaluateTaskPlan', () => {
 
   it('dispatches to evaluateFixedDays', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1],
       startDate: '2026-01-01',
     });
@@ -319,8 +323,8 @@ describe('runScheduler', () => {
       _id: 'tp_new',
       title: 'Daily standup',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 1 },
         startDate: '2026-01-15',
       },
@@ -350,8 +354,8 @@ describe('runScheduler', () => {
       _id: 'tp_weekly',
       title: 'Grocery shopping',
       recurrence: {
-        type: 'FIXED_DAYS',
-        subtype: 'WEEKDAYS',
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
         daysOfWeek: [1],
         startDate: '2026-01-01',
       },
@@ -379,8 +383,8 @@ describe('runScheduler', () => {
       _id: 'tp_1',
       title: 'Water plants',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-15',
       },
@@ -406,8 +410,8 @@ describe('runScheduler', () => {
       _id: 'tp_a',
       title: 'Task A',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 1 },
         startDate: '2026-01-15',
       },
@@ -418,8 +422,8 @@ describe('runScheduler', () => {
       _id: 'tp_b',
       title: 'Task B',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-15',
       },
@@ -454,8 +458,8 @@ describe('runScheduler', () => {
       _id: 'tp_ad',
       title: 'Recurring',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'AFTER_DONE',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
         interval: { days: 3 },
         startDate: '2026-01-01',
       },
@@ -483,8 +487,8 @@ describe('runScheduler', () => {
       _id: 'tp_fixed',
       title: 'Weekly',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-15',
       },
@@ -509,8 +513,8 @@ describe('runScheduler', () => {
 describe('evaluateIntervalFixed edge cases', () => {
   it('handles month boundary with months interval from Jan 31', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { months: 1 },
       startDate: '2026-01-31',
     });
@@ -525,8 +529,8 @@ describe('evaluateIntervalFixed edge cases', () => {
 
   it('handles weekly interval', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { weeks: 2 },
       startDate: '2026-01-05',
     });
@@ -537,8 +541,8 @@ describe('evaluateIntervalFixed edge cases', () => {
 
   it('returns null for wrong subtype', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'AFTER_DONE',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
       interval: { days: 3 },
       startDate: '2026-01-01',
     });
@@ -550,8 +554,8 @@ describe('evaluateIntervalFixed edge cases', () => {
 describe('evaluateFixedDays edge cases', () => {
   it('WEEKDAYS returns today when today matches dayOfWeek', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1],
       startDate: '2026-01-01',
     });
@@ -564,8 +568,8 @@ describe('evaluateFixedDays edge cases', () => {
 
   it('YEARDAYS rolls to next year when date has passed', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'YEARDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
       dates: [{ month: 1, day: 15 }],
       startDate: '2026-01-01',
     });
@@ -577,8 +581,8 @@ describe('evaluateFixedDays edge cases', () => {
 
   it('YEARDAYS Feb 29 clamps to Feb 28 in non-leap year', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'YEARDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
       dates: [{ month: 2, day: 29 }],
       startDate: '2026-01-01',
     });
@@ -590,8 +594,8 @@ describe('evaluateFixedDays edge cases', () => {
 
   it('returns empty for wrong recurrence type', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 1 },
       startDate: '2026-01-01',
     });
@@ -601,8 +605,8 @@ describe('evaluateFixedDays edge cases', () => {
 
   it('MONTHDAYS generates next month when day has passed this month', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [5],
       startDate: '2026-01-01',
     });
@@ -614,8 +618,8 @@ describe('evaluateFixedDays edge cases', () => {
 
   it('MONTHDAYS leap year February day 29', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'MONTHDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
       daysOfMonth: [29],
       startDate: '2024-01-01',
     });
@@ -629,8 +633,8 @@ describe('evaluateFixedDays edge cases', () => {
 describe('applyOverdueBehavior', () => {
   it('returns empty for KEEP behavior', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -646,8 +650,8 @@ describe('applyOverdueBehavior', () => {
 
   it('defaults to KEEP when overdueBehavior is undefined', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -662,8 +666,8 @@ describe('applyOverdueBehavior', () => {
 
   it('marks overdue TODO tasks as MISSED when behavior is MISSED', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -680,8 +684,8 @@ describe('applyOverdueBehavior', () => {
 
   it('discards overdue TODO tasks when behavior is DISCARD', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -698,8 +702,8 @@ describe('applyOverdueBehavior', () => {
 
   it('does not touch tasks with doAt equal to today', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -715,8 +719,8 @@ describe('applyOverdueBehavior', () => {
 
   it('does not touch tasks with doAt in the future', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -732,8 +736,8 @@ describe('applyOverdueBehavior', () => {
 
   it('does not touch DONE tasks even if overdue', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -749,8 +753,8 @@ describe('applyOverdueBehavior', () => {
 
   it('does not touch MISSED tasks already processed', () => {
     const plan = makePlan({
-      type: 'INTERVAL',
-      subtype: 'FIXED',
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
       interval: { days: 7 },
       startDate: '2026-01-01',
     });
@@ -771,8 +775,8 @@ describe('runScheduler with overdue behavior', () => {
       _id: 'tp_1',
       title: 'Water plants',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-01',
       },
@@ -809,8 +813,8 @@ describe('runScheduler with overdue behavior', () => {
       _id: 'tp_1',
       title: 'Water plants',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-01',
       },
@@ -846,8 +850,8 @@ describe('runScheduler with overdue behavior', () => {
       _id: 'tp_1',
       title: 'Water plants',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'FIXED',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
         interval: { days: 7 },
         startDate: '2026-01-01',
       },
@@ -881,8 +885,8 @@ describe('runScheduler with overdue behavior', () => {
       _id: 'tp_ad',
       title: 'Recurring',
       recurrence: {
-        type: 'INTERVAL',
-        subtype: 'AFTER_DONE',
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
         interval: { days: 3 },
         startDate: '2026-01-01',
       },
@@ -930,8 +934,8 @@ describe('WEEKDAYS generates tasks only on correct days of the week', () => {
 
   it('each generated task doAt falls on a day matching daysOfWeek (ISO convention)', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [1, 3, 5],
       startDate: '2026-01-01',
     });
@@ -947,8 +951,8 @@ describe('WEEKDAYS generates tasks only on correct days of the week', () => {
 
   it('Sunday is day 7 (ISO), generates a task on Sunday', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [7],
       startDate: '2026-01-01',
     });
@@ -966,8 +970,8 @@ describe('WEEKDAYS generates tasks only on correct days of the week', () => {
 
   it('Sun(7), Tue(2), Thu(4) only creates tasks on Sunday, Tuesday, Thursday', () => {
     const plan = makePlan({
-      type: 'FIXED_DAYS',
-      subtype: 'WEEKDAYS',
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
       daysOfWeek: [7, 2, 4],
       startDate: '2026-01-01',
     });
