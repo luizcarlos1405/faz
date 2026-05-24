@@ -912,3 +912,81 @@ describe('runScheduler with overdue behavior', () => {
     expect(result.tasks[0].doAt).toBe('2026-01-10');
   });
 });
+
+describe('WEEKDAYS generates tasks only on correct days of the week', () => {
+  const isoDayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  function dayNameOf(dateStr: string): string {
+    return isoDayNames[Temporal.PlainDate.from(dateStr).dayOfWeek - 1];
+  }
+
+  it('each generated task doAt falls on a day matching daysOfWeek (ISO convention)', () => {
+    const plan = makePlan({
+      type: 'FIXED_DAYS',
+      subtype: 'WEEKDAYS',
+      daysOfWeek: [1, 3, 5],
+      startDate: '2026-01-01',
+    });
+    const today = Temporal.PlainDate.from('2026-05-15');
+    const result = evaluateFixedDays(plan, today, []);
+
+    expect(result.length).toBe(3);
+    for (const task of result) {
+      const isoDow = Temporal.PlainDate.from(task.doAt).dayOfWeek;
+      expect([1, 3, 5]).toContain(isoDow);
+    }
+  });
+
+  it('Sunday is day 7 (ISO), generates a task on Sunday', () => {
+    const plan = makePlan({
+      type: 'FIXED_DAYS',
+      subtype: 'WEEKDAYS',
+      daysOfWeek: [7],
+      startDate: '2026-01-01',
+    });
+
+    const today = Temporal.PlainDate.from('2026-05-15');
+    expect(today.dayOfWeek).toBe(5);
+
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.length).toBe(1);
+
+    const generatedDate = Temporal.PlainDate.from(result[0].doAt);
+    expect(generatedDate.dayOfWeek).toBe(7);
+    expect(dayNameOf(result[0].doAt)).toBe('Sunday');
+  });
+
+  it('Sun(7), Tue(2), Thu(4) only creates tasks on Sunday, Tuesday, Thursday', () => {
+    const plan = makePlan({
+      type: 'FIXED_DAYS',
+      subtype: 'WEEKDAYS',
+      daysOfWeek: [7, 2, 4],
+      startDate: '2026-01-01',
+    });
+
+    const today = Temporal.PlainDate.from('2026-05-15');
+    expect(today.dayOfWeek).toBe(5);
+
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.length).toBe(3);
+
+    const doAts = result.map((t) => t.doAt).sort();
+
+    expect(doAts).not.toContain('2026-05-22');
+    expect(doAts).not.toContain('2026-05-18');
+
+    const dayNames = doAts.map(dayNameOf);
+    const allowedDays = new Set(['Sunday', 'Tuesday', 'Thursday']);
+    for (const name of dayNames) {
+      expect(allowedDays.has(name)).toBe(true);
+    }
+  });
+});

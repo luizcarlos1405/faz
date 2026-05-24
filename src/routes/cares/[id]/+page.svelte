@@ -211,7 +211,15 @@
     resetWizard();
   }
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayEntries = [
+    { iso: 1, name: 'Mon' },
+    { iso: 2, name: 'Tue' },
+    { iso: 3, name: 'Wed' },
+    { iso: 4, name: 'Thu' },
+    { iso: 5, name: 'Fri' },
+    { iso: 6, name: 'Sat' },
+    { iso: 7, name: 'Sun' },
+  ];
 </script>
 
 <div class="p-4">
@@ -378,18 +386,20 @@
           {#if planStep >= 3 && planType === 'FIXED_DAYS'}
             {#if planDaysSubtype === 'WEEKDAYS'}
               <div class="flex flex-wrap gap-1">
-                {#each dayNames as name, i (i)}
+                {#each dayEntries as entry (entry.iso)}
                   <button
-                    class="btn btn-sm {planDaysOfWeek.includes(i) ? 'btn-primary' : 'btn-ghost'}"
+                    class="btn btn-sm {planDaysOfWeek.includes(entry.iso)
+                      ? 'btn-primary'
+                      : 'btn-ghost'}"
                     onclick={() => {
-                      if (planDaysOfWeek.includes(i)) {
-                        planDaysOfWeek = planDaysOfWeek.filter((d) => d !== i);
+                      if (planDaysOfWeek.includes(entry.iso)) {
+                        planDaysOfWeek = planDaysOfWeek.filter((d) => d !== entry.iso);
                       } else {
-                        planDaysOfWeek = [...planDaysOfWeek, i];
+                        planDaysOfWeek = [...planDaysOfWeek, entry.iso];
                       }
                     }}
                   >
-                    {name}
+                    {entry.name}
                   </button>
                 {/each}
               </div>

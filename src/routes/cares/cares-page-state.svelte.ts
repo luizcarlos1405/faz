@@ -229,7 +229,7 @@ export function describeRecurrence(r: Recurrence): string {
     return `${describeInterval(r.interval)} after last time you did it`;
   }
   if (r.type === 'FIXED_DAYS' && r.subtype === 'WEEKDAYS') {
-    const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const names = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return `Every ${r.daysOfWeek.map((d) => names[d]).join(' and ')}`;
   }
   if (r.type === 'FIXED_DAYS' && r.subtype === 'MONTHDAYS') {
