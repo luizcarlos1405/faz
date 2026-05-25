@@ -16,7 +16,6 @@ import {
   updateTask,
   removeTask as deleteTask,
   reorderGoalTasks,
-  assignStepOrder,
   restoreTask,
 } from '$lib/db/task-repo';
 import { createCare } from '$lib/db/care-repo';
@@ -122,7 +121,6 @@ export function getGoalDetailState(goalId: string) {
   const toast = getToastState();
 
   async function load() {
-    await assignStepOrder(goalId);
     goal = await getGoal(goalId);
     const raw = await getTasksByGoal(goalId);
     tasks = sortWithDoneAtEnd(raw);

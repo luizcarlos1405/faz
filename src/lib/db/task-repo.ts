@@ -204,27 +204,6 @@ export async function reorderGoalTasks(goalId: string, taskIds: string[]): Promi
   }
 }
 
-export async function assignStepOrder(goalId: string): Promise<void> {
-  const tasks = await getTasksByGoal(goalId);
-  const needsMigration = tasks.some((t) => t.stepOrder == null);
-  if (!needsMigration) return;
-
-  const sorted = tasks.toSorted((a, b) => {
-    const doAtDiff = a.doAt.localeCompare(b.doAt);
-    if (doAtDiff !== 0) return doAtDiff;
-    return a.createdAt.localeCompare(b.createdAt);
-  });
-
-  const db = await getDb();
-  for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i].stepOrder !== i) {
-      sorted[i].stepOrder = i;
-      sorted[i].updatedAt = Temporal.Now.instant().toString();
-      await db.put(sorted[i]);
-    }
-  }
-}
-
 export async function updateTasksCareForPlan(taskPlanId: string, newCareId: string): Promise<void> {
   const tasks = await getTasksByTaskPlan(taskPlanId);
   const db = await getDb();
