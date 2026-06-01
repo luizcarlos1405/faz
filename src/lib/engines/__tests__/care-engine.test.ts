@@ -917,6 +917,123 @@ describe('runScheduler with overdue behavior', () => {
   });
 });
 
+describe('FIXED_DAYS no duplicate when existing task is DONE', () => {
+  it('WEEKDAYS does not generate duplicate when all tasks for today are DONE', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_vitd',
+      title: 'Take vitamin D',
+      recurrence: {
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+        daysOfWeek: [1],
+        startDate: '2026-04-25',
+      },
+      createdAt: '2026-04-25T00:00:00Z',
+      updatedAt: '2026-04-25T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_health',
+      type: DOC_TYPE.CARE.value,
+      title: 'Health',
+      taskPlans: [plan],
+      createdAt: '2026-04-25T00:00:00Z',
+      updatedAt: '2026-04-25T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-06-01');
+    expect(today.dayOfWeek).toBe(1);
+
+    const existingTasks: TaskDoc[] = [
+      makeTask({
+        _id: 'task_1',
+        taskPlanId: 'tp_vitd',
+        doAt: '2026-06-01',
+        status: TASK_STATUS.DONE.value,
+      }),
+      makeTask({
+        _id: 'task_2',
+        taskPlanId: 'tp_vitd',
+        doAt: '2026-06-01',
+        status: TASK_STATUS.DONE.value,
+      }),
+    ];
+
+    const result = runScheduler([care], today, () => existingTasks);
+    expect(result.tasks.length).toBe(0);
+  });
+
+  it('MONTHDAYS does not generate duplicate when existing task for that day is DONE', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_bill',
+      title: 'Pay internet',
+      recurrence: {
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+        daysOfMonth: [5],
+        startDate: '2026-01-05',
+      },
+      createdAt: '2026-01-05T00:00:00Z',
+      updatedAt: '2026-01-05T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_bills',
+      type: DOC_TYPE.CARE.value,
+      title: 'Bills',
+      taskPlans: [plan],
+      createdAt: '2026-01-05T00:00:00Z',
+      updatedAt: '2026-01-05T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-06-05');
+
+    const existingTasks: TaskDoc[] = [
+      makeTask({
+        _id: 'task_done',
+        taskPlanId: 'tp_bill',
+        doAt: '2026-06-05',
+        status: TASK_STATUS.DONE.value,
+      }),
+    ];
+
+    const result = runScheduler([care], today, () => existingTasks);
+    expect(result.tasks.length).toBe(0);
+  });
+
+  it('YEARDAYS does not generate duplicate when existing task for that date is DONE', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_bday',
+      title: 'Birthday card',
+      recurrence: {
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+        dates: [{ month: 6, day: 1 }],
+        startDate: '2026-01-01',
+      },
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_social',
+      type: DOC_TYPE.CARE.value,
+      title: 'Social',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-06-01');
+
+    const existingTasks: TaskDoc[] = [
+      makeTask({
+        _id: 'task_done',
+        taskPlanId: 'tp_bday',
+        doAt: '2026-06-01',
+        status: TASK_STATUS.DONE.value,
+      }),
+    ];
+
+    const result = runScheduler([care], today, () => existingTasks);
+    expect(result.tasks.length).toBe(0);
+  });
+});
+
 describe('WEEKDAYS generates tasks only on correct days of the week', () => {
   const isoDayNames = [
     'Monday',

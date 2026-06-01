@@ -1,6 +1,7 @@
 import PouchDB from 'pouchdb-browser';
 import pouchdbFind from 'pouchdb-find';
 import type { InboxItemDoc, TaskDoc, GoalDoc, CareDoc } from '$lib/types';
+import { runMigrations } from './migrations';
 
 PouchDB.plugin(pouchdbFind);
 
@@ -19,7 +20,7 @@ let initPromise: Promise<void> | null = null;
 export async function getDb(): Promise<Database> {
   if (!dbInstance) {
     dbInstance = new PouchDB<FazDoc>('faz');
-    initPromise = setupIndexes(dbInstance);
+    initPromise = setupIndexes(dbInstance).then(() => runMigrations(dbInstance!));
   }
   if (initPromise) {
     await initPromise;
