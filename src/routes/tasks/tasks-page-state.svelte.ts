@@ -158,7 +158,7 @@ export function getTasksPageState() {
   }
 
   async function removeTask(id: string) {
-    const task = allTasks.find((t) => t._id === id);
+    const task = allTasks.find((t) => t._id === id) || doneTodayList.find((t) => t._id === id);
     if (!task) return;
 
     const backup = snapshotTask(task);
