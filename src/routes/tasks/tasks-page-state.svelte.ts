@@ -11,7 +11,7 @@ import {
   restoreTask,
   getNextTaskForGoals,
 } from '$lib/db/task-repo';
-import { createGoal, getGoal } from '$lib/db/goal-repo';
+import { createGoal, getGoal, recalcGoalStatus } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
 import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -127,8 +127,14 @@ export function getTasksPageState() {
       if (task.taskPlanId) {
         await markPlanDone(task.taskPlanId, getToday());
       }
+      if (task.goalId) {
+        await recalcGoalStatus(task.goalId);
+      }
     } else {
       await uncompleteTask(id);
+      if (task.goalId) {
+        await recalcGoalStatus(task.goalId);
+      }
     }
     await load();
   }

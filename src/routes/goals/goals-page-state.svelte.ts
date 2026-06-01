@@ -6,6 +6,7 @@ import {
   getGoal,
   removeGoal as removeGoalRepo,
   reorderGoals,
+  recalcGoalStatus,
 } from '$lib/db/goal-repo';
 import {
   getTasksByGoal,
@@ -20,23 +21,12 @@ import {
 } from '$lib/db/task-repo';
 import { createCare } from '$lib/db/care-repo';
 import { getToastState } from '$lib/components/toast-state.svelte';
-import { calculateGoalStatus } from '$lib/engines/goal-engine';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
 import { TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
   return Temporal.Now.plainDateISO().toString();
-}
-
-async function recalcGoalStatus(goalId: string): Promise<void> {
-  const goal = await getGoal(goalId);
-  const tasks = await getTasksByGoal(goalId);
-  const newStatus = calculateGoalStatus(goal, tasks);
-  if (goal.status !== newStatus) {
-    goal.status = newStatus;
-    await updateGoal(goal);
-  }
 }
 
 export function getGoalsPageState() {

@@ -2,6 +2,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
+import { calculateGoalStatus } from '$lib/engines/goal-engine';
+import { getTasksByGoal } from './task-repo';
 import { DOC_TYPE, GOAL_STATUS, type GoalDoc } from '$lib/types';
 
 export async function createGoal(title: string, originInboxItemId?: string): Promise<GoalDoc> {
@@ -60,5 +62,15 @@ export async function reorderGoals(goalIds: string[]): Promise<void> {
     doc.goalsListOrder = i;
     doc.updatedAt = Temporal.Now.instant().toString();
     await db.put(doc);
+  }
+}
+
+export async function recalcGoalStatus(goalId: string): Promise<void> {
+  const goal = await getGoal(goalId);
+  const tasks = await getTasksByGoal(goalId);
+  const newStatus = calculateGoalStatus(goal, tasks);
+  if (goal.status !== newStatus) {
+    goal.status = newStatus;
+    await updateGoal(goal);
   }
 }
