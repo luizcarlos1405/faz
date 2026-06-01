@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import type { Database } from './database';
 import { FIND_LIMIT_ALL } from './database';
-import { DOC_TYPE, type TaskDoc } from '$lib/types';
+import { DOC_TYPE, type CareDoc, type TaskDoc } from '$lib/types';
 import PouchDB from 'pouchdb-browser';
 
 interface MigrationStateDoc {
@@ -55,6 +55,45 @@ const migrations: Migration[] = [
             sorted[i].updatedAt = Temporal.Now.instant().toString();
             await db.put(sorted[i]);
           }
+        }
+      }
+    },
+  },
+  {
+    version: 2,
+    description: 'Convert WEEKDAYS daysOfWeek from JS 0-6 convention to ISO 1-7',
+    up: async (db) => {
+      const { docs } = await db.find({
+        selector: { type: DOC_TYPE.CARE.value },
+        limit: FIND_LIMIT_ALL,
+      });
+      const cares = docs as CareDoc[];
+      let changed = false;
+
+      const jsToIso = (d: number): number => {
+        if (d === 0) return 7;
+        return d;
+      };
+
+      for (const care of cares) {
+        for (const plan of care.taskPlans) {
+          if (
+            plan.recurrence.type === 'FIXED_DAYS' &&
+            plan.recurrence.subtype === 'WEEKDAYS'
+          ) {
+            const needsFix = plan.recurrence.daysOfWeek.some(
+              (d) => d < 1 || d > 7
+            );
+            if (needsFix) {
+              plan.recurrence.daysOfWeek = plan.recurrence.daysOfWeek.map(jsToIso);
+              changed = true;
+            }
+          }
+        }
+        if (changed) {
+          care.updatedAt = Temporal.Now.instant().toString();
+          await db.put(care);
+          changed = false;
         }
       }
     },
