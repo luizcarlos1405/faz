@@ -112,7 +112,7 @@
       <ul
         tabindex="0"
         role="menu"
-        class="dropdown-content menu bg-base-100 rounded-box shadow-lg border border-base-300 z-[1] w-44 p-1"
+        class="dropdown-content menu bg-base-100 rounded-box shadow-lg border border-base-300 z-50 w-44 p-1"
       >
         <li>
           <button onclick={() => (showThemeModal = true)}>

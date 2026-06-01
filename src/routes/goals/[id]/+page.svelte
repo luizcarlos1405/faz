@@ -139,7 +139,7 @@
       <button class="btn btn-success btn-sm mb-4" onclick={ctrl.markCompleted}> Mark done </button>
     {/if}
 
-    <div class="join w-full mb-6 sticky top-4 z-50">
+    <div class="join w-full mb-6 sticky top-4 z-10">
       <input
         type="text"
         class="input join-item flex-1"
