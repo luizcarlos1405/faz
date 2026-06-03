@@ -7,8 +7,10 @@
   import CalendarClock from 'lucide-svelte/icons/calendar-clock';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
+  import Brain from 'lucide-svelte/icons/brain';
   import SwipeableItem from '$lib/components/swipeable-item.svelte';
   import TaskEditModal from '$lib/components/task-edit-modal.svelte';
+  import FocusMode from '$lib/components/focus-mode.svelte';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { flip } from 'svelte/animate';
@@ -18,6 +20,7 @@
   const ctrl = getTasksPageState();
   let isDragging = $state(false);
   let taskList: HTMLUListElement | undefined = $state();
+  let focusActive = $state(false);
 
   async function addAndScroll() {
     const newId = await ctrl.add();
@@ -184,7 +187,29 @@
       </ul>
     {/if}
   {/if}
+
+  {#if ctrl.tasks.length > 0}
+    <div class="fab">
+      <button class="btn btn-primary btn-lg btn-circle" onclick={() => (focusActive = true)}>
+        <Brain class="size-6" />
+      </button>
+    </div>
+  {/if}
 </div>
+
+<FocusMode
+  open={focusActive}
+  task={ctrl.tasks[0] ?? null}
+  remaining={ctrl.tasks.length}
+  origin={ctrl.tasks[0] ? ctrl.getOriginInfo(ctrl.tasks[0]) : null}
+  oncomplete={async () => {
+    if (ctrl.tasks[0]) await ctrl.toggleComplete(ctrl.tasks[0]._id);
+  }}
+  onskip={async () => {
+    await ctrl.moveToEnd();
+  }}
+  onclose={() => (focusActive = false)}
+/>
 
 <TaskEditModal
   open={!!ctrl.editingTask}
