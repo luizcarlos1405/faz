@@ -247,6 +247,15 @@ export function getTasksPageState() {
     await reorderTasks(itemIds);
   }
 
+  async function moveToEnd(): Promise<TaskDoc | null> {
+    if (displayedTasks.length === 0) return null;
+    displayedTasks = reorderItems(displayedTasks, 0, displayedTasks.length - 1, (item, i) => {
+      item.tasksListOrder = i;
+    });
+    await persistOrder();
+    return displayedTasks[0] ?? null;
+  }
+
   return {
     get tasks() {
       return displayedTasks;
@@ -278,6 +287,7 @@ export function getTasksPageState() {
     transformToCare,
     reorder,
     persistOrder,
+    moveToEnd,
     getOriginInfo,
   };
 }
