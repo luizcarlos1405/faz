@@ -77,13 +77,8 @@ const migrations: Migration[] = [
 
       for (const care of cares) {
         for (const plan of care.taskPlans) {
-          if (
-            plan.recurrence.type === 'FIXED_DAYS' &&
-            plan.recurrence.subtype === 'WEEKDAYS'
-          ) {
-            const needsFix = plan.recurrence.daysOfWeek.some(
-              (d) => d < 1 || d > 7
-            );
+          if (plan.recurrence.type === 'FIXED_DAYS' && plan.recurrence.subtype === 'WEEKDAYS') {
+            const needsFix = plan.recurrence.daysOfWeek.some((d) => d < 1 || d > 7);
             if (needsFix) {
               plan.recurrence.daysOfWeek = plan.recurrence.daysOfWeek.map(jsToIso);
               changed = true;
@@ -115,6 +110,7 @@ export async function runMigrations(db: Database): Promise<void> {
     await migration.up(db);
     state.version = migration.version;
     state.updatedAt = Temporal.Now.instant().toString();
-    await (db as PouchDB.Database).put(state);
+    const result = await (db as PouchDB.Database).put(state);
+    state._rev = result.rev;
   }
 }
