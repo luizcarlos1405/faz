@@ -189,10 +189,15 @@
   {/if}
 
   {#if ctrl.tasks.length > 0}
-    <div class="fab">
-      <button class="btn btn-primary btn-lg btn-circle" onclick={() => (focusActive = true)}>
-        <Brain class="size-6" />
-      </button>
+    <div class="fixed inset-x-0 bottom-24 z-50 pointer-events-none">
+      <div class="max-w-md mx-auto px-4 flex justify-end">
+        <button
+          class="pointer-events-auto btn btn-primary btn-lg btn-circle shadow-lg"
+          onclick={() => (focusActive = true)}
+        >
+          <Brain class="size-6" />
+        </button>
+      </div>
     </div>
   {/if}
 </div>
