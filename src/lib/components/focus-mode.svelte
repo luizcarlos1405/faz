@@ -3,6 +3,7 @@
   import Check from 'lucide-svelte/icons/check';
   import SkipForward from 'lucide-svelte/icons/skip-forward';
   import X from 'lucide-svelte/icons/x';
+  import Sunrise from 'lucide-svelte/icons/sunrise';
   import Target from 'lucide-svelte/icons/target';
   import type { TaskDoc } from '$lib/types';
 
@@ -19,6 +20,7 @@
     origin = null as OriginInfo | null,
     oncomplete,
     onskip,
+    ontomorrow,
     onclose,
   }: {
     open?: boolean;
@@ -27,6 +29,7 @@
     origin?: OriginInfo | null;
     oncomplete: () => Promise<void>;
     onskip: () => Promise<void>;
+    ontomorrow: () => Promise<void>;
     onclose: () => void;
   } = $props();
 
@@ -63,6 +66,16 @@
       busy = false;
     }
   }
+
+  async function handleTomorrow() {
+    if (busy) return;
+    busy = true;
+    try {
+      await ontomorrow();
+    } finally {
+      busy = false;
+    }
+  }
 </script>
 
 {#if open}
@@ -71,7 +84,19 @@
     transition:fade={{ duration: 200 }}
   >
     <div class="w-full max-w-md flex flex-col h-full">
-      <div class="flex justify-end items-center px-5 pt-4 pb-4">
+      <div class="flex justify-between items-center px-5 pt-4 pb-4">
+        {#if task && !allDone}
+          <button
+            class="flex items-center gap-1.5 bg-base-200 rounded-full py-2 px-3"
+            onclick={handleTomorrow}
+            disabled={busy}
+          >
+            <Sunrise class="size-4 text-base-content/40" />
+            <span class="text-[13px] font-medium text-base-content/40">Tomorrow</span>
+          </button>
+        {:else}
+          <div></div>
+        {/if}
         <button
           class="flex items-center gap-1.5 bg-base-200 rounded-full py-2 px-3"
           onclick={onclose}
@@ -125,20 +150,20 @@
         <div class="px-10 pb-12">
           <div class="flex justify-center gap-3">
             <button
-              class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-success text-success-content font-semibold disabled:opacity-50"
-              onclick={handleDone}
-              disabled={busy}
-            >
-              <Check class="size-5" />
-              Done
-            </button>
-            <button
               class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-base-200 text-base-content font-medium disabled:opacity-50"
               onclick={handleSkip}
               disabled={busy}
             >
               <SkipForward class="size-5" />
               Skip
+            </button>
+            <button
+              class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-success text-success-content font-semibold disabled:opacity-50"
+              onclick={handleDone}
+              disabled={busy}
+            >
+              <Check class="size-5" />
+              Done
             </button>
           </div>
         </div>

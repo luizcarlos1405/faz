@@ -213,6 +213,9 @@
   onskip={async () => {
     await ctrl.moveToEnd();
   }}
+  ontomorrow={async () => {
+    if (ctrl.tasks[0]) await ctrl.postponeTask(ctrl.tasks[0]._id);
+  }}
   onclose={() => (focusActive = false)}
 />
 
