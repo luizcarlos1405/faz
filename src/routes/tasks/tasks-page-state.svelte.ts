@@ -144,7 +144,7 @@ export function getTasksPageState() {
     if (!task) return;
 
     const originalDoAt = task.doAt;
-    const tomorrow = Temporal.PlainDate.from(task.doAt).add({ days: 1 }).toString();
+    const tomorrow = Temporal.PlainDate.from(getToday()).add({ days: 1 }).toString();
 
     task.doAt = tomorrow;
     await updateTask(task);
