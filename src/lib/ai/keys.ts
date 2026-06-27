@@ -3,6 +3,7 @@ import { PROVIDER_LIST, type ProviderId, type Provider } from './providers';
 const KEY_PREFIX = 'faz:ai:key:';
 const MODEL_PREFIX = 'faz:ai:model:';
 const LAST_PROVIDER_KEY = 'faz:ai:lastProvider';
+const AGENT_MODE_KEY = 'faz:ai:agentMode';
 
 export function getApiKey(id: ProviderId): string {
   return localStorage.getItem(KEY_PREFIX + id) ?? '';
@@ -47,4 +48,13 @@ export function getModel(id: ProviderId): string | null {
 
 export function setModel(id: ProviderId, model: string): void {
   localStorage.setItem(MODEL_PREFIX + id, model);
+}
+
+export function getAgentMode(): boolean {
+  return localStorage.getItem(AGENT_MODE_KEY) === '1';
+}
+
+export function setAgentMode(on: boolean): void {
+  if (on) localStorage.setItem(AGENT_MODE_KEY, '1');
+  else localStorage.removeItem(AGENT_MODE_KEY);
 }

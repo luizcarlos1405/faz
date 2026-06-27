@@ -1,4 +1,7 @@
-import { streamChat, ChatError, type ChatMessage } from '$lib/ai/client';
+import { streamChat, ChatError } from '$lib/ai/client';
+import { runAgent, type ToolEvent } from '$lib/ai/agent';
+import { buildSystemContext } from '$lib/ai/context';
+import { gatherContext } from '$lib/ai/context-gather';
 import {
   getApiKey,
   getConfiguredProviders,
@@ -6,10 +9,23 @@ import {
   setLastProviderId,
   getModel,
   setModel,
+  getAgentMode,
+  setAgentMode,
 } from '$lib/ai/keys';
 import { getProvider, type ProviderId, type Provider } from '$lib/ai/providers';
+import type { ChatMessage } from '$lib/ai/protocol';
 
 const IDLE_TIMEOUT_MS = 60000;
+
+type ToolLogEntry = ToolEvent & { undone?: boolean };
+
+interface TurnMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  reasoning?: string;
+  error?: boolean;
+  tools?: ToolLogEntry[];
+}
 
 function effectiveModel(id: ProviderId): string {
   const provider = getProvider(id);
@@ -36,11 +52,12 @@ function friendlyError(e: unknown, label: string): string {
 }
 
 export function getChatPageState() {
-  let messages = $state<ChatMessage[]>([]);
+  let messages = $state<TurnMessage[]>([]);
   let input = $state('');
   let streaming = $state(false);
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
   let modelId = $state(effectiveModel(providerId));
+  let agentMode = $state(getAgentMode());
   let controller: AbortController | null = null;
   let idleTimer: ReturnType<typeof setInterval> | null = null;
   let timedOut = false;
@@ -54,7 +71,7 @@ export function getChatPageState() {
     const text = input.trim();
     if (!text || streaming) return;
     const provider = getProvider(providerId);
-    const requestMessages: ChatMessage[] = messages
+    const requestBase: TurnMessage[] = messages
       .filter((m) => !m.error)
       .concat([{ role: 'user', content: text }]);
     input = '';
@@ -62,7 +79,7 @@ export function getChatPageState() {
     const key = getApiKey(providerId);
     if (!key) {
       messages = [
-        ...requestMessages,
+        ...requestBase,
         {
           role: 'assistant',
           content: `I don't have an API key for ${provider.label} yet. Add one in AI Keys to start chatting.`,
@@ -72,8 +89,8 @@ export function getChatPageState() {
       return;
     }
 
-    messages = [...requestMessages, { role: 'assistant', content: '', reasoning: '' }];
-    const assistantIndex = messages.length - 1;
+    messages = [...requestBase, { role: 'assistant', content: '', reasoning: '', tools: [] }];
+    const aiIndex = messages.length - 1;
     streaming = true;
     timedOut = false;
     controller = new AbortController();
@@ -86,30 +103,62 @@ export function getChatPageState() {
       }
     }, 5000);
 
+    const requestMessages: ChatMessage[] = requestBase.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
     try {
-      await streamChat({
-        providerId,
-        apiKey: key,
-        model: modelId,
-        messages: requestMessages,
-        signal: controller.signal,
-        onDelta: ({ content, reasoning }) => {
-          lastActivity = Date.now();
-          messages[assistantIndex].content += content;
-          messages[assistantIndex].reasoning += reasoning;
-          messages = [...messages];
-        },
-      });
+      if (agentMode) {
+        const system = buildSystemContext(await gatherContext());
+        await runAgent({
+          providerId,
+          apiKey: key,
+          model: modelId,
+          system,
+          messages: requestMessages,
+          signal: controller.signal,
+          onReasoning: (r) => {
+            lastActivity = Date.now();
+            messages[aiIndex].reasoning += r;
+            messages = [...messages];
+          },
+          onTool: (ev) => {
+            lastActivity = Date.now();
+            messages[aiIndex].tools = [...(messages[aiIndex].tools ?? []), { ...ev }];
+            messages = [...messages];
+          },
+          onText: (t) => {
+            lastActivity = Date.now();
+            messages[aiIndex].content = t;
+            messages = [...messages];
+          },
+        });
+      } else {
+        await streamChat({
+          providerId,
+          apiKey: key,
+          model: modelId,
+          messages: requestMessages,
+          signal: controller.signal,
+          onDelta: ({ content, reasoning }) => {
+            lastActivity = Date.now();
+            messages[aiIndex].content += content;
+            messages[aiIndex].reasoning += reasoning;
+            messages = [...messages];
+          },
+        });
+      }
     } catch (e) {
       if (timedOut) {
-        messages[assistantIndex] = {
+        messages[aiIndex] = {
           role: 'assistant',
           content: `This is taking too long — ${provider.label} stopped responding. Try again, or pick a different model.`,
           error: true,
         };
         messages = [...messages];
       } else if (!controller?.signal.aborted) {
-        messages[assistantIndex] = {
+        messages[aiIndex] = {
           role: 'assistant',
           content: friendlyError(e, provider.label),
           error: true,
@@ -124,7 +173,13 @@ export function getChatPageState() {
         idleTimer = null;
       }
       const last = messages[messages.length - 1];
-      if (last && last.role === 'assistant' && last.content === '' && !last.reasoning) {
+      if (
+        last &&
+        last.role === 'assistant' &&
+        last.content === '' &&
+        !last.reasoning &&
+        !(last.tools && last.tools.length)
+      ) {
         messages = messages.slice(0, -1);
       }
     }
@@ -132,6 +187,21 @@ export function getChatPageState() {
 
   function stop(): void {
     controller?.abort();
+  }
+
+  function undoTool(msgIndex: number, toolIndex: number): void {
+    const msg = messages[msgIndex];
+    const tool = msg?.tools?.[toolIndex];
+    if (!tool?.undo || tool.undone) return;
+    tool.undone = true;
+    messages = [...messages];
+    tool.undo.restore().catch(() => {
+      const t = messages[msgIndex]?.tools?.[toolIndex];
+      if (t) {
+        t.undone = false;
+        messages = [...messages];
+      }
+    });
   }
 
   function switchProvider(id: ProviderId): void {
@@ -143,6 +213,11 @@ export function getChatPageState() {
   function switchModel(model: string): void {
     modelId = model;
     setModel(providerId, model);
+  }
+
+  function toggleAgentMode(): void {
+    agentMode = !agentMode;
+    setAgentMode(agentMode);
   }
 
   function clear(): void {
@@ -169,6 +244,9 @@ export function getChatPageState() {
     get modelId() {
       return modelId;
     },
+    get agentMode() {
+      return agentMode;
+    },
     get currentProvider(): Provider {
       return getProvider(providerId);
     },
@@ -186,8 +264,10 @@ export function getChatPageState() {
     },
     send,
     stop,
+    undoTool,
     switchProvider,
     switchModel,
+    toggleAgentMode,
     clear,
   };
 }

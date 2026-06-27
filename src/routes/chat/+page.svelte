@@ -11,6 +11,39 @@
   import KeyRound from 'lucide-svelte/icons/key-round';
   import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+  import Zap from 'lucide-svelte/icons/zap';
+  import Search from 'lucide-svelte/icons/search';
+  import Plus from 'lucide-svelte/icons/plus';
+  import Check from 'lucide-svelte/icons/check';
+  import Pencil from 'lucide-svelte/icons/pencil';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
+  import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
+
+  const TOOL_ICONS: Record<string, typeof Search> = {
+    read: Search,
+    create: Plus,
+    complete: Check,
+    uncomplete: RotateCcw,
+    update: Pencil,
+    delete: Trash2,
+  };
+
+  function iconFor(name: string): typeof Search {
+    if (name.startsWith('list') || name.startsWith('get')) return Search;
+    for (const key of Object.keys(TOOL_ICONS)) {
+      if (name.startsWith(key)) return TOOL_ICONS[key];
+    }
+    return Check;
+  }
+
+  function toneFor(name: string, ok: boolean): string {
+    if (!ok) return 'text-error';
+    if (name.startsWith('delete') || name.startsWith('discard')) return 'text-error';
+    if (name.startsWith('create') || name.startsWith('complete') || name.startsWith('uncomplete')) {
+      return 'text-success';
+    }
+    return 'text-base-content/50';
+  }
 
   const hasKey = hasAnyKey();
   const ctrl = getChatPageState();
@@ -124,6 +157,7 @@
             {:else}
               {@const isLast = i === ctrl.messages.length - 1}
               {@const isActive = ctrl.streaming && isLast}
+              {@const hasTools = msg.tools && msg.tools.length > 0}
               <div class="flex gap-2.5 items-end">
                 <div
                   class="size-7 rounded-full bg-base-200 flex items-center justify-center shrink-0"
@@ -131,7 +165,7 @@
                   <Sparkles class="size-4 text-primary" />
                 </div>
                 <div
-                  class="max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm {msg.error
+                  class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm {msg.error
                     ? 'bg-warning/15'
                     : 'bg-base-200'}"
                 >
@@ -140,36 +174,56 @@
                       <AlertTriangle class="size-4 shrink-0 text-warning mt-0.5" />
                       <span class="whitespace-pre-wrap">{msg.content}</span>
                     </div>
-                  {:else if msg.reasoning}
-                    <details open={isActive && !msg.content}>
-                      <summary class="text-xs text-base-content/50 cursor-pointer">
-                        {isActive && !msg.content ? 'Thinking…' : 'Thought process'}
-                      </summary>
-                      <div
-                        class="mt-1 text-xs text-base-content/40 italic whitespace-pre-wrap border-l-2 border-base-300 pl-2"
-                      >
-                        {msg.reasoning}
+                  {:else}
+                    {#if msg.reasoning}
+                      <details open={isActive && !msg.content && !hasTools}>
+                        <summary class="text-xs text-base-content/50 cursor-pointer">
+                          {isActive && !msg.content && !hasTools ? 'Thinking…' : 'Thought process'}
+                        </summary>
+                        <div
+                          class="mt-1 text-xs text-base-content/40 italic whitespace-pre-wrap border-l-2 border-base-300 pl-2"
+                        >
+                          {msg.reasoning}
+                        </div>
+                      </details>
+                    {/if}
+                    {#if hasTools}
+                      <div class="flex flex-col gap-1.5 {msg.reasoning ? 'mt-2' : ''}">
+                        {#each msg.tools as tool, ti (ti)}
+                          {@const ToolIcon = iconFor(tool.name)}
+                          <div
+                            class="flex items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-2.5 py-1.5"
+                          >
+                            <span class="flex items-center gap-1.5 min-w-0">
+                              <ToolIcon class="size-3.5 shrink-0 {toneFor(tool.name, tool.ok)}" />
+                              <span class="text-xs truncate {tool.ok ? '' : 'text-error'}"
+                                >{tool.label}</span
+                              >
+                            </span>
+                            {#if tool.undo && !tool.undone}
+                              <button
+                                class="btn btn-ghost btn-xs gap-1 text-primary shrink-0"
+                                onclick={() => ctrl.undoTool(i, ti)}>Undo</button
+                              >
+                            {:else if tool.undone}
+                              <span class="text-xs text-base-content/40 shrink-0">Undone</span>
+                            {/if}
+                          </div>
+                        {/each}
                       </div>
-                    </details>
+                    {/if}
                     {#if msg.content}
-                      <div class="whitespace-pre-wrap mt-1">
+                      <div class="whitespace-pre-wrap {hasTools || msg.reasoning ? 'mt-2' : ''}">
                         {msg.content}
                         {#if isActive}<LoaderCircle
                             class="size-3 animate-spin inline ml-1 align-middle"
                           />{/if}
                       </div>
+                    {:else if isActive && !msg.reasoning && !hasTools}
+                      <div class="flex items-center gap-2 text-base-content/50">
+                        <LoaderCircle class="size-3 animate-spin" /> Thinking…
+                      </div>
                     {/if}
-                  {:else if msg.content}
-                    <div class="whitespace-pre-wrap">
-                      {msg.content}
-                      {#if isActive}<LoaderCircle
-                          class="size-3 animate-spin inline ml-1 align-middle"
-                        />{/if}
-                    </div>
-                  {:else if isActive}
-                    <div class="flex items-center gap-2 text-base-content/50">
-                      <LoaderCircle class="size-3 animate-spin" /> Thinking…
-                    </div>
                   {/if}
                 </div>
               </div>
@@ -178,6 +232,30 @@
         </div>
       {/if}
     </div>
+
+    <button
+      type="button"
+      class="flex items-center justify-between w-full px-4 py-2 border-t border-base-300 bg-base-100"
+      role="switch"
+      aria-checked={ctrl.agentMode}
+      onclick={ctrl.toggleAgentMode}
+    >
+      <span
+        class="flex items-center gap-1.5 text-sm font-semibold {ctrl.agentMode
+          ? 'text-primary'
+          : 'text-base-content/70'}"
+      >
+        <Zap class="size-3.5" />
+        Act on my data
+      </span>
+      <span
+        class="w-10 h-5 rounded-full p-0.5 flex items-center transition-colors {ctrl.agentMode
+          ? 'bg-primary justify-end'
+          : 'bg-base-300 justify-start'}"
+      >
+        <span class="block size-4 rounded-full bg-white shadow"></span>
+      </span>
+    </button>
 
     <div class="flex items-center gap-2 p-3 border-t border-base-300 bg-base-100">
       <input
