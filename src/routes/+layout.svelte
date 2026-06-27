@@ -7,6 +7,7 @@
   import Inbox from 'lucide-svelte/icons/inbox';
   import Target from 'lucide-svelte/icons/target';
   import Heart from 'lucide-svelte/icons/heart';
+  import MessageSquare from 'lucide-svelte/icons/message-square';
   import { onMount } from 'svelte';
   import { runSchedulerNow } from '$lib/scheduler';
   import TopBar from '$lib/components/top-bar.svelte';
@@ -18,6 +19,7 @@
   let { children }: { children: Snippet } = $props();
 
   const navItems = [
+    { href: '/chat', label: 'Chat', icon: MessageSquare },
     { href: '/tasks', label: 'Tasks', icon: ListChecks },
     { href: '/inbox', label: 'Inbox', icon: Inbox },
     { href: '/goals', label: 'Goals', icon: Target },

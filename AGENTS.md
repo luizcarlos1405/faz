@@ -63,21 +63,24 @@ Domain types (`TaskDoc`, `GoalDoc`, `CareDoc`, `InboxItemDoc`, `Recurrence`, etc
 
 ### Key domains (`src/lib/`)
 
-| Path           | Layer  | Purpose                                                                                     |
-| -------------- | ------ | ------------------------------------------------------------------------------------------- |
-| `engines/`     | Core   | Pure business logic: recurrence scheduling, goal status, ordering, import parsing           |
-| `utils/`       | Core   | Pure utilities: date formatting, reordering, snapshot                                       |
-| `types.ts`     | Bound. | All doc types and recurrence type unions                                                    |
-| `db/`          | Shell  | PouchDB repos (task, goal, care, inbox, data-manager). Calls core for ordering decisions.   |
-| `scheduler.ts` | Shell  | Orchestrator — gathers DB data, calls `runScheduler()`, writes results back                 |
-| `importers/`   | Split  | `google-tasks.ts` = core (parsing), `google-tasks-import.ts` = shell (file I/O + DB writes) |
-| `components/`  | Shell  | UI components (`.svelte`) and `.svelte.ts` reactive state helpers                           |
-| `attachments/` | Shell  | DOM-level drag-and-drop attachment                                                          |
+| Path           | Layer  | Purpose                                                                                                                                                                                                 |
+| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `engines/`     | Core   | Pure business logic: recurrence scheduling, goal status, ordering, import parsing                                                                                                                       |
+| `utils/`       | Core   | Pure utilities: date formatting, reordering, snapshot                                                                                                                                                   |
+| `types.ts`     | Bound. | All doc types and recurrence type unions                                                                                                                                                                |
+| `db/`          | Shell  | PouchDB repos (task, goal, care, inbox, data-manager). Calls core for ordering decisions.                                                                                                               |
+| `scheduler.ts` | Shell  | Orchestrator — gathers DB data, calls `runScheduler()`, writes results back                                                                                                                             |
+| `importers/`   | Split  | `google-tasks.ts` = core (parsing), `google-tasks-import.ts` = shell (file I/O + DB writes)                                                                                                             |
+| `components/`  | Shell  | UI components (`.svelte`) and `.svelte.ts` reactive state helpers                                                                                                                                       |
+| `attachments/` | Shell  | DOM-level drag-and-drop attachment                                                                                                                                                                      |
+| `ai/`          | Split  | Bring-your-own-key LLM chat. `protocol.ts` = pure (request shaping, SSE parsing); `client.ts` = shell (streaming `fetch`); `keys.ts`/`providers.ts` = config + localStorage. Browser-direct, no server. |
 
 ### Routes (`src/routes/`)
 
-`/tasks`, `/inbox`, `/goals`, `/cares` — bottom nav tabs. Root `/`
-redirects to `/tasks`.
+`/chat` (AI assistant), `/tasks`, `/inbox`, `/goals`, `/cares` — bottom nav
+tabs. Root `/` redirects to `/chat`. `/settings/keys` (API key management) is
+not in the nav — reached from the top-bar menu and from `/chat` when no
+provider is configured.
 
 ## Related Docs
 

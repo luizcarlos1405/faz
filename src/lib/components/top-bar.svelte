@@ -1,8 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import MoreVertical from 'lucide-svelte/icons/more-vertical';
   import Palette from 'lucide-svelte/icons/palette';
   import Database from 'lucide-svelte/icons/database';
+  import KeyRound from 'lucide-svelte/icons/key-round';
   import DataModal from './data-modal.svelte';
 
   let showThemeModal = $state(false);
@@ -122,6 +125,11 @@
         <li>
           <button onclick={() => (showDataModal = true)}>
             <Database class="size-4" /> Your data
+          </button>
+        </li>
+        <li>
+          <button onclick={() => goto(resolve('/settings/keys'))}>
+            <KeyRound class="size-4" /> AI keys
           </button>
         </li>
       </ul>
