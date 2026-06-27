@@ -19,11 +19,11 @@
   let { children }: { children: Snippet } = $props();
 
   const navItems = [
-    { href: '/chat', label: 'Chat', icon: MessageSquare },
-    { href: '/tasks', label: 'Tasks', icon: ListChecks },
-    { href: '/inbox', label: 'Inbox', icon: Inbox },
-    { href: '/goals', label: 'Goals', icon: Target },
-    { href: '/cares', label: 'Cares', icon: Heart },
+    { href: '/chat', label: 'Chat', icon: MessageSquare, matches: ['/chat', '/settings/keys'] },
+    { href: '/tasks', label: 'Tasks', icon: ListChecks, matches: ['/tasks'] },
+    { href: '/inbox', label: 'Inbox', icon: Inbox, matches: ['/inbox'] },
+    { href: '/goals', label: 'Goals', icon: Target, matches: ['/goals'] },
+    { href: '/cares', label: 'Cares', icon: Heart, matches: ['/cares'] },
   ] as const;
 
   const webManifestHref = pwaInfo?.webManifest.href ?? '';
@@ -66,7 +66,10 @@
 
   <nav class="dock dock-md static z-50">
     {#each navItems as item (item.href)}
-      <a href={resolve(item.href)} class:dock-active={page.url.hash.startsWith(`#${item.href}`)}>
+      <a
+        href={resolve(item.href)}
+        class:dock-active={item.matches.some((m) => page.url.hash.startsWith(`#${m}`))}
+      >
         <item.icon class="size-5" />
         <span class="dock-label">{item.label}</span>
       </a>
