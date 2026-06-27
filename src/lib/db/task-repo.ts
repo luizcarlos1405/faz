@@ -100,6 +100,20 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
   return (result.docs as TaskDoc[]).toSorted(byListOrder((t) => t.tasksListOrder));
 }
 
+export async function findTasks(opts: {
+  status?: string;
+  goalId?: string;
+  dueBefore?: string;
+}): Promise<TaskDoc[]> {
+  const db = await getDb();
+  const selector: Record<string, unknown> = { type: DOC_TYPE.TASK.value };
+  if (opts.status) selector.status = opts.status;
+  if (opts.goalId) selector.goalId = opts.goalId;
+  selector.doAt = opts.dueBefore ? { $lte: opts.dueBefore } : { $gt: null };
+  const result = await db.find({ selector, limit: FIND_LIMIT_ALL });
+  return (result.docs as TaskDoc[]).toSorted(byListOrder((t) => t.tasksListOrder));
+}
+
 export async function getDoneToday(todayDate: string): Promise<TaskDoc[]> {
   const db = await getDb();
   const allDone = await db.find({

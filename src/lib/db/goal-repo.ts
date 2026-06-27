@@ -44,6 +44,16 @@ export async function removeGoal(id: string): Promise<void> {
   await db.remove(doc);
 }
 
+export async function restoreGoal(doc: GoalDoc): Promise<GoalDoc> {
+  const db = await getDb();
+  const toPut: GoalDoc = { ...doc };
+  delete toPut._rev;
+  toPut.updatedAt = Temporal.Now.instant().toString();
+  const result = await db.put(toPut);
+  toPut._rev = result.rev;
+  return toPut;
+}
+
 export async function getAllGoals(): Promise<GoalDoc[]> {
   const db = await getDb();
   const result = await db.find({
