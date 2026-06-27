@@ -1,4 +1,4 @@
-import { getProvider, type ProviderId } from './providers';
+import { getProvider, type ProviderId, type Provider } from './providers';
 import { endpoint, buildHeaders, buildBody, parseDataPayload, type ChatMessage } from './protocol';
 
 export type { ChatMessage } from './protocol';
@@ -14,6 +14,21 @@ export class ChatError extends Error {
     this.kind = kind;
     this.status = status;
   }
+}
+
+export function assertOk(response: Response, provider: Provider): void {
+  if (response.ok) return;
+  if (response.status === 401) {
+    throw new ChatError('auth', `Invalid API key for ${provider.label}.`);
+  }
+  if (response.status === 429) {
+    throw new ChatError('rate', `${provider.label} is rate limiting. Try again shortly.`);
+  }
+  throw new ChatError(
+    'http',
+    `${provider.label} returned an error (${response.status}).`,
+    response.status,
+  );
 }
 
 export interface StreamDelta {
@@ -56,19 +71,7 @@ export async function streamChat(opts: StreamChatOptions): Promise<void> {
     throw e;
   }
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new ChatError('auth', `Invalid API key for ${provider.label}.`);
-    }
-    if (response.status === 429) {
-      throw new ChatError('rate', `${provider.label} is rate limiting. Try again shortly.`);
-    }
-    throw new ChatError(
-      'http',
-      `${provider.label} returned an error (${response.status}).`,
-      response.status,
-    );
-  }
+  assertOk(response, provider);
 
   if (!response.body) {
     throw new ChatError('network', `No response stream from ${provider.label}.`);
