@@ -1,0 +1,786 @@
+{
+  "version": "2.13",
+  "variables": {
+    "bg-base-100": { "type": "color", "value": "#FFFFFF" },
+    "bg-base-200": { "type": "color", "value": "#F3F4F6" },
+    "bg-base-300": { "type": "color", "value": "#E5E7EB" },
+    "primary": { "type": "color", "value": "#570DF8" },
+    "primary-content": { "type": "color", "value": "#FFFFFF" },
+    "success": { "type": "color", "value": "#22C55E" },
+    "warning": { "type": "color", "value": "#B45309" },
+    "warning-bg": { "type": "color", "value": "#FEF3C7" },
+    "text-base-content": { "type": "color", "value": "#1F2937" },
+    "text-muted": { "type": "color", "value": "#9CA3AF" }
+  },
+  "children": [
+    {
+      "type": "frame",
+      "id": "ufNx6",
+      "name": "Global Top Bar",
+      "x": 0,
+      "y": -160,
+      "width": 390,
+      "height": 56,
+      "reusable": true,
+      "fill": "$bg-base-100",
+      "justifyContent": "space_between",
+      "alignItems": "center",
+      "padding": [0, 16],
+      "children": [
+        {
+          "type": "frame",
+          "id": "l8FN90",
+          "name": "Brand",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "K7Pf4",
+              "name": "Logo",
+              "width": 26,
+              "height": 26,
+              "cornerRadius": 7,
+              "fill": "$primary",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "fUKLy",
+                  "name": "Zap",
+                  "library": "lucide",
+                  "icon": "zap",
+                  "width": 16,
+                  "height": 16,
+                  "fill": "$primary-content"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "J6LcrM",
+              "name": "Brand Name",
+              "content": "Faz",
+              "fill": "$text-base-content",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "icon",
+          "id": "WU3wD",
+          "name": "Menu",
+          "library": "lucide",
+          "icon": "ellipsis-vertical",
+          "width": 22,
+          "height": 22,
+          "fill": "$text-base-content"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "NtXRQ",
+      "name": "Dock Bar",
+      "x": 450,
+      "y": -160,
+      "width": 390,
+      "height": 70,
+      "reusable": true,
+      "fill": "$bg-base-100",
+      "justifyContent": "space_around",
+      "alignItems": "center",
+      "padding": [10, 6],
+      "children": [
+        {
+          "type": "frame",
+          "id": "uGcYt",
+          "name": "Chat",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            { "type": "icon", "id": "Oj0Xx", "name": "Chat Icon", "library": "lucide", "icon": "message-square", "width": 20, "height": 20, "fill": "$primary" },
+            { "type": "text", "id": "tlQV9", "name": "Chat Label", "content": "Chat", "fill": "$primary", "fontFamily": "Inter", "fontSize": 10, "fontWeight": "500" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "o8ia09",
+          "name": "Tasks",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            { "type": "icon", "id": "ornU0", "name": "Tasks Icon", "library": "lucide", "icon": "list-checks", "width": 20, "height": 20, "fill": "$text-muted" },
+            { "type": "text", "id": "GawwL", "name": "Tasks Label", "content": "Tasks", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 10, "fontWeight": "500" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "f9YsQN",
+          "name": "Inbox",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            { "type": "icon", "id": "sYPWE", "name": "Inbox Icon", "library": "lucide", "icon": "inbox", "width": 20, "height": 20, "fill": "$text-muted" },
+            { "type": "text", "id": "C8AB2", "name": "Inbox Label", "content": "Inbox", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 10, "fontWeight": "500" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "U5nXVP",
+          "name": "Goals",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            { "type": "icon", "id": "fsh3N", "name": "Goals Icon", "library": "lucide", "icon": "target", "width": 20, "height": 20, "fill": "$text-muted" },
+            { "type": "text", "id": "Qam6h", "name": "Goals Label", "content": "Goals", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 10, "fontWeight": "500" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "I4Yg3",
+          "name": "Cares",
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            { "type": "icon", "id": "FwPoI", "name": "Cares Icon", "library": "lucide", "icon": "heart", "width": 20, "height": 20, "fill": "$text-muted" },
+            { "type": "text", "id": "y6tFzO", "name": "Cares Label", "content": "Cares", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 10, "fontWeight": "500" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "CpMwG",
+      "name": "Provider Card",
+      "x": 0,
+      "y": -450,
+      "width": 358,
+      "reusable": true,
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 14,
+      "cornerRadius": 14,
+      "fill": "$bg-base-100",
+      "stroke": "$bg-base-300",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "type": "frame",
+          "id": "Tr6ds",
+          "name": "Top Row",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "K9ZOyz",
+              "name": "Identity",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "rnfdg",
+                  "name": "Avatar",
+                  "width": 34,
+                  "height": 34,
+                  "cornerRadius": 9,
+                  "fill": "$primary",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "text", "id": "eJxeD", "name": "Initial", "content": "Z", "fill": "$primary-content", "fontFamily": "Inter", "fontSize": 15, "fontWeight": "700" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IinY4",
+                  "name": "Name Col",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    { "type": "text", "id": "fbXWa", "name": "Provider Name", "content": "Zhipu GLM", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 15, "fontWeight": "600" },
+                    { "type": "text", "id": "HUpwv", "name": "Model", "content": "glm-4.7-flash", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "normal" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ly2Aj",
+              "name": "Status Wrap",
+              "layout": "vertical",
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tKcvG",
+                  "name": "Status Connected",
+                  "cornerRadius": 12,
+                  "fill": "$success",
+                  "gap": 4,
+                  "padding": [4, 10],
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "icon", "id": "yYYB9", "name": "Check", "library": "lucide", "icon": "check", "width": 12, "height": 12, "fill": "$primary-content" },
+                    { "type": "text", "id": "u0HlU7", "name": "Connected Label", "content": "Connected", "fill": "$primary-content", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "500" }
+                  ]
+                },
+                { "type": "text", "id": "S2r8W", "name": "Status Not Set", "content": "Not connected", "enabled": false, "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "normal" }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jKCiV",
+          "name": "Key Row",
+          "width": "fill_container",
+          "cornerRadius": 10,
+          "fill": "$bg-base-200",
+          "gap": 8,
+          "padding": [11, 12],
+          "alignItems": "center",
+          "children": [
+            { "type": "text", "id": "I23AjD", "name": "Key Value", "content": "●●●●●●●●●●●●●●", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "letterSpacing": 2, "textGrowth": "fixed-width", "width": "fill_container" },
+            { "type": "icon", "id": "e6ATl", "name": "Eye", "library": "lucide", "icon": "eye", "width": 16, "height": 16, "fill": "$text-muted" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "l1qNJ",
+          "name": "Warning Banner",
+          "width": 330,
+          "cornerRadius": 10,
+          "enabled": false,
+          "fill": "$warning-bg",
+          "gap": 8,
+          "padding": [10, 12],
+          "children": [
+            { "type": "icon", "id": "n1jiKz", "name": "Warn Icon", "library": "lucide", "icon": "triangle-alert", "width": 14, "height": 14, "fill": "$warning" },
+            { "type": "text", "id": "VSWAA", "name": "Warn Text", "content": "Browser requests are blocked by this provider. Use GLM or Anthropic.", "fill": "$warning", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "normal", "lineHeight": 1.4, "textGrowth": "fixed-width", "width": "fill_container" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "b8nm4u",
+          "name": "Actions",
+          "width": "fill_container",
+          "gap": 8,
+          "justifyContent": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "PsQlx",
+              "name": "Clear Btn",
+              "cornerRadius": 10,
+              "enabled": false,
+              "fill": "$bg-base-100",
+              "padding": [8, 14],
+              "stroke": "$bg-base-300",
+              "strokeWidth": 1,
+              "children": [
+                { "type": "text", "id": "qmJ6o", "name": "Clear Label", "content": "Clear", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "500" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Vu42a",
+              "name": "Save Btn",
+              "cornerRadius": 10,
+              "fill": "$primary",
+              "padding": [8, 16],
+              "children": [
+                { "type": "text", "id": "DUYbi", "name": "Save Label", "content": "Save", "fill": "$primary-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "600" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "t6YkU",
+      "name": "Chat - Conversation",
+      "x": 450,
+      "y": -10,
+      "width": 390,
+      "height": 844,
+      "clip": true,
+      "layout": "vertical",
+      "fill": "$bg-base-100",
+      "children": [
+        { "type": "ref", "id": "p2fhe9", "name": "Top Bar", "ref": "ufNx6" },
+        {
+          "type": "frame",
+          "id": "NpjPP",
+          "name": "Provider Switcher",
+          "width": "fill_container",
+          "fill": "$bg-base-100",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "padding": [10, 16],
+          "stroke": "$bg-base-300",
+          "strokeWidth": { "bottom": 1 },
+          "children": [
+            {
+              "type": "frame",
+              "id": "fq9jq",
+              "name": "Provider Select",
+              "cornerRadius": 10,
+              "fill": "$bg-base-200",
+              "gap": 8,
+              "padding": [8, 12],
+              "alignItems": "center",
+              "children": [
+                { "type": "ellipse", "id": "DH16o", "name": "Dot", "width": 8, "height": 8, "fill": "$primary" },
+                { "type": "text", "id": "cNTbE", "name": "Provider Name", "content": "GLM 4.7 Flash", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "500" },
+                { "type": "icon", "id": "jiCSD", "name": "Chevron", "library": "lucide", "icon": "chevron-down", "width": 14, "height": 14, "fill": "$text-muted" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QELyv",
+              "name": "Keys Btn",
+              "cornerRadius": 8,
+              "padding": 8,
+              "children": [
+                { "type": "icon", "id": "e4GM6", "name": "Keys Icon", "library": "lucide", "icon": "key-round", "width": 18, "height": 18, "fill": "$text-muted" }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "F0iC2W",
+          "name": "Messages",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 16,
+          "clip": true,
+          "children": [
+            {
+              "type": "frame",
+              "id": "HVwVs",
+              "name": "Assistant Row",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TnGsX",
+                  "name": "Avatar",
+                  "width": 28,
+                  "height": 28,
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "icon", "id": "flCDy", "name": "Avatar Icon", "library": "lucide", "icon": "sparkles", "width": 16, "height": 16, "fill": "$primary" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dJi5O",
+                  "name": "Bubble",
+                  "width": 272,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [10, 14],
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "children": [
+                    { "type": "text", "id": "RkT4b", "name": "Text", "content": "Hey! Looks like a busy week. Want help turning “Prepare Q3 report” into concrete steps?", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "O41tQ",
+              "name": "User Row",
+              "width": "fill_container",
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VzDBI",
+                  "name": "Bubble",
+                  "width": 220,
+                  "layout": "vertical",
+                  "padding": [10, 14],
+                  "cornerRadius": 14,
+                  "fill": "$primary",
+                  "children": [
+                    { "type": "text", "id": "t43www", "name": "Text", "content": "Yes, break it into steps", "fill": "$primary-content", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RbLMq",
+              "name": "Assistant Row",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cbZ6x",
+                  "name": "Avatar",
+                  "width": 28,
+                  "height": 28,
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "icon", "id": "WGL1y", "name": "Avatar Icon", "library": "lucide", "icon": "sparkles", "width": 16, "height": 16, "fill": "$primary" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hL1XC",
+                  "name": "Bubble",
+                  "width": 272,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [10, 14],
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "children": [
+                    { "type": "text", "id": "RK0rO", "name": "Text", "content": "Here’s a plan:\n\n1. Gather last quarter’s metrics\n2. Draft the report outline\n3. Build supporting charts\n4. Write the executive summary\n5. Review and polish", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ZT1OT",
+              "name": "User Row",
+              "width": "fill_container",
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TMcMV",
+                  "name": "Bubble",
+                  "width": 220,
+                  "layout": "vertical",
+                  "padding": [10, 14],
+                  "cornerRadius": 14,
+                  "fill": "$primary",
+                  "children": [
+                    { "type": "text", "id": "pmgIp", "name": "Text", "content": "Which one should I do first?", "fill": "$primary-content", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wWzfK",
+              "name": "Assistant Row",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "O6HMy",
+                  "name": "Avatar",
+                  "width": 28,
+                  "height": 28,
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "icon", "id": "MUwjV", "name": "Avatar Icon", "library": "lucide", "icon": "sparkles", "width": 16, "height": 16, "fill": "$primary" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "co1Ir",
+                  "name": "Bubble",
+                  "width": 272,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [10, 14],
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "children": [
+                    { "type": "text", "id": "V1RP5c", "name": "Text", "content": "Start by gathering last quarter’s metrics — everything else depends on those numbers.", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" },
+                    {
+                      "type": "frame",
+                      "id": "UHkCl",
+                      "name": "Generating",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        { "type": "icon", "id": "EkcPS", "name": "Spinner", "library": "lucide", "icon": "loader-circle", "width": 12, "height": 12, "fill": "$primary" },
+                        { "type": "text", "id": "iK3QK", "name": "Gen Label", "content": "Generating…", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 11, "fontWeight": "500" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "fdYBZ",
+          "name": "Input Bar",
+          "width": "fill_container",
+          "fill": "$bg-base-100",
+          "gap": 8,
+          "padding": [10, 12],
+          "alignItems": "center",
+          "stroke": "$bg-base-300",
+          "strokeWidth": { "top": 1 },
+          "children": [
+            {
+              "type": "frame",
+              "id": "Y8yai",
+              "name": "Field",
+              "width": "fill_container",
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$bg-base-200",
+              "padding": [0, 14],
+              "alignItems": "center",
+              "children": [
+                { "type": "text", "id": "F9nCU", "name": "Placeholder", "content": "Message Faz AI…", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z9o2wW",
+              "name": "Send",
+              "width": 40,
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$primary",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                { "type": "icon", "id": "CrwAW", "name": "Send Icon", "library": "lucide", "icon": "arrow-up", "width": 20, "height": 20, "fill": "$primary-content" }
+              ]
+            }
+          ]
+        },
+        { "type": "ref", "id": "Cyesm", "name": "Dock", "ref": "NtXRQ" }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "IrO4J",
+      "name": "Chat - Empty",
+      "x": 920,
+      "y": -10,
+      "width": 390,
+      "height": 844,
+      "clip": true,
+      "layout": "vertical",
+      "fill": "$bg-base-100",
+      "children": [
+        { "type": "ref", "id": "suH9N", "name": "Top Bar", "ref": "ufNx6" },
+        {
+          "type": "frame",
+          "id": "gNVdX",
+          "name": "Empty Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "xVzxU",
+              "name": "Cluster",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 18,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "b5iVy",
+                  "name": "Icon Circle",
+                  "width": 76,
+                  "height": 76,
+                  "cornerRadius": 38,
+                  "fill": "$bg-base-200",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    { "type": "icon", "id": "z3nRPb", "name": "Sparkles", "library": "lucide", "icon": "sparkles", "width": 36, "height": 36, "fill": "$primary" }
+                  ]
+                },
+                { "type": "text", "id": "h06Ahv", "name": "Heading", "content": "Chat with your AI", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 22, "fontWeight": "700", "textAlign": "center", "textGrowth": "fixed-width", "width": "fill_container" },
+                { "type": "text", "id": "Ktr93", "name": "Subtext", "content": "Ask anything. Your API key stays on this device.", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal", "lineHeight": 1.5, "textAlign": "center", "textGrowth": "fixed-width", "width": "fill_container" },
+                {
+                  "type": "frame",
+                  "id": "LP4T7",
+                  "name": "Chips",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sbLW6",
+                      "name": "Plan my week",
+                      "cornerRadius": 20,
+                      "fill": "$bg-base-200",
+                      "padding": [8, 14],
+                      "children": [
+                        { "type": "text", "id": "qtzXS", "name": "Plan my week Label", "content": "Plan my week", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "500" }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c3kB9",
+                      "name": "Summarize inbox",
+                      "cornerRadius": 20,
+                      "fill": "$bg-base-200",
+                      "padding": [8, 14],
+                      "children": [
+                        { "type": "text", "id": "hGcNX", "name": "Summarize inbox Label", "content": "Summarize inbox", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "500" }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "v7Yw0",
+                      "name": "Draft a goal",
+                      "cornerRadius": 20,
+                      "fill": "$bg-base-200",
+                      "padding": [8, 14],
+                      "children": [
+                        { "type": "text", "id": "UkESu", "name": "Draft a goal Label", "content": "Draft a goal", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "500" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "O3oor4",
+          "name": "Input Bar",
+          "width": "fill_container",
+          "fill": "$bg-base-100",
+          "gap": 8,
+          "padding": [10, 12],
+          "alignItems": "center",
+          "stroke": "$bg-base-300",
+          "strokeWidth": { "top": 1 },
+          "children": [
+            {
+              "type": "frame",
+              "id": "N1WAq7",
+              "name": "Field",
+              "width": "fill_container",
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$bg-base-200",
+              "padding": [0, 14],
+              "alignItems": "center",
+              "children": [
+                { "type": "text", "id": "CpCkp", "name": "Placeholder", "content": "Message Faz AI…", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "normal" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zCm9Z",
+              "name": "Send",
+              "width": 40,
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$primary",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                { "type": "icon", "id": "FzE9Y", "name": "Send Icon", "library": "lucide", "icon": "arrow-up", "width": 20, "height": 20, "fill": "$primary-content" }
+              ]
+            }
+          ]
+        },
+        { "type": "ref", "id": "jeQXK", "name": "Dock", "ref": "NtXRQ" }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "KzA6O",
+      "name": "API Keys",
+      "x": 1390,
+      "y": -10,
+      "width": 390,
+      "height": 844,
+      "clip": true,
+      "layout": "vertical",
+      "fill": "$bg-base-100",
+      "children": [
+        { "type": "ref", "id": "M7aKn8", "name": "Top Bar", "ref": "ufNx6" },
+        {
+          "type": "frame",
+          "id": "xHHBJ",
+          "name": "Keys Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "FfDjD",
+              "name": "Header",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                { "type": "text", "id": "KqDEY", "name": "Title", "content": "AI Keys", "fill": "$text-base-content", "fontFamily": "Inter", "fontSize": 22, "fontWeight": "700" },
+                { "type": "text", "id": "XegBN", "name": "Subtitle", "content": "Connect a provider to chat. Keys are stored only on this device.", "fill": "$text-muted", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "normal", "lineHeight": 1.45, "textGrowth": "fixed-width", "width": "fill_container" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "es3Ve",
+              "name": "Cards",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                { "type": "ref", "id": "XrLJi", "name": "Zhipu GLM", "ref": "CpMwG", "width": "fill_container", "descendants": { "rnfdg": { "fill": "#3B5BFE" }, "eJxeD": { "content": "Z" }, "fbXWa": { "content": "Zhipu GLM" }, "HUpwv": { "content": "glm-4.7-flash" }, "tKcvG": { "enabled": true }, "S2r8W": { "enabled": false }, "I23AjD": { "content": "●●●●●●●●●●●●●●", "letterSpacing": 2 }, "l1qNJ": { "enabled": false }, "PsQlx": { "enabled": true } } },
+                { "type": "ref", "id": "fwXV2", "name": "Anthropic", "ref": "CpMwG", "width": "fill_container", "descendants": { "rnfdg": { "fill": "#D97757" }, "eJxeD": { "content": "A" }, "fbXWa": { "content": "Anthropic" }, "HUpwv": { "content": "claude-3-5-sonnet" }, "tKcvG": { "enabled": true }, "S2r8W": { "enabled": false }, "I23AjD": { "content": "●●●●●●●●●●●●●●", "letterSpacing": 2 }, "l1qNJ": { "enabled": false }, "PsQlx": { "enabled": true } } },
+                { "type": "ref", "id": "nWEiA", "name": "OpenAI", "ref": "CpMwG", "width": "fill_container", "descendants": { "rnfdg": { "fill": "#10A37F" }, "eJxeD": { "content": "O" }, "fbXWa": { "content": "OpenAI" }, "HUpwv": { "content": "gpt-4o-mini" }, "tKcvG": { "enabled": false }, "S2r8W": { "enabled": true }, "I23AjD": { "content": "Paste API key", "letterSpacing": 0 }, "l1qNJ": { "enabled": true }, "PsQlx": { "enabled": false } } }
+              ]
+            }
+          ]
+        },
+        { "type": "ref", "id": "bxZAT", "name": "Dock", "ref": "NtXRQ" }
+      ]
+    }
+  ]
+}
