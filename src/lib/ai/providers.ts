@@ -8,6 +8,7 @@ export interface Provider {
   protocol: Protocol;
   baseUrl: string;
   defaultModel: string;
+  models: string[];
   browserCompatible: boolean;
   docsUrl: string;
 }
@@ -19,6 +20,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'openai',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     defaultModel: 'glm-4.7-flash',
+    models: ['glm-4.7-flash', 'glm-4-flash-250414', 'glm-4.6', 'glm-4.7'],
     browserCompatible: true,
     docsUrl: 'https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys',
   },
@@ -28,6 +30,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
     defaultModel: 'claude-3-5-sonnet-latest',
+    models: ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest', 'claude-3-opus-latest'],
     browserCompatible: true,
     docsUrl: 'https://console.anthropic.com/settings/keys',
   },
@@ -37,6 +40,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'openai',
     baseUrl: 'https://api.groq.com/openai/v1',
     defaultModel: 'llama-3.3-70b-versatile',
+    models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
     browserCompatible: true,
     docsUrl: 'https://console.groq.com/keys',
   },
@@ -46,6 +50,12 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'openai',
     baseUrl: 'https://openrouter.ai/api/v1',
     defaultModel: 'openai/gpt-4o-mini',
+    models: [
+      'openai/gpt-4o-mini',
+      'anthropic/claude-3.5-haiku',
+      'google/gemini-flash-1.5',
+      'meta-llama/llama-3.3-70b-instruct',
+    ],
     browserCompatible: true,
     docsUrl: 'https://openrouter.ai/keys',
   },
@@ -55,6 +65,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'openai',
     baseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
+    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'],
     browserCompatible: false,
     docsUrl: 'https://platform.openai.com/api-keys',
   },

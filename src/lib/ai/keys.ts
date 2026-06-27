@@ -1,6 +1,7 @@
 import { PROVIDER_LIST, type ProviderId, type Provider } from './providers';
 
 const KEY_PREFIX = 'faz:ai:key:';
+const MODEL_PREFIX = 'faz:ai:model:';
 const LAST_PROVIDER_KEY = 'faz:ai:lastProvider';
 
 export function getApiKey(id: ProviderId): string {
@@ -38,4 +39,12 @@ export function getLastProviderId(): ProviderId | null {
 
 export function setLastProviderId(id: ProviderId): void {
   localStorage.setItem(LAST_PROVIDER_KEY, id);
+}
+
+export function getModel(id: ProviderId): string | null {
+  return localStorage.getItem(MODEL_PREFIX + id);
+}
+
+export function setModel(id: ProviderId, model: string): void {
+  localStorage.setItem(MODEL_PREFIX + id, model);
 }
