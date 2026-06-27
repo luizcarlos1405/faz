@@ -122,6 +122,8 @@
                 </div>
               </div>
             {:else}
+              {@const isLast = i === ctrl.messages.length - 1}
+              {@const isActive = ctrl.streaming && isLast}
               <div class="flex gap-2.5 items-end">
                 <div
                   class="size-7 rounded-full bg-base-200 flex items-center justify-center shrink-0"
@@ -129,11 +131,45 @@
                   <Sparkles class="size-4 text-primary" />
                 </div>
                 <div
-                  class="max-w-[80%] bg-base-200 rounded-2xl px-3.5 py-2.5 whitespace-pre-wrap text-sm"
+                  class="max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm {msg.error
+                    ? 'bg-warning/15'
+                    : 'bg-base-200'}"
                 >
-                  {msg.content}
-                  {#if ctrl.streaming && i === ctrl.messages.length - 1}
-                    <LoaderCircle class="size-3 animate-spin inline ml-1 align-middle" />
+                  {#if msg.error}
+                    <div class="flex items-start gap-1.5">
+                      <AlertTriangle class="size-4 shrink-0 text-warning mt-0.5" />
+                      <span class="whitespace-pre-wrap">{msg.content}</span>
+                    </div>
+                  {:else if msg.reasoning}
+                    <details open={isActive && !msg.content}>
+                      <summary class="text-xs text-base-content/50 cursor-pointer">
+                        {isActive && !msg.content ? 'Thinking…' : 'Thought process'}
+                      </summary>
+                      <div
+                        class="mt-1 text-xs text-base-content/40 italic whitespace-pre-wrap border-l-2 border-base-300 pl-2"
+                      >
+                        {msg.reasoning}
+                      </div>
+                    </details>
+                    {#if msg.content}
+                      <div class="whitespace-pre-wrap mt-1">
+                        {msg.content}
+                        {#if isActive}<LoaderCircle
+                            class="size-3 animate-spin inline ml-1 align-middle"
+                          />{/if}
+                      </div>
+                    {/if}
+                  {:else if msg.content}
+                    <div class="whitespace-pre-wrap">
+                      {msg.content}
+                      {#if isActive}<LoaderCircle
+                          class="size-3 animate-spin inline ml-1 align-middle"
+                        />{/if}
+                    </div>
+                  {:else if isActive}
+                    <div class="flex items-center gap-2 text-base-content/50">
+                      <LoaderCircle class="size-3 animate-spin" /> Thinking…
+                    </div>
                   {/if}
                 </div>
               </div>
@@ -142,15 +178,6 @@
         </div>
       {/if}
     </div>
-
-    {#if ctrl.error}
-      <div class="px-4 pb-1">
-        <div class="alert alert-error py-2 px-3 text-sm gap-2">
-          <AlertTriangle class="size-4 shrink-0" />
-          <span class="flex-1">{ctrl.error}</span>
-        </div>
-      </div>
-    {/if}
 
     <div class="flex items-center gap-2 p-3 border-t border-base-300 bg-base-100">
       <input
