@@ -4,8 +4,16 @@ import {
   getConfiguredProviders,
   getLastProviderId,
   setLastProviderId,
+  getModel,
+  setModel,
 } from '$lib/ai/keys';
 import { getProvider, type ProviderId, type Provider } from '$lib/ai/providers';
+
+function effectiveModel(id: ProviderId): string {
+  const provider = getProvider(id);
+  const stored = getModel(id);
+  return stored && provider.models.includes(stored) ? stored : provider.defaultModel;
+}
 
 export function getChatPageState() {
   let messages = $state<ChatMessage[]>([]);
@@ -13,10 +21,13 @@ export function getChatPageState() {
   let streaming = $state(false);
   let error = $state<string | null>(null);
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
+  let modelId = $state(effectiveModel(providerId));
   let controller: AbortController | null = null;
 
   const configuredProviders = $derived(getConfiguredProviders());
   const showSwitch = $derived(configuredProviders.length >= 2);
+  const currentModels = $derived(getProvider(providerId).models);
+  const showModelSwitch = $derived(currentModels.length >= 2);
 
   async function send(): Promise<void> {
     const text = input.trim();
@@ -37,7 +48,7 @@ export function getChatPageState() {
       await streamChat({
         providerId,
         apiKey: key,
-        model: getProvider(providerId).defaultModel,
+        model: modelId,
         messages: requestMessages,
         signal: controller.signal,
         onDelta: (delta) => {
@@ -66,6 +77,12 @@ export function getChatPageState() {
   function switchProvider(id: ProviderId): void {
     providerId = id;
     setLastProviderId(id);
+    modelId = effectiveModel(id);
+  }
+
+  function switchModel(model: string): void {
+    modelId = model;
+    setModel(providerId, model);
   }
 
   function clear(): void {
@@ -93,18 +110,28 @@ export function getChatPageState() {
     get providerId() {
       return providerId;
     },
+    get modelId() {
+      return modelId;
+    },
     get currentProvider(): Provider {
       return getProvider(providerId);
     },
     get configuredProviders() {
       return configuredProviders;
     },
+    get currentModels() {
+      return currentModels;
+    },
     get showSwitch() {
       return showSwitch;
+    },
+    get showModelSwitch() {
+      return showModelSwitch;
     },
     send,
     stop,
     switchProvider,
+    switchModel,
     clear,
   };
 }

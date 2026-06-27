@@ -52,19 +52,36 @@
   </div>
 {:else}
   <div class="flex flex-col h-full">
-    {#if ctrl.showSwitch}
+    {#if ctrl.showSwitch || ctrl.showModelSwitch}
       <div
         class="flex items-center justify-between gap-2 px-4 py-2 border-b border-base-300 bg-base-100"
       >
-        <select
-          class="select select-bordered select-sm w-auto"
-          value={ctrl.providerId}
-          onchange={(e) => ctrl.switchProvider(e.currentTarget.value as ProviderId)}
-        >
-          {#each ctrl.configuredProviders as p (p.id)}
-            <option value={p.id}>{p.label}</option>
-          {/each}
-        </select>
+        <div class="flex items-center gap-2">
+          {#if ctrl.showSwitch}
+            <select
+              class="select select-bordered select-sm w-auto"
+              value={ctrl.providerId}
+              onchange={(e) => ctrl.switchProvider(e.currentTarget.value as ProviderId)}
+              aria-label="Provider"
+            >
+              {#each ctrl.configuredProviders as p (p.id)}
+                <option value={p.id}>{p.label}</option>
+              {/each}
+            </select>
+          {/if}
+          {#if ctrl.showModelSwitch}
+            <select
+              class="select select-bordered select-sm w-auto"
+              value={ctrl.modelId}
+              onchange={(e) => ctrl.switchModel(e.currentTarget.value)}
+              aria-label="Model"
+            >
+              {#each ctrl.currentModels as m (m)}
+                <option value={m}>{m}</option>
+              {/each}
+            </select>
+          {/if}
+        </div>
         <a
           class="btn btn-ghost btn-sm btn-circle"
           href={resolve('/settings/keys')}
