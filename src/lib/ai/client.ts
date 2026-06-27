@@ -16,12 +16,17 @@ export class ChatError extends Error {
   }
 }
 
+export interface StreamDelta {
+  content: string;
+  reasoning: string;
+}
+
 export interface StreamChatOptions {
   providerId: ProviderId;
   apiKey: string;
   model: string;
   messages: ChatMessage[];
-  onDelta: (text: string) => void;
+  onDelta: (delta: StreamDelta) => void;
   signal?: AbortSignal;
 }
 
@@ -86,7 +91,9 @@ export async function streamChat(opts: StreamChatOptions): Promise<void> {
         const data = line.slice(5).trim();
         const result = parseDataPayload(provider.protocol, data);
         if (!result) continue;
-        if (result.text) opts.onDelta(result.text);
+        if (result.content || result.reasoning) {
+          opts.onDelta({ content: result.content, reasoning: result.reasoning });
+        }
         if (result.done) return;
       }
     }

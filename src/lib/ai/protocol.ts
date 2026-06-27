@@ -3,6 +3,14 @@ import type { Protocol } from './providers';
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
+  reasoning?: string;
+  error?: boolean;
+}
+
+export interface StreamDelta {
+  content: string;
+  reasoning: string;
+  done: boolean;
 }
 
 const ANTHROPIC_MAX_TOKENS = 4096;
@@ -27,8 +35,10 @@ export function buildBody(
   messages: ChatMessage[],
   model: string,
 ): Record<string, unknown> {
+  // Only role/content are part of the request — reasoning/error are UI-only.
+  const clean = messages.map((m) => ({ role: m.role, content: m.content }));
   if (protocol === 'anthropic') {
-    const rest = [...messages];
+    const rest = [...clean];
     let system: string | undefined;
     if (rest[0]?.role === 'system') {
       system = rest.shift()!.content;
@@ -42,36 +52,41 @@ export function buildBody(
     if (system) body.system = system;
     return body;
   }
-  return { model, messages, stream: true };
+  return { model, messages: clean, stream: true };
 }
 
 export function isDoneMarker(data: string): boolean {
   return data === '[DONE]';
 }
 
-export function parseOpenAIDelta(parsed: Record<string, any>): { text: string; done: boolean } {
-  const choice = parsed.choices?.[0];
-  const text = typeof choice?.delta?.content === 'string' ? choice.delta.content : '';
-  return { text, done: false };
+export function parseOpenAIDelta(parsed: Record<string, any>): StreamDelta {
+  const delta = parsed.choices?.[0]?.delta;
+  const content = typeof delta?.content === 'string' ? delta.content : '';
+  const reasoning = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : '';
+  return { content, reasoning, done: false };
 }
 
-export function parseAnthropicDelta(parsed: Record<string, any>): { text: string; done: boolean } {
+export function parseAnthropicDelta(parsed: Record<string, any>): StreamDelta {
   if (parsed.type === 'content_block_delta') {
-    const text = typeof parsed.delta?.text === 'string' ? parsed.delta.text : '';
-    return { text, done: false };
+    const delta = parsed.delta;
+    if (delta?.type === 'thinking_delta') {
+      return { content: '', reasoning: delta.thinking ?? '', done: false };
+    }
+    return {
+      content: typeof delta?.text === 'string' ? delta.text : '',
+      reasoning: '',
+      done: false,
+    };
   }
   if (parsed.type === 'message_stop') {
-    return { text: '', done: true };
+    return { content: '', reasoning: '', done: true };
   }
-  return { text: '', done: false };
+  return { content: '', reasoning: '', done: false };
 }
 
-export function parseDataPayload(
-  protocol: Protocol,
-  data: string,
-): { text: string; done: boolean } | null {
+export function parseDataPayload(protocol: Protocol, data: string): StreamDelta | null {
   if (isDoneMarker(data)) {
-    return { text: '', done: true };
+    return { content: '', reasoning: '', done: true };
   }
   let parsed: Record<string, any>;
   try {

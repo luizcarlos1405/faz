@@ -67,24 +67,52 @@ describe('buildBody', () => {
     ];
     expect(buildBody('openai', withSystem, 'glm-4.7-flash').messages).toEqual(withSystem);
   });
+
+  it('strips reasoning/error from the request body', () => {
+    const withExtras = [
+      { role: 'assistant' as const, content: 'hi', reasoning: 'secret', error: true },
+    ];
+    expect(buildBody('openai', withExtras, 'm').messages).toEqual([
+      { role: 'assistant', content: 'hi' },
+    ]);
+  });
 });
 
 describe('parseOpenAIDelta', () => {
   it('extracts content text', () => {
     const parsed = { choices: [{ delta: { content: 'Hello' } }] };
-    expect(parseOpenAIDelta(parsed)).toEqual({ text: 'Hello', done: false });
+    expect(parseOpenAIDelta(parsed)).toEqual({ content: 'Hello', reasoning: '', done: false });
   });
 
-  it('returns empty text when no content', () => {
+  it('extracts reasoning_content separately', () => {
+    const parsed = { choices: [{ delta: { reasoning_content: 'thinking…' } }] };
+    expect(parseOpenAIDelta(parsed)).toEqual({ content: '', reasoning: 'thinking…', done: false });
+  });
+
+  it('extracts both content and reasoning when present', () => {
+    const parsed = { choices: [{ delta: { content: 'A', reasoning_content: 'B' } }] };
+    expect(parseOpenAIDelta(parsed)).toEqual({ content: 'A', reasoning: 'B', done: false });
+  });
+
+  it('returns empty strings when no content', () => {
     const parsed = { choices: [{ delta: { role: 'assistant' } }] };
-    expect(parseOpenAIDelta(parsed).text).toBe('');
+    expect(parseOpenAIDelta(parsed).content).toBe('');
+    expect(parseOpenAIDelta(parsed).reasoning).toBe('');
   });
 });
 
 describe('parseAnthropicDelta', () => {
-  it('extracts text from content_block_delta', () => {
-    const parsed = { type: 'content_block_delta', delta: { text: 'Hi' } };
-    expect(parseAnthropicDelta(parsed)).toEqual({ text: 'Hi', done: false });
+  it('extracts text from a text content_block_delta', () => {
+    const parsed = { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hi' } };
+    expect(parseAnthropicDelta(parsed)).toEqual({ content: 'Hi', reasoning: '', done: false });
+  });
+
+  it('extracts thinking from a thinking_delta', () => {
+    const parsed = {
+      type: 'content_block_delta',
+      delta: { type: 'thinking_delta', thinking: 'musing' },
+    };
+    expect(parseAnthropicDelta(parsed)).toEqual({ content: '', reasoning: 'musing', done: false });
   });
 
   it('signals done on message_stop', () => {
@@ -92,13 +120,21 @@ describe('parseAnthropicDelta', () => {
   });
 
   it('ignores other event types', () => {
-    expect(parseAnthropicDelta({ type: 'message_start' })).toEqual({ text: '', done: false });
+    expect(parseAnthropicDelta({ type: 'message_start' })).toEqual({
+      content: '',
+      reasoning: '',
+      done: false,
+    });
   });
 });
 
 describe('parseDataPayload', () => {
   it('handles the [DONE] marker', () => {
-    expect(parseDataPayload('openai', '[DONE]')).toEqual({ text: '', done: true });
+    expect(parseDataPayload('openai', '[DONE]')).toEqual({
+      content: '',
+      reasoning: '',
+      done: true,
+    });
   });
 
   it('returns null on invalid JSON', () => {
@@ -107,12 +143,19 @@ describe('parseDataPayload', () => {
 
   it('parses an openai content chunk', () => {
     const data = JSON.stringify({ choices: [{ delta: { content: 'x' } }] });
-    expect(parseDataPayload('openai', data)).toEqual({ text: 'x', done: false });
+    expect(parseDataPayload('openai', data)).toEqual({ content: 'x', reasoning: '', done: false });
   });
 
   it('parses an anthropic content chunk', () => {
-    const data = JSON.stringify({ type: 'content_block_delta', delta: { text: 'y' } });
-    expect(parseDataPayload('anthropic', data)).toEqual({ text: 'y', done: false });
+    const data = JSON.stringify({
+      type: 'content_block_delta',
+      delta: { type: 'text_delta', text: 'y' },
+    });
+    expect(parseDataPayload('anthropic', data)).toEqual({
+      content: 'y',
+      reasoning: '',
+      done: false,
+    });
   });
 });
 
