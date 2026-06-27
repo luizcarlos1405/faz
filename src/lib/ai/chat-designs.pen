@@ -2008,6 +2008,588 @@
           "ref": "NtXRQ"
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "agScr",
+      "name": "Chat - Agent Mode",
+      "x": 2330,
+      "y": -10,
+      "width": 390,
+      "height": 844,
+      "clip": true,
+      "layout": "vertical",
+      "fill": "$bg-base-100",
+      "children": [
+        {
+          "type": "ref",
+          "id": "agTop",
+          "name": "Top Bar",
+          "ref": "ufNx6"
+        },
+        {
+          "type": "frame",
+          "id": "agRow",
+          "name": "Switcher",
+          "width": "fill_container",
+          "layout": "horizontal",
+          "padding": [
+            10,
+            16
+          ],
+          "gap": 8,
+          "alignItems": "center",
+          "justifyContent": "space_between",
+          "fill": "$bg-base-100",
+          "stroke": "$bg-base-300",
+          "strokeWidth": {
+            "bottom": 1
+          },
+          "children": [
+            {
+              "type": "frame",
+              "id": "agProv",
+              "name": "Provider Select",
+              "padding": [
+                7,
+                10
+              ],
+              "cornerRadius": 10,
+              "fill": "$bg-base-200",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "agProvT",
+                  "name": "ProvName",
+                  "content": "GLM",
+                  "fill": "$text-base-content",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "icon",
+                  "id": "agProvC",
+                  "name": "ProvChev",
+                  "library": "lucide",
+                  "icon": "chevron-down",
+                  "width": 14,
+                  "height": 14,
+                  "fill": "$text-muted"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "agMod",
+              "name": "Model Select",
+              "width": "fill_container",
+              "padding": [
+                7,
+                12
+              ],
+              "cornerRadius": 10,
+              "fill": "$bg-base-200",
+              "gap": 6,
+              "alignItems": "center",
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "agModL",
+                  "name": "ModelLeft",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "agModI",
+                      "name": "ModelIcon",
+                      "library": "lucide",
+                      "icon": "sparkles",
+                      "width": 13,
+                      "height": 13,
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "agModT",
+                      "name": "ModelName",
+                      "content": "glm-4.7-flash",
+                      "fill": "$text-base-content",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "agModC",
+                  "name": "ModelChev",
+                  "library": "lucide",
+                  "icon": "chevron-down",
+                  "width": 14,
+                  "height": 14,
+                  "fill": "$text-muted"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "agKey",
+              "name": "KeysBtn",
+              "padding": 8,
+              "cornerRadius": 8,
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "agKeyI",
+                  "name": "KeysIcon",
+                  "library": "lucide",
+                  "icon": "key-round",
+                  "width": 18,
+                  "height": 18,
+                  "fill": "$text-muted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "agMsgs",
+          "name": "Messages",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 16,
+          "clip": true,
+          "children": [
+            {
+              "type": "frame",
+              "id": "agUsr",
+              "name": "User Row",
+              "width": "fill_container",
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "agUsrB",
+                  "name": "User Bubble",
+                  "width": 230,
+                  "layout": "vertical",
+                  "padding": [
+                    10,
+                    14
+                  ],
+                  "cornerRadius": 14,
+                  "fill": "$primary",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "agUsrT",
+                      "name": "Text",
+                      "content": "Add “Buy milk” to today, and delete the “old leftovers” task",
+                      "fill": "$primary-content",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "lineHeight": 1.45,
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "agAR",
+              "name": "Assistant Row",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "agAv",
+                  "name": "Avatar",
+                  "width": 28,
+                  "height": 28,
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "agAvI",
+                      "name": "AvIcon",
+                      "library": "lucide",
+                      "icon": "sparkles",
+                      "width": 16,
+                      "height": 16,
+                      "fill": "$primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "agBub",
+                  "name": "Bubble",
+                  "width": 282,
+                  "layout": "vertical",
+                  "padding": [
+                    10,
+                    14
+                  ],
+                  "cornerRadius": 14,
+                  "fill": "$bg-base-200",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "agLog",
+                      "name": "Action Log",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "agRCh",
+                          "name": "Read Chip",
+                          "width": "fill_container",
+                          "layout": "horizontal",
+                          "padding": [
+                            6,
+                            10
+                          ],
+                          "cornerRadius": 8,
+                          "fill": "$bg-base-100",
+                          "stroke": "$bg-base-300",
+                          "strokeWidth": 1,
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "agRcI",
+                              "name": "Read Icon",
+                              "library": "lucide",
+                              "icon": "search",
+                              "width": 13,
+                              "height": 13,
+                              "fill": "$text-muted"
+                            },
+                            {
+                              "type": "text",
+                              "id": "agRcT",
+                              "name": "Read Text",
+                              "content": "Read 4 tasks",
+                              "fill": "$text-muted",
+                              "fontFamily": "Inter",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "agCCh",
+                          "name": "Create Chip",
+                          "width": "fill_container",
+                          "layout": "horizontal",
+                          "padding": [
+                            6,
+                            10
+                          ],
+                          "cornerRadius": 8,
+                          "fill": "$bg-base-100",
+                          "stroke": "$bg-base-300",
+                          "strokeWidth": 1,
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "agCcI",
+                              "name": "Create Icon",
+                              "library": "lucide",
+                              "icon": "check",
+                              "width": 13,
+                              "height": 13,
+                              "fill": "$success"
+                            },
+                            {
+                              "type": "text",
+                              "id": "agCcT",
+                              "name": "Create Text",
+                              "content": "Created task: Buy milk",
+                              "fill": "$text-base-content",
+                              "fontFamily": "Inter",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "agDCh",
+                          "name": "Delete Chip",
+                          "width": "fill_container",
+                          "layout": "horizontal",
+                          "padding": [
+                            6,
+                            10
+                          ],
+                          "cornerRadius": 8,
+                          "fill": "$bg-base-100",
+                          "stroke": "$bg-base-300",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "agDL",
+                              "name": "Delete Left",
+                              "layout": "horizontal",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "agDlI",
+                                  "name": "Trash Icon",
+                                  "library": "lucide",
+                                  "icon": "trash-2",
+                                  "width": 13,
+                                  "height": 13,
+                                  "fill": "#EF4444"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "agDlT",
+                                  "name": "Delete Text",
+                                  "content": "Deleted: old leftovers",
+                                  "fill": "$text-base-content",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "agUbtn",
+                              "name": "Undo Btn",
+                              "layout": "horizontal",
+                              "padding": [
+                                3,
+                                8
+                              ],
+                              "cornerRadius": 6,
+                              "fill": "$bg-base-100",
+                              "stroke": "$bg-base-300",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "agUbtnI",
+                                  "name": "Undo Icon",
+                                  "library": "lucide",
+                                  "icon": "rotate-ccw",
+                                  "width": 11,
+                                  "height": 11,
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "agUbtnT",
+                                  "name": "Undo Text",
+                                  "content": "Undo",
+                                  "fill": "$primary",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "agAnsw",
+                      "name": "Answer",
+                      "content": "Done — added Buy milk and deleted old leftovers. Tap Undo on the delete if it was a mistake.",
+                      "fill": "$text-base-content",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "lineHeight": 1.45,
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "agTog",
+          "name": "Toggle Row",
+          "width": "fill_container",
+          "layout": "horizontal",
+          "padding": [
+            8,
+            12
+          ],
+          "gap": 8,
+          "alignItems": "center",
+          "justifyContent": "space_between",
+          "fill": "$bg-base-100",
+          "stroke": "$bg-base-300",
+          "strokeWidth": {
+            "top": 1
+          },
+          "children": [
+            {
+              "type": "frame",
+              "id": "agTogL",
+              "name": "Toggle Left",
+              "layout": "horizontal",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "agTogI",
+                  "name": "Toggle Icon",
+                  "library": "lucide",
+                  "icon": "zap",
+                  "width": 14,
+                  "height": 14,
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "agTogT",
+                  "name": "Toggle Label",
+                  "content": "Act on my data",
+                  "fill": "$text-base-content",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "agSw",
+              "name": "Switch (on)",
+              "width": 40,
+              "height": 22,
+              "cornerRadius": 11,
+              "fill": "$primary",
+              "layout": "horizontal",
+              "padding": 2,
+              "alignItems": "center",
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "agSwK",
+                  "name": "Knob",
+                  "width": 18,
+                  "height": 18,
+                  "fill": "$primary-content"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "agIn",
+          "name": "InputBar",
+          "width": "fill_container",
+          "layout": "horizontal",
+          "padding": [
+            10,
+            12
+          ],
+          "gap": 8,
+          "alignItems": "center",
+          "fill": "$bg-base-100",
+          "stroke": "$bg-base-300",
+          "strokeWidth": {
+            "top": 1
+          },
+          "children": [
+            {
+              "type": "frame",
+              "id": "agFld",
+              "name": "Field",
+              "width": "fill_container",
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$bg-base-200",
+              "padding": [
+                0,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "agPh",
+                  "name": "Ph",
+                  "content": "Message Faz AI…",
+                  "fill": "$text-muted",
+                  "fontFamily": "Inter",
+                  "fontSize": 14
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "agSnd",
+              "name": "Send",
+              "width": 40,
+              "height": 40,
+              "cornerRadius": 20,
+              "fill": "$primary",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "agSndI",
+                  "name": "SendIcon",
+                  "library": "lucide",
+                  "icon": "arrow-up",
+                  "width": 20,
+                  "height": 20,
+                  "fill": "$primary-content"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ref",
+          "id": "agDock",
+          "name": "Dock",
+          "ref": "NtXRQ"
+        }
+      ]
     }
   ]
 }
