@@ -55,6 +55,21 @@ export const TOOL_SPECS: ToolSpec[] = [
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
+    name: 'list_cares',
+    description: 'List all cares (recurring self-care items) with id, title, and plan count.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'get_care',
+    description: 'Get one care and its task plans (with human-readable schedules) by id.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'create_task',
     description:
       'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally attach to a goal.',

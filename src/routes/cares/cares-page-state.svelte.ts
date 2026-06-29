@@ -13,18 +13,13 @@ import {
 import { updateTasksCareForPlan } from '$lib/db/task-repo';
 import { Temporal } from '@js-temporal/polyfill';
 import { reorderItems } from '$lib/utils/reorderItems';
+import { describeRecurrence } from '$lib/engines/recurrence-wizard';
 import type { CareDoc, TaskPlan, Recurrence, OverdueBehavior } from '$lib/types';
-import {
-  RECURRENCE_TYPE,
-  INTERVAL_SUBTYPE,
-  FIXED_DAYS_SUBTYPE,
-  ISO_WEEKDAYS,
-  MONTH_SHORT_NAMES,
-} from '$lib/types';
 
-const DAY_SHORT_NAMES = ['', ...ISO_WEEKDAYS.map((e) => e.name)];
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
+
+export { describeRecurrence };
 
 export function getCaresPageState() {
   let cares = $state<CareDoc[]>([]);
@@ -231,55 +226,4 @@ export function getTaskPlanEditState(careId: string, planId: string) {
     saveAndMove,
     deletePlan,
   };
-}
-
-export function describeRecurrence(r: Recurrence): string {
-  if (r.type === RECURRENCE_TYPE.INTERVAL.value && r.subtype === INTERVAL_SUBTYPE.FIXED.value) {
-    return describeInterval(r.interval);
-  }
-  if (
-    r.type === RECURRENCE_TYPE.INTERVAL.value &&
-    r.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
-  ) {
-    return `${describeInterval(r.interval)} after last time you did it`;
-  }
-  if (
-    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
-    r.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value
-  ) {
-    return `Every ${r.daysOfWeek.map((d) => DAY_SHORT_NAMES[d]).join(' and ')}`;
-  }
-  if (
-    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
-    r.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value
-  ) {
-    const suffix = (n: number) => {
-      if (n === 1 || n === 21 || n === 31) return 'st';
-      if (n === 2 || n === 22) return 'nd';
-      if (n === 3 || n === 23) return 'rd';
-      return 'th';
-    };
-    return `Every ${r.daysOfMonth.map((d) => `${d}${suffix(d)}`).join(' and ')} of the month`;
-  }
-  if (
-    r.type === RECURRENCE_TYPE.FIXED_DAYS.value &&
-    r.subtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value
-  ) {
-    return r.dates.map(({ month, day }) => `${MONTH_SHORT_NAMES[month]} ${day}`).join(' and ');
-  }
-  return 'Unknown schedule';
-}
-
-function describeInterval(d: {
-  years?: number;
-  months?: number;
-  weeks?: number;
-  days?: number;
-}): string {
-  const parts: string[] = [];
-  if (d.years) parts.push(`${d.years} year${d.years > 1 ? 's' : ''}`);
-  if (d.months) parts.push(`${d.months} month${d.months > 1 ? 's' : ''}`);
-  if (d.weeks) parts.push(`${d.weeks} week${d.weeks > 1 ? 's' : ''}`);
-  if (d.days) parts.push(`${d.days} day${d.days > 1 ? 's' : ''}`);
-  return parts.join(' and ');
 }

@@ -25,6 +25,8 @@ import {
   markProcessed,
   updateInboxItem,
 } from '$lib/db/inbox-repo';
+import { getCare, getAllCares } from '$lib/db/care-repo';
+import { describeRecurrence } from '$lib/engines/recurrence-wizard';
 import { TASK_STATUS, GOAL_STATUS, type TaskDoc } from '$lib/types';
 
 export interface ToolUndo {
@@ -130,6 +132,30 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
     case 'list_inbox': {
       const items = (await getUnprocessed()).map((i) => ({ id: i._id, title: i.title }));
       return ok(`Read ${items.length} inbox item${items.length === 1 ? '' : 's'}`, { items });
+    }
+
+    case 'list_cares': {
+      const cares = (await getAllCares()).map((c) => ({
+        id: c._id,
+        title: c.title,
+        planCount: c.taskPlans.length,
+      }));
+      return ok(`Read ${cares.length} care${cares.length === 1 ? '' : 's'}`, { cares });
+    }
+
+    case 'get_care': {
+      const id = str(args.id);
+      const care = await getOrFail('Read care', id, () => getCare(id));
+      if ('ok' in care) return care;
+      const plans = care.taskPlans.map((tp) => ({
+        id: tp._id,
+        title: tp.title,
+        schedule: describeRecurrence(tp.recurrence),
+      }));
+      return ok(`Read care: ${care.title}`, {
+        care: { id: care._id, title: care.title },
+        plans,
+      });
     }
 
     case 'create_task': {
