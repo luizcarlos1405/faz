@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill';
 import {
   getTask,
   findTasks,
@@ -8,6 +9,7 @@ import {
   removeTask,
   restoreTask,
   getTasksByGoal,
+  updateTasksCareForPlan,
 } from '$lib/db/task-repo';
 import {
   getGoal,
@@ -25,9 +27,36 @@ import {
   markProcessed,
   updateInboxItem,
 } from '$lib/db/inbox-repo';
-import { getCare, getAllCares } from '$lib/db/care-repo';
-import { describeRecurrence } from '$lib/engines/recurrence-wizard';
-import { TASK_STATUS, GOAL_STATUS, type TaskDoc } from '$lib/types';
+import {
+  getCare,
+  getAllCares,
+  createCare,
+  updateCare,
+  removeCare,
+  restoreCare,
+  addTaskPlan,
+  updateTaskPlan,
+  removeTaskPlan,
+  moveTaskPlan,
+  markPlanDone,
+} from '$lib/db/care-repo';
+import {
+  buildRecurrence,
+  isValidRecurrence,
+  describeRecurrence,
+  type WizardRecurrenceInput,
+} from '$lib/engines/recurrence-wizard';
+import { runSchedulerNow } from '$lib/scheduler';
+import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
+import {
+  TASK_STATUS,
+  GOAL_STATUS,
+  OVERDUE_BEHAVIOR,
+  FIXED_DAYS_SUBTYPE,
+  type TaskDoc,
+  type TaskPlan,
+  type OverdueBehavior,
+} from '$lib/types';
 
 export interface ToolUndo {
   label: string;
@@ -44,6 +73,7 @@ export interface ToolResult {
 
 const TASK_STATUSES = new Set(Object.values(TASK_STATUS).map((s) => s.value));
 const GOAL_STATUSES = new Set(Object.values(GOAL_STATUS).map((s) => s.value));
+const OVERDUE_BEHAVIORS = new Set(Object.values(OVERDUE_BEHAVIOR).map((s) => s.value));
 const LIST_LIMIT = 50;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -53,6 +83,39 @@ function str(v: unknown): string {
 
 function isIsoDate(v: unknown): v is string {
   return typeof v === 'string' && ISO_DATE.test(v);
+}
+
+function todayIso(): string {
+  return Temporal.Now.plainDateISO().toString();
+}
+
+const INVALID = Symbol('invalid');
+
+function validateOverdue(v: unknown): OverdueBehavior | undefined | typeof INVALID {
+  const s = str(v);
+  if (!s) return undefined;
+  return OVERDUE_BEHAVIORS.has(s as OverdueBehavior) ? (s as OverdueBehavior) : INVALID;
+}
+
+function recurrenceFromArgs(args: Record<string, any>): WizardRecurrenceInput | null {
+  const r = args.recurrence;
+  if (!r || typeof r !== 'object') return null;
+  const scheduleType = str(r.scheduleType);
+  if (!scheduleType) return null;
+  const interval =
+    r.interval && typeof r.interval === 'object'
+      ? (r.interval as WizardRecurrenceInput['interval'])
+      : {};
+  const daysSubtype = str(r.daysSubtype) || FIXED_DAYS_SUBTYPE.WEEKDAYS.value;
+  return {
+    scheduleType: scheduleType as WizardRecurrenceInput['scheduleType'],
+    interval,
+    daysSubtype: daysSubtype as WizardRecurrenceInput['daysSubtype'],
+    daysOfWeek: Array.isArray(r.daysOfWeek) ? r.daysOfWeek : [],
+    daysOfMonth: Array.isArray(r.daysOfMonth) ? r.daysOfMonth : [],
+    yearDates: Array.isArray(r.yearDates) ? r.yearDates : [],
+    startDate: isIsoDate(r.startDate) ? r.startDate : '',
+  };
 }
 
 function ok(label: string, summary: unknown, undo?: ToolUndo): ToolResult {
@@ -158,6 +221,144 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       });
     }
 
+    case 'create_care': {
+      const title = str(args.title);
+      if (!title) return fail('Create care failed', 'title is required.');
+      const care = await createCare(title, []);
+      return ok(`Created care: ${title}`, { id: care._id, title });
+    }
+
+    case 'update_care': {
+      const id = str(args.id);
+      const title = str(args.title);
+      if (!title) return fail('Update care failed', 'title is required.');
+      const care = await getOrFail('Update care', id, () => getCare(id));
+      if ('ok' in care) return care;
+      care.title = title;
+      await updateCare(care);
+      return ok(`Renamed care: ${title}`, { id, title });
+    }
+
+    case 'delete_care': {
+      const id = str(args.id);
+      const care = await getOrFail('Delete care', id, () => getCare(id));
+      if ('ok' in care) return care;
+      await removeCare(id);
+      return ok(
+        `Deleted care: ${care.title}`,
+        { id, deleted: true },
+        {
+          label: `Restore care: ${care.title}`,
+          restore: async () => {
+            await restoreCare(care);
+          },
+        },
+      );
+    }
+
+    case 'add_task_plan': {
+      const careId = str(args.careId);
+      const title = str(args.title);
+      if (!title) return fail('Add plan failed', 'title is required.');
+      const input = recurrenceFromArgs(args);
+      if (!input || !isIsoDate(input.startDate) || !isValidRecurrence(input))
+        return fail('Add plan failed', 'recurrence is invalid or incomplete.');
+      const care = await getOrFail('Add plan', careId, () => getCare(careId));
+      if ('ok' in care) return care;
+      const recurrence = buildRecurrence(input);
+      const overdueBehavior = validateOverdue(args.overdueBehavior);
+      if (overdueBehavior === INVALID)
+        return fail(
+          'Add plan failed',
+          `Invalid overdueBehavior. Valid: ${[...OVERDUE_BEHAVIORS].join(', ')}.`,
+        );
+      const updated = await addTaskPlan(careId, { title, recurrence, overdueBehavior });
+      await runSchedulerNow();
+      bumpTaskRefresh();
+      const plan = updated.taskPlans[updated.taskPlans.length - 1];
+      return ok(`Added plan: ${title}`, {
+        careId,
+        planId: plan._id,
+        schedule: describeRecurrence(recurrence),
+      });
+    }
+
+    case 'update_task_plan': {
+      const careId = str(args.careId);
+      const planId = str(args.planId);
+      if (!planId) return fail('Update plan failed', 'planId is required.');
+      const care = await getOrFail('Update plan', careId, () => getCare(careId));
+      if ('ok' in care) return care;
+      if (!care.taskPlans.some((tp) => tp._id === planId))
+        return fail('Update plan failed', `No plan ${planId} in care ${careId}.`);
+      const updates: Partial<TaskPlan> = {};
+      const title = str(args.title);
+      if (title) updates.title = title;
+      if (args.recurrence !== undefined) {
+        const input = recurrenceFromArgs(args);
+        if (!input || !isIsoDate(input.startDate) || !isValidRecurrence(input))
+          return fail('Update plan failed', 'recurrence is invalid or incomplete.');
+        updates.recurrence = buildRecurrence(input);
+      }
+      if (args.overdueBehavior !== undefined) {
+        const ob = validateOverdue(args.overdueBehavior);
+        if (ob === INVALID)
+          return fail(
+            'Update plan failed',
+            `Invalid overdueBehavior. Valid: ${[...OVERDUE_BEHAVIORS].join(', ')}.`,
+          );
+        updates.overdueBehavior = ob;
+      }
+      await updateTaskPlan(careId, planId, updates);
+      await runSchedulerNow();
+      bumpTaskRefresh();
+      return ok(`Updated plan`, { careId, planId });
+    }
+
+    case 'delete_task_plan': {
+      const careId = str(args.careId);
+      const planId = str(args.planId);
+      const care = await getOrFail('Delete plan', careId, () => getCare(careId));
+      if ('ok' in care) return care;
+      const plan = care.taskPlans.find((tp) => tp._id === planId);
+      if (!plan) return fail('Delete plan failed', `No plan ${planId} in care ${careId}.`);
+      const snapshot: TaskPlan = { ...plan };
+      await removeTaskPlan(careId, planId);
+      return ok(
+        `Deleted plan: ${plan.title}`,
+        { careId, planId, deleted: true },
+        {
+          label: `Restore plan: ${plan.title}`,
+          restore: async () => {
+            const cur = await getCare(careId);
+            cur.taskPlans.push(snapshot);
+            await updateCare(cur);
+            await runSchedulerNow();
+            bumpTaskRefresh();
+          },
+        },
+      );
+    }
+
+    case 'move_task_plan': {
+      const planId = str(args.planId);
+      const fromCareId = str(args.fromCareId);
+      const toCareId = str(args.toCareId);
+      if (!planId || !fromCareId || !toCareId)
+        return fail('Move plan failed', 'planId, fromCareId, and toCareId are required.');
+      if (fromCareId === toCareId)
+        return fail('Move plan failed', 'fromCareId and toCareId must differ.');
+      const fromCare = await getOrFail('Move plan', fromCareId, () => getCare(fromCareId));
+      if ('ok' in fromCare) return fromCare;
+      if (!fromCare.taskPlans.some((tp) => tp._id === planId))
+        return fail('Move plan failed', `No plan ${planId} in care ${fromCareId}.`);
+      await moveTaskPlan(fromCareId, toCareId, planId);
+      await updateTasksCareForPlan(planId, toCareId);
+      await runSchedulerNow();
+      bumpTaskRefresh();
+      return ok(`Moved plan to another care`, { planId, fromCareId, toCareId });
+    }
+
     case 'create_task': {
       const title = str(args.title);
       if (!title) return fail('Create task failed', 'title is required.');
@@ -196,6 +397,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const task = await getOrFail('Complete task', id, () => getTask(id));
       if ('ok' in task) return task;
       const done = await completeTask(id);
+      if (done.taskPlanId) await markPlanDone(done.taskPlanId, todayIso()).catch(() => {});
       if (done.goalId) await recalcGoalStatus(done.goalId).catch(() => {});
       return ok(`Completed task: ${done.title}`, { id, status: done.status });
     }

@@ -51,6 +51,16 @@ export async function removeCare(id: string): Promise<void> {
   await db.remove(doc);
 }
 
+export async function restoreCare(doc: CareDoc): Promise<CareDoc> {
+  const db = await getDb();
+  const toPut: CareDoc = { ...doc };
+  delete toPut._rev;
+  toPut.updatedAt = Temporal.Now.instant().toString();
+  const result = await db.put(toPut);
+  toPut._rev = result.rev;
+  return toPut;
+}
+
 export async function getAllCares(): Promise<CareDoc[]> {
   const db = await getDb();
   const result = await db.find({

@@ -6,9 +6,72 @@ export interface ToolSpec {
 
 const TASK_STATUS_ENUM = ['TODO', 'DONE', 'MISSED'];
 const GOAL_STATUS_ENUM = ['NOT_STARTED', 'IN_PROGRESS', 'REVIEW', 'COMPLETED'];
+const OVERDUE_BEHAVIOR_ENUM = ['KEEP', 'MISSED', 'DISCARD'];
+const SCHEDULE_TYPE_ENUM = ['INTERVAL_FIXED', 'INTERVAL_AFTER_DONE', 'FIXED_DAYS'];
+const DAYS_SUBTYPE_ENUM = ['WEEKDAYS', 'MONTHDAYS', 'YEARDAYS'];
 
 const dateSchema = { type: 'string', description: 'ISO date YYYY-MM-DD' };
 const idSchema = { type: 'string', description: 'Entity id' };
+
+const intervalSchema = {
+  type: 'object',
+  description: 'Required for INTERVAL_* schedules. At least one unit must be > 0.',
+  properties: {
+    years: { type: 'number' },
+    months: { type: 'number' },
+    weeks: { type: 'number' },
+    days: { type: 'number' },
+  },
+  additionalProperties: false,
+};
+
+const recurrenceSchema = {
+  type: 'object',
+  description: 'Recurrence schedule.',
+  properties: {
+    scheduleType: {
+      type: 'string',
+      enum: SCHEDULE_TYPE_ENUM,
+      description:
+        'INTERVAL_FIXED (every N), INTERVAL_AFTER_DONE (N after last completion), or FIXED_DAYS.',
+    },
+    interval: intervalSchema,
+    daysSubtype: {
+      type: 'string',
+      enum: DAYS_SUBTYPE_ENUM,
+      description: 'Required when scheduleType is FIXED_DAYS.',
+    },
+    daysOfWeek: {
+      type: 'array',
+      items: { type: 'number' },
+      description: 'ISO weekday numbers 1=Mon..7=Sun. For WEEKDAYS.',
+    },
+    daysOfMonth: {
+      type: 'array',
+      items: { type: 'number' },
+      description: 'Day-of-month numbers 1-31. For MONTHDAYS.',
+    },
+    yearDates: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { month: { type: 'number' }, day: { type: 'number' } },
+        required: ['month', 'day'],
+        additionalProperties: false,
+      },
+      description: '{month, day} pairs. For YEARDAYS.',
+    },
+    startDate: dateSchema,
+  },
+  required: ['scheduleType', 'startDate'],
+  additionalProperties: false,
+};
+
+const overdueBehaviorSchema = {
+  type: 'string',
+  enum: OVERDUE_BEHAVIOR_ENUM,
+  description: 'What happens when an occurrence is overdue. Defaults to KEEP.',
+};
 
 export const TOOL_SPECS: ToolSpec[] = [
   {
@@ -66,6 +129,87 @@ export const TOOL_SPECS: ToolSpec[] = [
       type: 'object',
       properties: { id: idSchema },
       required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'create_care',
+    description: 'Create a care (a recurring self-care area). Add task plans to it afterwards.',
+    inputSchema: {
+      type: 'object',
+      properties: { title: { type: 'string' } },
+      required: ['title'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'update_care',
+    description: 'Rename a care.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema, title: { type: 'string' } },
+      required: ['id', 'title'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'delete_care',
+    description: 'Permanently delete a care and all its task plans. The user is offered an Undo.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'add_task_plan',
+    description: 'Add a recurring task plan to a care.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        careId: idSchema,
+        title: { type: 'string' },
+        recurrence: recurrenceSchema,
+        overdueBehavior: overdueBehaviorSchema,
+      },
+      required: ['careId', 'title', 'recurrence'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'update_task_plan',
+    description: 'Update a task plan title, recurrence schedule, or overdue behavior.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        careId: idSchema,
+        planId: idSchema,
+        title: { type: 'string' },
+        recurrence: recurrenceSchema,
+        overdueBehavior: overdueBehaviorSchema,
+      },
+      required: ['careId', 'planId'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'delete_task_plan',
+    description: 'Remove a task plan from a care. The user is offered an Undo.',
+    inputSchema: {
+      type: 'object',
+      properties: { careId: idSchema, planId: idSchema },
+      required: ['careId', 'planId'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'move_task_plan',
+    description: 'Move a task plan (and its generated tasks) from one care to another.',
+    inputSchema: {
+      type: 'object',
+      properties: { planId: idSchema, fromCareId: idSchema, toCareId: idSchema },
+      required: ['planId', 'fromCareId', 'toCareId'],
       additionalProperties: false,
     },
   },
