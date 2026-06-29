@@ -14,14 +14,13 @@
   import type { Recurrence, OverdueBehavior } from '$lib/types';
   import {
     PLAN_TYPE,
-    RECURRENCE_TYPE,
-    INTERVAL_SUBTYPE,
     FIXED_DAYS_SUBTYPE,
     ISO_WEEKDAYS,
     MONTH_SHORT_NAMES,
     OVERDUE_BEHAVIOR,
   } from '$lib/types';
   import type { PlanType, FixedDaysSubtype } from '$lib/types';
+  import { buildRecurrence, isValidRecurrence } from '$lib/engines/recurrence-wizard';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import { Temporal } from '@js-temporal/polyfill';
@@ -136,71 +135,31 @@
     wheelOpen = false;
   }
 
-  function toDurationLike() {
+  function wizardInput() {
     return {
-      years: planInterval.years || undefined,
-      months: planInterval.months || undefined,
-      weeks: planInterval.weeks || undefined,
-      days: planInterval.days || undefined,
-    };
-  }
-
-  function buildRecurrence(): Recurrence {
-    if (planType === PLAN_TYPE.INTERVAL_FIXED.value) {
-      return {
-        type: RECURRENCE_TYPE.INTERVAL.value,
-        subtype: INTERVAL_SUBTYPE.FIXED.value,
-        interval: toDurationLike(),
-        startDate: planStartDate,
-      };
-    }
-    if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
-      return {
-        type: RECURRENCE_TYPE.INTERVAL.value,
-        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
-        interval: toDurationLike(),
-        startDate: planStartDate,
-      };
-    }
-    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
-      return {
-        type: RECURRENCE_TYPE.FIXED_DAYS.value,
-        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
-        daysOfWeek: planDaysOfWeek,
-        startDate: planStartDate,
-      };
-    }
-    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
-      return {
-        type: RECURRENCE_TYPE.FIXED_DAYS.value,
-        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
-        daysOfMonth: planDaysOfMonth,
-        startDate: planStartDate,
-      };
-    }
-    return {
-      type: RECURRENCE_TYPE.FIXED_DAYS.value,
-      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
-      dates: planYearDates,
+      scheduleType: planType,
+      interval: planInterval,
+      daysSubtype: planDaysSubtype,
+      daysOfWeek: planDaysOfWeek,
+      daysOfMonth: planDaysOfMonth,
+      yearDates: planYearDates,
       startDate: planStartDate,
     };
   }
 
+  function buildCurrentRecurrence(): Recurrence {
+    return buildRecurrence(wizardInput());
+  }
+
   function canCreate(): boolean {
     if (!newPlanTitle.trim()) return false;
-    if (planType.startsWith('INTERVAL')) {
-      const { years, months, weeks, days } = planInterval;
-      return years + months + weeks + days > 0;
-    }
-    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) return planDaysOfWeek.length > 0;
-    if (planDaysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) return planDaysOfMonth.length > 0;
-    return planYearDates.length > 0;
+    return isValidRecurrence(wizardInput());
   }
 
   async function handleCreate() {
     const newPlanId = await ctrl.addTaskPlan({
       title: newPlanTitle.trim(),
-      recurrence: buildRecurrence(),
+      recurrence: buildCurrentRecurrence(),
       overdueBehavior: planOverdueBehavior,
     });
     resetWizard();
