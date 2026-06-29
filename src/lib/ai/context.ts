@@ -30,6 +30,7 @@ export function buildSystemContext(ctx: AgentContext): string {
     '- Task status: TODO, DONE, MISSED. Goal status: NOT_STARTED, IN_PROGRESS, REVIEW, COMPLETED.',
     '- Dates are ISO YYYY-MM-DD.',
     '- Cares hold recurring task plans; each plan has a recurrence schedule (interval or fixed days).',
+    '- To process an inbox item: create the target entity with originInboxItemId, then call mark_inbox_processed.',
     'Current snapshot:',
     `Active tasks (due today or earlier, ${ctx.tasks.length}):`,
     taskLines,

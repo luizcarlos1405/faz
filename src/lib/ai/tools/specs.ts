@@ -134,10 +134,17 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_care',
-    description: 'Create a care (a recurring self-care area). Add task plans to it afterwards.',
+    description:
+      'Create a care (a recurring self-care area). Add task plans to it afterwards. Optionally link to the inbox item it was processed from.',
     inputSchema: {
       type: 'object',
-      properties: { title: { type: 'string' } },
+      properties: {
+        title: { type: 'string' },
+        originInboxItemId: {
+          type: 'string',
+          description: 'Inbox item this care was processed from.',
+        },
+      },
       required: ['title'],
       additionalProperties: false,
     },
@@ -216,10 +223,18 @@ export const TOOL_SPECS: ToolSpec[] = [
   {
     name: 'create_task',
     description:
-      'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally attach to a goal.',
+      'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally attach to a goal or link to the inbox item it was processed from.',
     inputSchema: {
       type: 'object',
-      properties: { title: { type: 'string' }, doAt: dateSchema, goalId: idSchema },
+      properties: {
+        title: { type: 'string' },
+        doAt: dateSchema,
+        goalId: idSchema,
+        originInboxItemId: {
+          type: 'string',
+          description: 'Inbox item this task was processed from.',
+        },
+      },
       required: ['title', 'doAt'],
       additionalProperties: false,
     },
@@ -271,10 +286,16 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_goal',
-    description: 'Create a goal.',
+    description: 'Create a goal. Optionally link to the inbox item it was processed from.',
     inputSchema: {
       type: 'object',
-      properties: { title: { type: 'string' } },
+      properties: {
+        title: { type: 'string' },
+        originInboxItemId: {
+          type: 'string',
+          description: 'Inbox item this goal was processed from.',
+        },
+      },
       required: ['title'],
       additionalProperties: false,
     },
@@ -314,8 +335,20 @@ export const TOOL_SPECS: ToolSpec[] = [
     },
   },
   {
+    name: 'mark_inbox_processed',
+    description:
+      'Mark an inbox item as dealt with (it leaves the capture queue). Use after converting an inbox item into a task, goal, or care. The user is offered an Undo.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'delete_inbox_item',
-    description: 'Discard an inbox item. The user is offered an Undo.',
+    description:
+      'Discard an inbox item without acting on it (archives it). The user is offered an Undo.',
     inputSchema: {
       type: 'object',
       properties: { id: idSchema },

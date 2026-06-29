@@ -224,7 +224,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
     case 'create_care': {
       const title = str(args.title);
       if (!title) return fail('Create care failed', 'title is required.');
-      const care = await createCare(title, []);
+      const originInboxItemId = str(args.originInboxItemId) || undefined;
+      const care = await createCare(title, [], originInboxItemId);
       return ok(`Created care: ${title}`, { id: care._id, title });
     }
 
@@ -365,7 +366,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       if (!isIsoDate(args.doAt))
         return fail('Create task failed', 'doAt must be an ISO date YYYY-MM-DD.');
       const goalId = str(args.goalId) || undefined;
-      const task = await createTask({ title, doAt: args.doAt, goalId });
+      const originInboxItemId = str(args.originInboxItemId) || undefined;
+      const task = await createTask({ title, doAt: args.doAt, goalId, originInboxItemId });
       if (goalId) await recalcGoalStatus(goalId).catch(() => {});
       return ok(`Created task: ${title}`, { id: task._id, title });
     }
@@ -431,7 +433,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
     case 'create_goal': {
       const title = str(args.title);
       if (!title) return fail('Create goal failed', 'title is required.');
-      const goal = await createGoal(title);
+      const originInboxItemId = str(args.originInboxItemId) || undefined;
+      const goal = await createGoal(title, originInboxItemId);
       return ok(`Created goal: ${title}`, { id: goal._id, title });
     }
 
@@ -477,6 +480,25 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       if (!title) return fail('Capture inbox failed', 'title is required.');
       const item = await createInboxItem(title);
       return ok(`Captured inbox: ${title}`, { id: item._id, title });
+    }
+
+    case 'mark_inbox_processed': {
+      const id = str(args.id);
+      const item = await getOrFail('Process inbox', id, () => getInboxItem(id));
+      if ('ok' in item) return item;
+      await markProcessed(id);
+      return ok(
+        `Processed inbox: ${item.title}`,
+        { id, processed: true },
+        {
+          label: `Restore inbox: ${item.title}`,
+          restore: async () => {
+            const cur = await getInboxItem(id);
+            cur.isProcessed = false;
+            await updateInboxItem(cur);
+          },
+        },
+      );
     }
 
     case 'delete_inbox_item': {
