@@ -18,11 +18,11 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     id: 'zai',
     label: 'Zhipu GLM',
     protocol: 'openai',
-    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    baseUrl: 'https://api.z.ai/api/paas/v4',
     defaultModel: 'glm-4.7-flash',
     models: ['glm-4.7-flash', 'glm-4-flash-250414', 'glm-4.6', 'glm-4.7'],
     browserCompatible: true,
-    docsUrl: 'https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys',
+    docsUrl: 'https://z.ai/manage-apikey/apikey-list',
   },
   anthropic: {
     id: 'anthropic',
