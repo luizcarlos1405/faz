@@ -80,35 +80,14 @@
               <span class="text-xs text-base-content/50">{p.defaultModel}</span>
             </div>
           </div>
-          {#if isConfigured(p.id)}
+          {#if p.browserCompatible && isConfigured(p.id)}
             <span class="badge badge-success badge-sm gap-1">
               <Check class="size-3" />
               Connected
             </span>
-          {:else}
+          {:else if p.browserCompatible}
             <span class="text-xs text-base-content/40">Not connected</span>
           {/if}
-        </div>
-
-        <div class="join w-full">
-          <input
-            type={revealed[p.id] ? 'text' : 'password'}
-            class="input join-item flex-1 font-mono text-sm"
-            placeholder="Paste API key"
-            autocomplete="off"
-            bind:value={keyInputs[p.id]}
-          />
-          <button
-            class="btn btn-ghost join-item border border-l-0 border-base-300"
-            onclick={() => (revealed[p.id] = !revealed[p.id])}
-            aria-label={revealed[p.id] ? 'Hide key' : 'Show key'}
-          >
-            {#if revealed[p.id]}
-              <EyeOff class="size-4" />
-            {:else}
-              <Eye class="size-4" />
-            {/if}
-          </button>
         </div>
 
         {#if !p.browserCompatible}
@@ -119,23 +98,44 @@
               Anthropic.
             </span>
           </div>
-        {/if}
-
-        <div class="flex items-center justify-between gap-2">
-          <button
-            class="btn btn-ghost btn-sm gap-1 text-base-content/60"
-            onclick={() => window.open(p.docsUrl, '_blank', 'noopener')}
-          >
-            <ExternalLink class="size-3.5" />
-            Get key
-          </button>
-          <div class="flex gap-2">
-            {#if isConfigured(p.id)}
-              <button class="btn btn-outline btn-sm" onclick={() => remove(p.id)}>Clear</button>
-            {/if}
-            <button class="btn btn-primary btn-sm" onclick={() => save(p.id)}>Save</button>
+        {:else}
+          <div class="join w-full">
+            <input
+              type={revealed[p.id] ? 'text' : 'password'}
+              class="input join-item flex-1 font-mono text-sm"
+              placeholder="Paste API key"
+              autocomplete="off"
+              bind:value={keyInputs[p.id]}
+            />
+            <button
+              class="btn btn-ghost join-item border border-l-0 border-base-300"
+              onclick={() => (revealed[p.id] = !revealed[p.id])}
+              aria-label={revealed[p.id] ? 'Hide key' : 'Show key'}
+            >
+              {#if revealed[p.id]}
+                <EyeOff class="size-4" />
+              {:else}
+                <Eye class="size-4" />
+              {/if}
+            </button>
           </div>
-        </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <button
+              class="btn btn-ghost btn-sm gap-1 text-base-content/60"
+              onclick={() => window.open(p.docsUrl, '_blank', 'noopener')}
+            >
+              <ExternalLink class="size-3.5" />
+              Get key
+            </button>
+            <div class="flex gap-2">
+              {#if isConfigured(p.id)}
+                <button class="btn btn-outline btn-sm" onclick={() => remove(p.id)}>Clear</button>
+              {/if}
+              <button class="btn btn-primary btn-sm" onclick={() => save(p.id)}>Save</button>
+            </div>
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
