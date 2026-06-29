@@ -48,6 +48,7 @@ import {
 } from '$lib/engines/recurrence-wizard';
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
+import { snapshotTask } from '$lib/utils/task-undo';
 import {
   TASK_STATUS,
   GOAL_STATUS,
@@ -425,6 +426,44 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
           label: `Restore task: ${task.title}`,
           restore: async () => {
             await restoreTask(task);
+          },
+        },
+      );
+    }
+
+    case 'convert_task_to_goal': {
+      const id = str(args.id);
+      const task = await getOrFail('Convert task', id, () => getTask(id));
+      if ('ok' in task) return task;
+      const backup = snapshotTask(task);
+      await createGoal(task.title);
+      await removeTask(id);
+      return ok(
+        `Converted to goal: ${task.title}`,
+        { id, converted: 'goal' },
+        {
+          label: `Restore task: ${task.title}`,
+          restore: async () => {
+            await restoreTask(backup);
+          },
+        },
+      );
+    }
+
+    case 'convert_task_to_care': {
+      const id = str(args.id);
+      const task = await getOrFail('Convert task', id, () => getTask(id));
+      if ('ok' in task) return task;
+      const backup = snapshotTask(task);
+      await createCare(task.title, []);
+      await removeTask(id);
+      return ok(
+        `Converted to care: ${task.title}`,
+        { id, converted: 'care' },
+        {
+          label: `Restore task: ${task.title}`,
+          restore: async () => {
+            await restoreTask(backup);
           },
         },
       );

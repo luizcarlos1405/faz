@@ -18,6 +18,7 @@
   import Pencil from 'lucide-svelte/icons/pencil';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
+  import ArrowRightLeft from 'lucide-svelte/icons/arrow-right-left';
 
   const TOOL_ICONS: Record<string, typeof Search> = {
     read: Search,
@@ -26,6 +27,8 @@
     uncomplete: RotateCcw,
     update: Pencil,
     delete: Trash2,
+    convert: ArrowRightLeft,
+    move: ArrowRightLeft,
   };
 
   function iconFor(name: string): typeof Search {

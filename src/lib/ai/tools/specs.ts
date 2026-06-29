@@ -285,6 +285,28 @@ export const TOOL_SPECS: ToolSpec[] = [
     },
   },
   {
+    name: 'convert_task_to_goal',
+    description:
+      'Turn a task into a goal (creates a goal from the task title and deletes the task). The user is offered an Undo.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'convert_task_to_care',
+    description:
+      'Turn a task into a care (creates a care from the task title and deletes the task). The user is offered an Undo.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: idSchema },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'create_goal',
     description: 'Create a goal. Optionally link to the inbox item it was processed from.',
     inputSchema: {
