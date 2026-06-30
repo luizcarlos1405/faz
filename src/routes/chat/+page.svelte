@@ -12,7 +12,6 @@
   import KeyRound from 'lucide-svelte/icons/key-round';
   import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-  import Zap from 'lucide-svelte/icons/zap';
   import Search from 'lucide-svelte/icons/search';
   import Plus from 'lucide-svelte/icons/plus';
   import Check from 'lucide-svelte/icons/check';
@@ -237,30 +236,6 @@
         </div>
       {/if}
     </div>
-
-    <button
-      type="button"
-      class="flex items-center justify-between w-full px-4 py-2 border-t border-base-300 bg-base-100"
-      role="switch"
-      aria-checked={ctrl.agentMode}
-      onclick={ctrl.toggleAgentMode}
-    >
-      <span
-        class="flex items-center gap-1.5 text-sm font-semibold {ctrl.agentMode
-          ? 'text-primary'
-          : 'text-base-content/70'}"
-      >
-        <Zap class="size-3.5" />
-        Act on my data
-      </span>
-      <span
-        class="w-10 h-5 rounded-full p-0.5 flex items-center transition-colors {ctrl.agentMode
-          ? 'bg-primary justify-end'
-          : 'bg-base-300 justify-start'}"
-      >
-        <span class="block size-4 rounded-full bg-white shadow"></span>
-      </span>
-    </button>
 
     <div class="flex items-center gap-2 p-3 border-t border-base-300 bg-base-100">
       <input

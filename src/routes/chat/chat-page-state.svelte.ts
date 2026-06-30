@@ -1,4 +1,4 @@
-import { streamChat, ChatError } from '$lib/ai/client';
+import { ChatError } from '$lib/ai/client';
 import { runAgent, type ToolEvent } from '$lib/ai/agent';
 import { buildSystemContext } from '$lib/ai/context';
 import { gatherContext } from '$lib/ai/context-gather';
@@ -9,8 +9,6 @@ import {
   setLastProviderId,
   getModel,
   setModel,
-  getAgentMode,
-  setAgentMode,
 } from '$lib/ai/keys';
 import { getProvider, type ProviderId, type Provider } from '$lib/ai/providers';
 import type { ChatMessage } from '$lib/ai/protocol';
@@ -57,7 +55,6 @@ export function getChatPageState() {
   let streaming = $state(false);
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
   let modelId = $state(effectiveModel(providerId));
-  let agentMode = $state(getAgentMode());
   let controller: AbortController | null = null;
   let idleTimer: ReturnType<typeof setInterval> | null = null;
   let timedOut = false;
@@ -109,46 +106,30 @@ export function getChatPageState() {
     }));
 
     try {
-      if (agentMode) {
-        const system = buildSystemContext(await gatherContext());
-        await runAgent({
-          providerId,
-          apiKey: key,
-          model: modelId,
-          system,
-          messages: requestMessages,
-          signal: controller.signal,
-          onReasoning: (r) => {
-            lastActivity = Date.now();
-            messages[aiIndex].reasoning += r;
-            messages = [...messages];
-          },
-          onTool: (ev) => {
-            lastActivity = Date.now();
-            messages[aiIndex].tools = [...(messages[aiIndex].tools ?? []), { ...ev }];
-            messages = [...messages];
-          },
-          onText: (t) => {
-            lastActivity = Date.now();
-            messages[aiIndex].content = t;
-            messages = [...messages];
-          },
-        });
-      } else {
-        await streamChat({
-          providerId,
-          apiKey: key,
-          model: modelId,
-          messages: requestMessages,
-          signal: controller.signal,
-          onDelta: ({ content, reasoning }) => {
-            lastActivity = Date.now();
-            messages[aiIndex].content += content;
-            messages[aiIndex].reasoning += reasoning;
-            messages = [...messages];
-          },
-        });
-      }
+      const system = buildSystemContext(await gatherContext());
+      await runAgent({
+        providerId,
+        apiKey: key,
+        model: modelId,
+        system,
+        messages: requestMessages,
+        signal: controller.signal,
+        onReasoning: (r) => {
+          lastActivity = Date.now();
+          messages[aiIndex].reasoning += r;
+          messages = [...messages];
+        },
+        onTool: (ev) => {
+          lastActivity = Date.now();
+          messages[aiIndex].tools = [...(messages[aiIndex].tools ?? []), { ...ev }];
+          messages = [...messages];
+        },
+        onText: (t) => {
+          lastActivity = Date.now();
+          messages[aiIndex].content = t;
+          messages = [...messages];
+        },
+      });
     } catch (e) {
       if (timedOut) {
         messages[aiIndex] = {
@@ -215,11 +196,6 @@ export function getChatPageState() {
     setModel(providerId, model);
   }
 
-  function toggleAgentMode(): void {
-    agentMode = !agentMode;
-    setAgentMode(agentMode);
-  }
-
   function clear(): void {
     if (streaming) return;
     messages = [];
@@ -244,9 +220,6 @@ export function getChatPageState() {
     get modelId() {
       return modelId;
     },
-    get agentMode() {
-      return agentMode;
-    },
     get currentProvider(): Provider {
       return getProvider(providerId);
     },
@@ -267,7 +240,6 @@ export function getChatPageState() {
     undoTool,
     switchProvider,
     switchModel,
-    toggleAgentMode,
     clear,
   };
 }
