@@ -12,6 +12,7 @@
 
   const colors: Record<ProviderId, string> = {
     zai: '#3B5BFE',
+    deepseek: '#4D6BFE',
     anthropic: '#D97757',
     groq: '#F55036',
     openrouter: '#6366F1',
@@ -20,6 +21,7 @@
 
   const badges: Record<ProviderId, string> = {
     zai: 'Z',
+    deepseek: 'DS',
     anthropic: 'A',
     groq: 'G',
     openrouter: 'OR',

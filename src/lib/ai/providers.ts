@@ -1,6 +1,6 @@
 export type Protocol = 'openai' | 'anthropic';
 
-export type ProviderId = 'zai' | 'openai' | 'anthropic' | 'groq' | 'openrouter';
+export type ProviderId = 'zai' | 'openai' | 'anthropic' | 'groq' | 'openrouter' | 'deepseek';
 
 export interface Provider {
   id: ProviderId;
@@ -23,6 +23,16 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     models: ['glm-4.7-flash', 'glm-4-flash-250414', 'glm-4.6', 'glm-4.7'],
     browserCompatible: true,
     docsUrl: 'https://z.ai/manage-apikey/apikey-list',
+  },
+  deepseek: {
+    id: 'deepseek',
+    label: 'DeepSeek',
+    protocol: 'openai',
+    baseUrl: 'https://api.deepseek.com/v1',
+    defaultModel: 'deepseek-chat',
+    models: ['deepseek-chat', 'deepseek-reasoner'],
+    browserCompatible: true,
+    docsUrl: 'https://platform.deepseek.com/api_keys',
   },
   anthropic: {
     id: 'anthropic',
