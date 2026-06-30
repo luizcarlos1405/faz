@@ -4,6 +4,7 @@
   import { resolve } from '$app/paths';
   import { getChatPageState } from './chat-page-state.svelte';
   import { hasAnyKey } from '$lib/ai/keys';
+  import { sanitizeHtml } from '$lib/ai/html';
   import type { ProviderId } from '$lib/ai/providers';
   import Sparkles from 'lucide-svelte/icons/sparkles';
   import ArrowUp from 'lucide-svelte/icons/arrow-up';
@@ -216,8 +217,9 @@
                       </div>
                     {/if}
                     {#if msg.content}
-                      <div class="whitespace-pre-wrap {hasTools || msg.reasoning ? 'mt-2' : ''}">
-                        {msg.content}
+                      <div class="chat-html {hasTools || msg.reasoning ? 'mt-2' : ''}">
+                        <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via sanitizeHtml (DOMPurify) in $lib/ai/html.ts -->
+                        {@html sanitizeHtml(msg.content)}
                         {#if isActive}<LoaderCircle
                             class="size-3 animate-spin inline ml-1 align-middle"
                           />{/if}
@@ -286,3 +288,25 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .chat-html :global(p) {
+    margin: 0;
+  }
+  .chat-html :global(p + p) {
+    margin-top: 0.4em;
+  }
+  .chat-html :global(ul) {
+    list-style: disc;
+    margin: 0.25em 0;
+    padding-left: 1.25em;
+  }
+  .chat-html :global(ol) {
+    list-style: decimal;
+    margin: 0.25em 0;
+    padding-left: 1.25em;
+  }
+  .chat-html :global(li) {
+    margin: 0.1em 0;
+  }
+</style>
