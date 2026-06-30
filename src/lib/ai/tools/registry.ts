@@ -324,6 +324,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       if (!plan) return fail('Delete plan failed', `No plan ${planId} in care ${careId}.`);
       const snapshot: TaskPlan = { ...plan };
       await removeTaskPlan(careId, planId);
+      await runSchedulerNow();
+      bumpTaskRefresh();
       return ok(
         `Deleted plan: ${plan.title}`,
         { careId, planId, deleted: true },

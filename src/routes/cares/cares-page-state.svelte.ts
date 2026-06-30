@@ -83,6 +83,8 @@ export function getCareDetailState(careId: string) {
 
   async function removeTaskPlan(planId: string) {
     await removeTaskPlanRepo(careId, planId);
+    await runSchedulerNow();
+    bumpTaskRefresh();
     await load();
   }
 
@@ -206,6 +208,8 @@ export function getTaskPlanEditState(careId: string, planId: string) {
 
   async function deletePlan() {
     await removeTaskPlanRepo(careId, planId);
+    await runSchedulerNow();
+    bumpTaskRefresh();
   }
 
   return {
