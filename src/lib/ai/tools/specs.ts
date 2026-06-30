@@ -367,15 +367,4 @@ export const TOOL_SPECS: ToolSpec[] = [
       additionalProperties: false,
     },
   },
-  {
-    name: 'delete_inbox_item',
-    description:
-      'Discard an inbox item without acting on it (archives it). The user is offered an Undo.',
-    inputSchema: {
-      type: 'object',
-      properties: { id: idSchema },
-      required: ['id'],
-      additionalProperties: false,
-    },
-  },
 ];

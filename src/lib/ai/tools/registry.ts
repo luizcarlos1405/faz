@@ -538,25 +538,6 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       );
     }
 
-    case 'delete_inbox_item': {
-      const id = str(args.id);
-      const item = await getOrFail('Discard inbox', id, () => getInboxItem(id));
-      if ('ok' in item) return item;
-      await markProcessed(id);
-      return ok(
-        `Discarded inbox: ${item.title}`,
-        { id, discarded: true },
-        {
-          label: `Restore inbox: ${item.title}`,
-          restore: async () => {
-            const cur = await getInboxItem(id);
-            cur.isProcessed = false;
-            await updateInboxItem(cur);
-          },
-        },
-      );
-    }
-
     default:
       return fail('Unknown tool', `No tool named "${name}".`);
   }
