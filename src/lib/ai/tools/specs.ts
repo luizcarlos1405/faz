@@ -241,14 +241,14 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'update_task',
-    description: 'Update a task title, due date, or status.',
+    description:
+      'Update a task title or due date. Use complete_task to mark done and uncomplete_task to reopen.',
     inputSchema: {
       type: 'object',
       properties: {
         id: idSchema,
         title: { type: 'string' },
         doAt: dateSchema,
-        status: { type: 'string', enum: TASK_STATUS_ENUM },
       },
       required: ['id'],
       additionalProperties: false,

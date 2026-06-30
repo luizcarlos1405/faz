@@ -50,7 +50,6 @@ import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 import { snapshotTask } from '$lib/utils/task-undo';
 import {
-  TASK_STATUS,
   GOAL_STATUS,
   OVERDUE_BEHAVIOR,
   FIXED_DAYS_SUBTYPE,
@@ -72,7 +71,6 @@ export interface ToolResult {
   undo?: ToolUndo;
 }
 
-const TASK_STATUSES = new Set(Object.values(TASK_STATUS).map((s) => s.value));
 const GOAL_STATUSES = new Set(Object.values(GOAL_STATUS).map((s) => s.value));
 const OVERDUE_BEHAVIORS = new Set(Object.values(OVERDUE_BEHAVIOR).map((s) => s.value));
 const LIST_LIMIT = 50;
@@ -381,17 +379,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const title = str(args.title);
       if (title) task.title = title;
       if (isIsoDate(args.doAt)) task.doAt = args.doAt;
-      if (args.status !== undefined) {
-        if (!TASK_STATUSES.has(args.status)) {
-          return fail(
-            'Update task failed',
-            `Invalid status. Valid: ${[...TASK_STATUSES].join(', ')}.`,
-          );
-        }
-        task.status = args.status;
-      }
       await updateTask(task);
-      if (task.goalId) await recalcGoalStatus(task.goalId).catch(() => {});
       return ok(`Updated task: ${task.title}`, { id, title: task.title });
     }
 
