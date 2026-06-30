@@ -426,6 +426,11 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const backup = snapshotTask(task);
       await createGoal(task.title);
       await removeTask(id);
+      if (task.goalId) {
+        await recalcGoalStatus(task.goalId).catch((e) =>
+          console.error('[ai/tools] recalc goal status failed', e),
+        );
+      }
       return ok(
         `Converted to goal: ${task.title}`,
         { id, converted: 'goal' },
@@ -445,6 +450,11 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const backup = snapshotTask(task);
       await createCare(task.title, []);
       await removeTask(id);
+      if (task.goalId) {
+        await recalcGoalStatus(task.goalId).catch((e) =>
+          console.error('[ai/tools] recalc goal status failed', e),
+        );
+      }
       return ok(
         `Converted to care: ${task.title}`,
         { id, converted: 'care' },
