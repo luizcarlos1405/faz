@@ -367,7 +367,10 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const goalId = str(args.goalId) || undefined;
       const originInboxItemId = str(args.originInboxItemId) || undefined;
       const task = await createTask({ title, doAt: args.doAt, goalId, originInboxItemId });
-      if (goalId) await recalcGoalStatus(goalId).catch(() => {});
+      if (goalId)
+        await recalcGoalStatus(goalId).catch((e) =>
+          console.error('[ai/tools] recalc goal status failed', e),
+        );
       return ok(`Created task: ${title}`, { id: task._id, title });
     }
 
@@ -388,8 +391,14 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const task = await getOrFail('Complete task', id, () => getTask(id));
       if ('ok' in task) return task;
       const done = await completeTask(id);
-      if (done.taskPlanId) await markPlanDone(done.taskPlanId, todayIso()).catch(() => {});
-      if (done.goalId) await recalcGoalStatus(done.goalId).catch(() => {});
+      if (done.taskPlanId)
+        await markPlanDone(done.taskPlanId, todayIso()).catch((e) =>
+          console.error('[ai/tools] mark plan done failed', e),
+        );
+      if (done.goalId)
+        await recalcGoalStatus(done.goalId).catch((e) =>
+          console.error('[ai/tools] recalc goal status failed', e),
+        );
       return ok(`Completed task: ${done.title}`, { id, status: done.status });
     }
 
@@ -398,7 +407,10 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const task = await getOrFail('Reopen task', id, () => getTask(id));
       if ('ok' in task) return task;
       const reopened = await uncompleteTask(id);
-      if (reopened.goalId) await recalcGoalStatus(reopened.goalId).catch(() => {});
+      if (reopened.goalId)
+        await recalcGoalStatus(reopened.goalId).catch((e) =>
+          console.error('[ai/tools] recalc goal status failed', e),
+        );
       return ok(`Reopened task: ${reopened.title}`, { id, status: reopened.status });
     }
 
