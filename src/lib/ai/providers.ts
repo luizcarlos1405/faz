@@ -11,6 +11,7 @@ export interface Provider {
   models: string[];
   browserCompatible: boolean;
   docsUrl: string;
+  supportsModelsEndpoint?: boolean;
 }
 
 export const PROVIDERS: Record<ProviderId, Provider> = {
@@ -20,7 +21,18 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     protocol: 'openai',
     baseUrl: 'https://api.z.ai/api/paas/v4',
     defaultModel: 'glm-4.7-flash',
-    models: ['glm-4.7-flash', 'glm-4-flash-250414', 'glm-4.6', 'glm-4.7'],
+    models: [
+      'glm-5.2',
+      'glm-5.1',
+      'glm-5-turbo',
+      'glm-5',
+      'glm-4.7',
+      'glm-4.7-flash',
+      'glm-4.6',
+      'glm-4.5',
+      'glm-4.5-air',
+      'glm-4.5-flash',
+    ],
     browserCompatible: true,
     docsUrl: 'https://z.ai/manage-apikey/apikey-list',
   },
@@ -29,10 +41,11 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     label: 'DeepSeek',
     protocol: 'openai',
     baseUrl: 'https://api.deepseek.com/v1',
-    defaultModel: 'deepseek-chat',
-    models: ['deepseek-chat', 'deepseek-reasoner'],
+    defaultModel: 'deepseek-v4-flash',
+    models: ['deepseek-v4-pro', 'deepseek-v4-flash'],
     browserCompatible: true,
     docsUrl: 'https://platform.deepseek.com/api_keys',
+    supportsModelsEndpoint: true,
   },
   anthropic: {
     id: 'anthropic',
