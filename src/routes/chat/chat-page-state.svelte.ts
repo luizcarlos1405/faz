@@ -11,6 +11,7 @@ import {
   setModel,
 } from '$lib/ai/keys';
 import { getProvider, type ProviderId, type Provider } from '$lib/ai/providers';
+import { loadModels, readCachedModels } from '$lib/ai/models';
 import type { ChatMessage } from '$lib/ai/protocol';
 
 const IDLE_TIMEOUT_MS = 60000;
@@ -28,7 +29,8 @@ interface TurnMessage {
 function effectiveModel(id: ProviderId): string {
   const provider = getProvider(id);
   const stored = getModel(id);
-  return stored && provider.models.includes(stored) ? stored : provider.defaultModel;
+  const known = new Set<string>([...provider.models, ...(readCachedModels(id) ?? [])]);
+  return stored && known.has(stored) ? stored : provider.defaultModel;
 }
 
 function friendlyError(e: unknown, label: string): string {
@@ -61,8 +63,17 @@ export function getChatPageState() {
 
   const configuredProviders = $derived(getConfiguredProviders());
   const showSwitch = $derived(configuredProviders.length >= 2);
-  const currentModels = $derived(getProvider(providerId).models);
+  let currentModels = $state<string[]>(getProvider(providerId).models);
   const showModelSwitch = $derived(currentModels.length >= 2);
+
+  async function loadModelsFor(id: ProviderId): Promise<void> {
+    const key = getApiKey(id);
+    if (!key) return;
+    const models = await loadModels(getProvider(id), key);
+    if (models.length) currentModels = models;
+  }
+
+  loadModelsFor(providerId);
 
   async function send(): Promise<void> {
     const text = input.trim();
@@ -189,6 +200,8 @@ export function getChatPageState() {
     providerId = id;
     setLastProviderId(id);
     modelId = effectiveModel(id);
+    currentModels = getProvider(id).models;
+    loadModelsFor(id);
   }
 
   function switchModel(model: string): void {
