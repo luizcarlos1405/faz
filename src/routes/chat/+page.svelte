@@ -3,10 +3,11 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { getChatPageState } from './chat-page-state.svelte';
+  import ChatDisplayModal from './chat-display-modal.svelte';
   import { hasAnyKey } from '$lib/ai/keys';
   import { sanitizeHtml } from '$lib/ai/html';
   import type { ProviderId } from '$lib/ai/providers';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
+  import Bot from 'lucide-svelte/icons/bot';
   import ArrowUp from 'lucide-svelte/icons/arrow-up';
   import Square from 'lucide-svelte/icons/square';
   import KeyRound from 'lucide-svelte/icons/key-round';
@@ -54,6 +55,7 @@
 
   let scrollEl: HTMLDivElement | undefined = $state();
   let inputEl: HTMLInputElement | undefined = $state();
+  let displayModalOpen = $state(false);
 
   onMount(() => {
     if (!hasKey) goto(resolve('/settings/keys'));
@@ -132,7 +134,7 @@
       {#if ctrl.messages.length === 0}
         <div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
           <div class="size-16 rounded-full bg-base-200 flex items-center justify-center">
-            <Sparkles class="size-8 text-primary" />
+            <Bot class="size-8 text-primary" />
           </div>
           <div class="flex flex-col gap-1">
             <h2 class="text-xl font-bold">Chat with your AI</h2>
@@ -161,12 +163,18 @@
               {@const isLast = i === ctrl.messages.length - 1}
               {@const isActive = ctrl.streaming && isLast}
               {@const hasTools = msg.tools && msg.tools.length > 0}
+              {@const showingReasoning = ctrl.showThinking && !!msg.reasoning}
+              {@const showingTools = ctrl.showTools && hasTools}
+              {@const anyVisibleDetail = showingReasoning || showingTools}
               <div class="flex gap-2.5 items-end">
-                <div
-                  class="size-7 rounded-full bg-base-200 flex items-center justify-center shrink-0"
+                <button
+                  type="button"
+                  class="size-7 rounded-full bg-base-200 flex items-center justify-center shrink-0 cursor-pointer"
+                  aria-label="Message display"
+                  onclick={() => (displayModalOpen = true)}
                 >
-                  <Sparkles class="size-4 text-primary" />
-                </div>
+                  <Bot class="size-4 text-primary" />
+                </button>
                 <div
                   class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm {msg.error
                     ? 'bg-warning/15'
@@ -178,10 +186,12 @@
                       <span class="whitespace-pre-wrap">{msg.content}</span>
                     </div>
                   {:else}
-                    {#if msg.reasoning}
-                      <details open={isActive && !msg.content && !hasTools}>
+                    {#if showingReasoning}
+                      <details open={isActive && !msg.content && !showingTools}>
                         <summary class="text-xs text-base-content/50 cursor-pointer">
-                          {isActive && !msg.content && !hasTools ? 'Thinking…' : 'Thought process'}
+                          {isActive && !msg.content && !showingTools
+                            ? 'Thinking…'
+                            : 'Thought process'}
                         </summary>
                         <div
                           class="mt-1 text-xs text-base-content/40 italic whitespace-pre-wrap border-l-2 border-base-300 pl-2"
@@ -190,8 +200,8 @@
                         </div>
                       </details>
                     {/if}
-                    {#if hasTools}
-                      <div class="flex flex-col gap-1.5 {msg.reasoning ? 'mt-2' : ''}">
+                    {#if showingTools}
+                      <div class="flex flex-col gap-1.5 {showingReasoning ? 'mt-2' : ''}">
                         {#each msg.tools as tool, ti (ti)}
                           {@const ToolIcon = iconFor(tool.name)}
                           <div
@@ -216,14 +226,14 @@
                       </div>
                     {/if}
                     {#if msg.content}
-                      <div class="chat-html {hasTools || msg.reasoning ? 'mt-2' : ''}">
+                      <div class="chat-html {showingTools || showingReasoning ? 'mt-2' : ''}">
                         <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via sanitizeHtml (DOMPurify) in $lib/ai/html.ts -->
                         {@html sanitizeHtml(msg.content)}
                         {#if isActive}<LoaderCircle
                             class="size-3 animate-spin inline ml-1 align-middle"
                           />{/if}
                       </div>
-                    {:else if isActive && !msg.reasoning && !hasTools}
+                    {:else if isActive && !anyVisibleDetail}
                       <div class="flex items-center gap-2 text-base-content/50">
                         <LoaderCircle class="size-3 animate-spin" /> Thinking…
                       </div>
@@ -262,6 +272,15 @@
       {/if}
     </div>
   </div>
+
+  <ChatDisplayModal
+    open={displayModalOpen}
+    showThinking={ctrl.showThinking}
+    showTools={ctrl.showTools}
+    onToggleThinking={ctrl.setShowThinking}
+    onToggleTools={ctrl.setShowTools}
+    onclose={() => (displayModalOpen = false)}
+  />
 {/if}
 
 <style>
