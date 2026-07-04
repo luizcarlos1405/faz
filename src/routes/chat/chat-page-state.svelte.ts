@@ -18,6 +18,7 @@ const IDLE_TIMEOUT_MS = 60000;
 
 const SHOW_THINKING_KEY = 'faz:ai:showThinking';
 const SHOW_TOOLS_KEY = 'faz:ai:showTools';
+const CHAT_HISTORY_KEY = 'faz:ai:chatHistory';
 
 function readFlag(key: string): boolean {
   return localStorage.getItem(key) === '1';
@@ -35,6 +36,58 @@ interface TurnMessage {
   reasoning?: string;
   error?: boolean;
   tools?: ToolLogEntry[];
+}
+
+function serialize(messages: TurnMessage[]): string {
+  return JSON.stringify({
+    version: 1,
+    messages: messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+      ...(m.error ? { error: m.error } : {}),
+      ...(m.tools && m.tools.length
+        ? {
+            tools: m.tools.map((t) => ({
+              id: t.id,
+              name: t.name,
+              label: t.label,
+              ok: t.ok,
+              ...(t.undone ? { undone: t.undone } : {}),
+            })),
+          }
+        : {}),
+    })),
+  });
+}
+
+function loadHistory(): TurnMessage[] {
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(CHAT_HISTORY_KEY);
+  } catch {
+    return [];
+  }
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as { messages?: TurnMessage[] };
+    const msgs = (parsed.messages ?? []).filter(
+      (m) => typeof m?.role === 'string' && typeof m?.content === 'string',
+    );
+    const last = msgs[msgs.length - 1];
+    if (
+      last &&
+      last.role === 'assistant' &&
+      last.content === '' &&
+      !last.reasoning &&
+      !(last.tools && last.tools.length)
+    ) {
+      msgs.pop();
+    }
+    return msgs;
+  } catch {
+    return [];
+  }
 }
 
 function effectiveModel(id: ProviderId): string {
@@ -63,7 +116,7 @@ function friendlyError(e: unknown, label: string): string {
 }
 
 export function getChatPageState() {
-  let messages = $state<TurnMessage[]>([]);
+  let messages = $state<TurnMessage[]>(loadHistory());
   let input = $state('');
   let streaming = $state(false);
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
@@ -88,6 +141,12 @@ export function getChatPageState() {
 
   loadModelsFor(providerId);
 
+  function persist(next: TurnMessage[]): void {
+    try {
+      localStorage.setItem(CHAT_HISTORY_KEY, serialize(next));
+    } catch {}
+  }
+
   async function send(): Promise<void> {
     const text = input.trim();
     if (!text || streaming) return;
@@ -107,10 +166,12 @@ export function getChatPageState() {
           error: true,
         },
       ];
+      persist(messages);
       return;
     }
 
     messages = [...requestBase, { role: 'assistant', content: '', reasoning: '', tools: [] }];
+    persist(messages);
     const aiIndex = messages.length - 1;
     streaming = true;
     timedOut = false;
@@ -187,6 +248,7 @@ export function getChatPageState() {
       ) {
         messages = messages.slice(0, -1);
       }
+      persist(messages);
     }
   }
 
@@ -200,11 +262,13 @@ export function getChatPageState() {
     if (!tool?.undo || tool.undone) return;
     tool.undone = true;
     messages = [...messages];
+    persist(messages);
     tool.undo.restore().catch(() => {
       const t = messages[msgIndex]?.tools?.[toolIndex];
       if (t) {
         t.undone = false;
         messages = [...messages];
+        persist(messages);
       }
     });
   }
@@ -235,6 +299,9 @@ export function getChatPageState() {
   function clear(): void {
     if (streaming) return;
     messages = [];
+    try {
+      localStorage.removeItem(CHAT_HISTORY_KEY);
+    } catch {}
   }
 
   return {
