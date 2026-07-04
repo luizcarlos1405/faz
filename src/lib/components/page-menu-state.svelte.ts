@@ -5,7 +5,6 @@ export interface PageMenuItem {
   label: string;
   icon?: Component;
   onclick?: () => void | Promise<void>;
-  href?: string;
 }
 
 let items = $state<PageMenuItem[]>([]);

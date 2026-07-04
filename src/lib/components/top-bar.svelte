@@ -7,7 +7,9 @@
   import Database from 'lucide-svelte/icons/database';
   import KeyRound from 'lucide-svelte/icons/key-round';
   import DataModal from './data-modal.svelte';
+  import { getPageMenuState } from './page-menu-state.svelte';
 
+  const pageMenu = getPageMenuState();
   let showThemeModal = $state(false);
   let showDataModal = $state(false);
   let currentTheme = $state('light');
@@ -117,6 +119,17 @@
         role="menu"
         class="dropdown-content menu bg-base-100 rounded-box shadow-lg border border-base-300 z-50 w-44 p-1"
       >
+        {#each pageMenu.items as item (item.id)}
+          <li>
+            <button onclick={() => item.onclick?.()}>
+              {#if item.icon}<item.icon class="size-4" />{/if}
+              {item.label}
+            </button>
+          </li>
+        {/each}
+        {#if pageMenu.items.length > 0}
+          <li><hr class="border-base-300 my-1" /></li>
+        {/if}
         <li>
           <button onclick={() => (showThemeModal = true)}>
             <Palette class="size-4" /> Themes
