@@ -1,5 +1,16 @@
+export type ToolKind =
+  | 'read'
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'complete'
+  | 'uncomplete'
+  | 'convert'
+  | 'move';
+
 export interface ToolSpec {
   name: string;
+  kind: ToolKind;
   description: string;
   inputSchema: Record<string, unknown>;
 }
@@ -76,6 +87,7 @@ const overdueBehaviorSchema = {
 export const TOOL_SPECS: ToolSpec[] = [
   {
     name: 'list_tasks',
+    kind: 'read',
     description: "List the user's tasks. Optionally filter by status, goal, or due date.",
     inputSchema: {
       type: 'object',
@@ -89,6 +101,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'get_task',
+    kind: 'read',
     description: 'Get full details of one task by id.',
     inputSchema: {
       type: 'object',
@@ -99,11 +112,13 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'list_goals',
+    kind: 'read',
     description: 'List all goals with id, title, and status.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
     name: 'get_goal',
+    kind: 'read',
     description: 'Get one goal and its ordered task steps by id.',
     inputSchema: {
       type: 'object',
@@ -114,16 +129,19 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'list_inbox',
+    kind: 'read',
     description: 'List unprocessed inbox items (the capture queue).',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
     name: 'list_cares',
+    kind: 'read',
     description: 'List all cares (recurring self-care items) with id, title, and plan count.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
     name: 'get_care',
+    kind: 'read',
     description: 'Get one care and its task plans (with human-readable schedules) by id.',
     inputSchema: {
       type: 'object',
@@ -134,6 +152,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_care',
+    kind: 'create',
     description:
       'Create a care (a recurring self-care area). Add task plans to it afterwards. Optionally link to the inbox item it was processed from.',
     inputSchema: {
@@ -151,6 +170,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'update_care',
+    kind: 'update',
     description: 'Rename a care.',
     inputSchema: {
       type: 'object',
@@ -161,6 +181,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'delete_care',
+    kind: 'delete',
     description: 'Permanently delete a care and all its task plans. The user is offered an Undo.',
     inputSchema: {
       type: 'object',
@@ -171,6 +192,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'add_task_plan',
+    kind: 'create',
     description: 'Add a recurring task plan to a care.',
     inputSchema: {
       type: 'object',
@@ -186,6 +208,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'update_task_plan',
+    kind: 'update',
     description: 'Update a task plan title, recurrence schedule, or overdue behavior.',
     inputSchema: {
       type: 'object',
@@ -202,6 +225,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'delete_task_plan',
+    kind: 'delete',
     description: 'Remove a task plan from a care. The user is offered an Undo.',
     inputSchema: {
       type: 'object',
@@ -212,6 +236,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'move_task_plan',
+    kind: 'move',
     description: 'Move a task plan (and its generated tasks) from one care to another.',
     inputSchema: {
       type: 'object',
@@ -222,6 +247,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_task',
+    kind: 'create',
     description:
       'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally attach to a goal or link to the inbox item it was processed from.',
     inputSchema: {
@@ -241,6 +267,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'update_task',
+    kind: 'update',
     description:
       'Update a task title or due date. Use complete_task to mark done and uncomplete_task to reopen.',
     inputSchema: {
@@ -256,6 +283,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'complete_task',
+    kind: 'complete',
     description: 'Mark a task done.',
     inputSchema: {
       type: 'object',
@@ -266,6 +294,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'uncomplete_task',
+    kind: 'uncomplete',
     description: 'Move a done task back to todo.',
     inputSchema: {
       type: 'object',
@@ -276,6 +305,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'delete_task',
+    kind: 'delete',
     description: 'Permanently delete a task. The user is offered an Undo.',
     inputSchema: {
       type: 'object',
@@ -286,6 +316,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'convert_task_to_goal',
+    kind: 'convert',
     description:
       'Turn a task into a goal (creates a goal from the task title and deletes the task). The user is offered an Undo.',
     inputSchema: {
@@ -297,6 +328,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'convert_task_to_care',
+    kind: 'convert',
     description:
       'Turn a task into a care (creates a care from the task title and deletes the task). The user is offered an Undo.',
     inputSchema: {
@@ -308,6 +340,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_goal',
+    kind: 'create',
     description: 'Create a goal. Optionally link to the inbox item it was processed from.',
     inputSchema: {
       type: 'object',
@@ -324,6 +357,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'update_goal',
+    kind: 'update',
     description: 'Update a goal title or status.',
     inputSchema: {
       type: 'object',
@@ -338,6 +372,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'delete_goal',
+    kind: 'delete',
     description: 'Permanently delete a goal. The user is offered an Undo.',
     inputSchema: {
       type: 'object',
@@ -348,6 +383,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'create_inbox_item',
+    kind: 'create',
     description: 'Capture a new inbox item (a thought to process later).',
     inputSchema: {
       type: 'object',
@@ -358,6 +394,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: 'mark_inbox_processed',
+    kind: 'complete',
     description:
       'Mark an inbox item as dealt with (it leaves the capture queue). Use after converting an inbox item into a task, goal, or care. The user is offered an Undo.',
     inputSchema: {
@@ -368,3 +405,19 @@ export const TOOL_SPECS: ToolSpec[] = [
     },
   },
 ];
+
+export const TOOL_KIND_BY_NAME: ReadonlyMap<string, ToolKind> = new Map(
+  TOOL_SPECS.map((s) => [s.name, s.kind]),
+);
+
+export function toolKind(name: string): ToolKind | undefined {
+  return TOOL_KIND_BY_NAME.get(name);
+}
+
+export function isReadonlyTool(name: string): boolean {
+  return toolKind(name) === 'read';
+}
+
+export function isMutatingTool(name: string): boolean {
+  return !isReadonlyTool(name);
+}
