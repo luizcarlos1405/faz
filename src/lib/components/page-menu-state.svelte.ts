@@ -1,9 +1,9 @@
-import type { Component } from 'svelte';
+type IconComponent = typeof import('lucide-svelte').Icon;
 
 export interface PageMenuItem {
   id: string;
   label: string;
-  icon?: Component;
+  icon?: IconComponent;
   onclick?: () => void | Promise<void>;
 }
 
