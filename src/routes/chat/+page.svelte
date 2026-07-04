@@ -152,10 +152,8 @@
         <div class="flex flex-col gap-3.5">
           {#each ctrl.messages as msg, i (i)}
             {#if msg.role === 'user'}
-              <div class="flex justify-end">
-                <div
-                  class="max-w-[80%] bg-primary text-primary-content rounded-2xl px-3.5 py-2.5 whitespace-pre-wrap text-sm"
-                >
+              <div class="chat chat-end">
+                <div class="chat-bubble chat-bubble-primary text-sm whitespace-pre-wrap">
                   {msg.content}
                 </div>
               </div>
@@ -166,23 +164,21 @@
               {@const showingReasoning = ctrl.showThinking && !!msg.reasoning}
               {@const showingTools = ctrl.showTools && hasTools}
               {@const anyVisibleDetail = showingReasoning || showingTools}
-              <div class="flex gap-2.5 items-end">
-                <button
-                  type="button"
-                  class="size-7 rounded-full bg-base-200 flex items-center justify-center shrink-0 cursor-pointer"
-                  aria-label="Message display"
-                  onclick={() => (displayModalOpen = true)}
-                >
-                  <Bot class="size-4 text-primary" />
-                </button>
-                <div
-                  class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm {msg.error
-                    ? 'bg-warning/15'
-                    : 'bg-base-200'}"
-                >
+              <div class="chat chat-start">
+                <div class="chat-image">
+                  <button
+                    type="button"
+                    class="size-7 rounded-full bg-base-200 flex items-center justify-center cursor-pointer"
+                    aria-label="Message display"
+                    onclick={() => (displayModalOpen = true)}
+                  >
+                    <Bot class="size-4 text-primary" />
+                  </button>
+                </div>
+                <div class="chat-bubble text-sm {msg.error ? 'chat-bubble-warning' : ''}">
                   {#if msg.error}
                     <div class="flex items-start gap-1.5">
-                      <AlertTriangle class="size-4 shrink-0 text-warning mt-0.5" />
+                      <AlertTriangle class="size-4 shrink-0 mt-0.5" />
                       <span class="whitespace-pre-wrap">{msg.content}</span>
                     </div>
                   {:else}
