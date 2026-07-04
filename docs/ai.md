@@ -96,9 +96,11 @@ out, no I/O); shell modules do the fetching, DB access, and DOM work.
 Built fresh on every send by `buildSystemContext(await gatherContext())`. It contains:
 
 1. **Base prompt** (`buildBasePrompt`) — Faz's identity, what Tasks/Goals/Cares/Inbox are, how to
-   behave (capture passing thoughts into the inbox; act when the user wants to act), and a
-   condensed version of [WRITING.md](./WRITING.md) (tone, word choices, brevity). It also tells
-   the model to **always reply with HTML** using only `p/strong/em/ul/ol/li/br` — never markdown.
+   behave (act as a thinking partner: capture passing thoughts into the inbox, act once the user's
+   intent is clear, and ask a short clarifying question — then stop and wait — when a request is
+   ambiguous, incomplete, or sounds strange; never guess), and a condensed version of
+   [WRITING.md](./WRITING.md) (tone, word choices, brevity). It also tells the model to
+   **always reply with HTML** using only `p/strong/em/ul/ol/li/br` — never markdown.
 2. **Live snapshot** — today's date, active tasks (id, title, due, status), goals (id, title,
    status), cares (id, title, plan count), and the unprocessed-inbox count.
 
