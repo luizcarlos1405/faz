@@ -1,3 +1,11 @@
+import {
+  TASK_STATUS,
+  GOAL_STATUS,
+  OVERDUE_BEHAVIOR,
+  PLAN_TYPE,
+  FIXED_DAYS_SUBTYPE,
+} from '$lib/types';
+
 export type ToolKind =
   | 'read'
   | 'create'
@@ -15,11 +23,11 @@ export interface ToolSpec {
   inputSchema: Record<string, unknown>;
 }
 
-const TASK_STATUS_ENUM = ['TODO', 'DONE', 'MISSED'];
-const GOAL_STATUS_ENUM = ['NOT_STARTED', 'IN_PROGRESS', 'REVIEW', 'COMPLETED'];
-const OVERDUE_BEHAVIOR_ENUM = ['KEEP', 'MISSED', 'DISCARD'];
-const SCHEDULE_TYPE_ENUM = ['INTERVAL_FIXED', 'INTERVAL_AFTER_DONE', 'FIXED_DAYS'];
-const DAYS_SUBTYPE_ENUM = ['WEEKDAYS', 'MONTHDAYS', 'YEARDAYS'];
+const TASK_STATUS_ENUM = Object.values(TASK_STATUS).map((s) => s.value);
+const GOAL_STATUS_ENUM = Object.values(GOAL_STATUS).map((s) => s.value);
+const OVERDUE_BEHAVIOR_ENUM = Object.values(OVERDUE_BEHAVIOR).map((s) => s.value);
+const SCHEDULE_TYPE_ENUM = Object.values(PLAN_TYPE).map((s) => s.value);
+const DAYS_SUBTYPE_ENUM = Object.values(FIXED_DAYS_SUBTYPE).map((s) => s.value);
 
 const dateSchema = { type: 'string', description: 'ISO date YYYY-MM-DD' };
 const idSchema = { type: 'string', description: 'Entity id' };
