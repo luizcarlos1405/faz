@@ -29,6 +29,22 @@ describe('buildBasePrompt', () => {
     expect(prompt).toMatch(/capture it with create_inbox_item/i);
   });
 
+  it('frames Faz as a thinking partner, not a command runner', () => {
+    expect(prompt).toMatch(/thinking partner/i);
+    expect(prompt).toMatch(/not just a command runner/i);
+  });
+
+  it('still acts once the intent is clear', () => {
+    expect(prompt).toMatch(/Once the intent is clear, act/i);
+  });
+
+  it('instructs asking a clarifying question and waiting when ambiguous', () => {
+    expect(prompt).toMatch(/ask a short clarifying question/i);
+    expect(prompt).toMatch(/stop and wait/i);
+    expect(prompt).toMatch(/Don't guess or assume/);
+    expect(prompt).toMatch(/ambiguous, incomplete, or something about it sounds strange/);
+  });
+
   it('demands HTML replies, never markdown', () => {
     expect(prompt).toMatch(/Always reply with HTML, never markdown/);
     expect(prompt).not.toContain('**bold** as encouraged');
