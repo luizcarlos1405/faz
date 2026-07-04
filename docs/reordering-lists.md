@@ -1,3 +1,8 @@
+<!-- MAINTENANCE: Keep this file up-to-date with the reality of the codebase.
+     Update it anytime you notice a discrepancy with the reorder implementation
+     in src/lib/db/*-repo.ts, src/lib/engines/ordering.ts, src/lib/utils/reorderItems.ts,
+     and the list pages under src/routes/. -->
+
 # Reordering Lists
 
 This guide explains how to add drag-to-reorder to a list page. Follow all four steps below. The goals list (`src/routes/goals/`) and cares list (`src/routes/cares/`) are reference implementations.

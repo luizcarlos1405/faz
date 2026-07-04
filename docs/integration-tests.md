@@ -1,3 +1,7 @@
+<!-- MAINTENANCE: Keep this file up-to-date with the reality of the codebase.
+     Update it anytime you notice a discrepancy with the test setup in
+     tests/e2e/**, playwright.config.ts, and the commands in AGENTS.md. -->
+
 # Integration Tests
 
 Headless browser tests using [Playwright](https://playwright.dev/) via `@playwright/test`.

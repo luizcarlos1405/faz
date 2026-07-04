@@ -1,3 +1,7 @@
+<!-- MAINTENANCE: Keep this file up-to-date with the reality of the codebase.
+     Update it anytime you notice a discrepancy with the user-facing copy in
+     src/routes/** and src/lib/components/**. -->
+
 # Writing Guide
 
 Faz is a companion, not a boss. Every word in the app should feel like a calm friend helping you
