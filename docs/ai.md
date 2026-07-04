@@ -232,17 +232,24 @@ UI details:
   **Message display** bottom sheet (`chat-display-modal.svelte`).
 - **Message display sheet** — two global, persisted toggle switches:
   - **Show thinking** (`faz:ai:showThinking`)
-  - **Show tool calls** (`faz:ai:showTools`)
+  - **Show all tool calls** (`faz:ai:showAllTools`) — governs only **read-only** tool calls
+    (`list_*` / `get_*`). Tool calls that change data (create / update / delete / complete /
+    uncomplete / convert / move / `mark_inbox_processed`) **always** render, so the user always
+    has confirmation of a change and a path to undo it.
 
-  Both default to **off**, so bubbles render only the answer text. The choices are app-wide and
-  survive reloads.
+  Both default to **off**, so a read-only turn renders only the answer text. Because mutations
+  always render, bubbles may still show action chips when the toggle is off. The choices are
+  app-wide and survive reloads.
 
 - **Reasoning panel** — only rendered when _Show thinking_ is on. A collapsible `<details>`
   labeled "Thinking…" while active, "Thought process" once content/tools arrive.
-- **Evidence chips** — only rendered when _Show tool calls_ is on. One per tool call, with an
-  icon by action kind (`read`, `create`, `complete`, `uncomplete`, `update`, `delete`,
-  `convert`, `move`). Destructive tools show an inline **Undo** button; after undo, an "Undone"
-  label. (Undo is therefore reachable only while tool calls are visible.)
+- **Evidence chips** — one per tool call, with an icon by action kind (`read`, `create`,
+  `complete`, `uncomplete`, `update`, `delete`, `convert`, `move`). **Mutating** tool calls
+  (everything except `list_*` / `get_*`) always render regardless of the toggle, including
+  failed attempts (shown in error red). **Read-only** chips (`list_*` / `get_*`) render only
+  when _Show all tool calls_ is on. Destructive tools show an inline **Undo** button; after undo,
+  an "Undone" label. Because mutating chips always render, Undo is always reachable for
+  destructive actions.
 - **Loading fallback** — when the assistant is active but has no visible content (e.g. a
   multi-tool run with both toggles off), a "Thinking…" spinner keeps the bubble from going blank.
 - **Stop** button replaces Send while streaming.

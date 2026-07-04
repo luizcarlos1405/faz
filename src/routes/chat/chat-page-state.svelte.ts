@@ -17,7 +17,7 @@ import type { ChatMessage } from '$lib/ai/protocol';
 const IDLE_TIMEOUT_MS = 60000;
 
 const SHOW_THINKING_KEY = 'faz:ai:showThinking';
-const SHOW_TOOLS_KEY = 'faz:ai:showTools';
+const SHOW_ALL_TOOLS_KEY = 'faz:ai:showAllTools';
 const CHAT_HISTORY_KEY = 'faz:ai:chatHistory';
 
 function readFlag(key: string): boolean {
@@ -122,7 +122,7 @@ export function getChatPageState() {
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
   let modelId = $state(effectiveModel(providerId));
   let showThinking = $state(readFlag(SHOW_THINKING_KEY));
-  let showTools = $state(readFlag(SHOW_TOOLS_KEY));
+  let showAllTools = $state(readFlag(SHOW_ALL_TOOLS_KEY));
   let controller: AbortController | null = null;
   let idleTimer: ReturnType<typeof setInterval> | null = null;
   let timedOut = false;
@@ -291,9 +291,9 @@ export function getChatPageState() {
     writeFlag(SHOW_THINKING_KEY, v);
   }
 
-  function setShowTools(v: boolean): void {
-    showTools = v;
-    writeFlag(SHOW_TOOLS_KEY, v);
+  function setShowAllTools(v: boolean): void {
+    showAllTools = v;
+    writeFlag(SHOW_ALL_TOOLS_KEY, v);
   }
 
   function clear(): void {
@@ -341,8 +341,8 @@ export function getChatPageState() {
     get showThinking() {
       return showThinking;
     },
-    get showTools() {
-      return showTools;
+    get showAllTools() {
+      return showAllTools;
     },
     send,
     stop,
@@ -350,7 +350,7 @@ export function getChatPageState() {
     switchProvider,
     switchModel,
     setShowThinking,
-    setShowTools,
+    setShowAllTools,
     clear,
   };
 }

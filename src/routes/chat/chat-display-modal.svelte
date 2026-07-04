@@ -5,16 +5,16 @@
   let {
     open,
     showThinking,
-    showTools,
+    showAllTools,
     onToggleThinking,
-    onToggleTools,
+    onToggleAllTools,
     onclose,
   }: {
     open: boolean;
     showThinking: boolean;
-    showTools: boolean;
+    showAllTools: boolean;
     onToggleThinking: (value: boolean) => void;
-    onToggleTools: (value: boolean) => void;
+    onToggleAllTools: (value: boolean) => void;
     onclose: () => void;
   } = $props();
 </script>
@@ -40,13 +40,13 @@
       <label class="label justify-between cursor-pointer">
         <span class="label-text flex items-center gap-2">
           <Wrench class="size-4" />
-          Show tool calls
+          Show all tool calls
         </span>
         <input
           type="checkbox"
           class="toggle toggle-primary"
-          checked={showTools}
-          onchange={(e) => onToggleTools(e.currentTarget.checked)}
+          checked={showAllTools}
+          onchange={(e) => onToggleAllTools(e.currentTarget.checked)}
         />
       </label>
     </div>

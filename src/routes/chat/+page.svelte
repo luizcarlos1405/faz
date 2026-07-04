@@ -33,8 +33,16 @@
     move: ArrowRightLeft,
   };
 
+  function isReadonlyTool(name: string): boolean {
+    return name.startsWith('list') || name.startsWith('get');
+  }
+
+  function isMutatingTool(name: string): boolean {
+    return !isReadonlyTool(name);
+  }
+
   function iconFor(name: string): typeof Search {
-    if (name.startsWith('list') || name.startsWith('get')) return Search;
+    if (isReadonlyTool(name)) return Search;
     for (const key of Object.keys(TOOL_ICONS)) {
       if (name.startsWith(key)) return TOOL_ICONS[key];
     }
@@ -174,9 +182,9 @@
             {:else}
               {@const isLast = i === ctrl.messages.length - 1}
               {@const isActive = ctrl.streaming && isLast}
-              {@const hasTools = msg.tools && msg.tools.length > 0}
               {@const showingReasoning = ctrl.showThinking && !!msg.reasoning}
-              {@const showingTools = ctrl.showTools && hasTools}
+              {@const showingTools =
+                !!msg.tools && msg.tools.some((t) => ctrl.showAllTools || isMutatingTool(t.name))}
               {@const anyVisibleDetail = showingReasoning || showingTools}
               <div class="chat chat-start">
                 <div class="chat-image">
@@ -213,25 +221,27 @@
                     {#if showingTools}
                       <div class="flex flex-col gap-1.5 {showingReasoning ? 'mt-2' : ''}">
                         {#each msg.tools as tool, ti (ti)}
-                          {@const ToolIcon = iconFor(tool.name)}
-                          <div
-                            class="flex items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-2.5 py-1.5"
-                          >
-                            <span class="flex items-center gap-1.5 min-w-0">
-                              <ToolIcon class="size-3.5 shrink-0 {toneFor(tool.name, tool.ok)}" />
-                              <span class="text-xs truncate {tool.ok ? '' : 'text-error'}"
-                                >{tool.label}</span
-                              >
-                            </span>
-                            {#if tool.undo && !tool.undone}
-                              <button
-                                class="btn btn-ghost btn-xs gap-1 text-primary shrink-0"
-                                onclick={() => ctrl.undoTool(i, ti)}>Undo</button
-                              >
-                            {:else if tool.undone}
-                              <span class="text-xs text-base-content/40 shrink-0">Undone</span>
-                            {/if}
-                          </div>
+                          {#if ctrl.showAllTools || isMutatingTool(tool.name)}
+                            {@const ToolIcon = iconFor(tool.name)}
+                            <div
+                              class="flex items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-2.5 py-1.5"
+                            >
+                              <span class="flex items-center gap-1.5 min-w-0">
+                                <ToolIcon class="size-3.5 shrink-0 {toneFor(tool.name, tool.ok)}" />
+                                <span class="text-xs truncate {tool.ok ? '' : 'text-error'}"
+                                  >{tool.label}</span
+                                >
+                              </span>
+                              {#if tool.undo && !tool.undone}
+                                <button
+                                  class="btn btn-ghost btn-xs gap-1 text-primary shrink-0"
+                                  onclick={() => ctrl.undoTool(i, ti)}>Undo</button
+                                >
+                              {:else if tool.undone}
+                                <span class="text-xs text-base-content/40 shrink-0">Undone</span>
+                              {/if}
+                            </div>
+                          {/if}
                         {/each}
                       </div>
                     {/if}
@@ -286,9 +296,9 @@
   <ChatDisplayModal
     open={displayModalOpen}
     showThinking={ctrl.showThinking}
-    showTools={ctrl.showTools}
+    showAllTools={ctrl.showAllTools}
     onToggleThinking={ctrl.setShowThinking}
-    onToggleTools={ctrl.setShowTools}
+    onToggleAllTools={ctrl.setShowAllTools}
     onclose={() => (displayModalOpen = false)}
   />
 {/if}
