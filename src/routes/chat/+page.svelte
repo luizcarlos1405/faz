@@ -8,6 +8,7 @@
   import { sanitizeHtml } from '$lib/ai/html';
   import { usePageMenu } from '$lib/components/page-menu-state.svelte';
   import type { ProviderId } from '$lib/ai/providers';
+  import { toolKind, isMutatingTool, type ToolKind } from '$lib/ai/tools/specs';
   import Bot from 'lucide-svelte/icons/bot';
   import ArrowUp from 'lucide-svelte/icons/arrow-up';
   import Square from 'lucide-svelte/icons/square';
@@ -22,39 +23,25 @@
   import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
   import ArrowRightLeft from 'lucide-svelte/icons/arrow-right-left';
 
-  const TOOL_ICONS: Record<string, typeof Search> = {
+  const TOOL_ICON_BY_KIND: Record<ToolKind, typeof Search> = {
     read: Search,
     create: Plus,
-    complete: Check,
-    uncomplete: RotateCcw,
     update: Pencil,
     delete: Trash2,
+    complete: Check,
+    uncomplete: RotateCcw,
     convert: ArrowRightLeft,
     move: ArrowRightLeft,
   };
 
-  function isReadonlyTool(name: string): boolean {
-    return name.startsWith('list') || name.startsWith('get');
+  function iconForKind(kind: ToolKind | undefined): typeof Search {
+    return kind ? TOOL_ICON_BY_KIND[kind] : Check;
   }
 
-  function isMutatingTool(name: string): boolean {
-    return !isReadonlyTool(name);
-  }
-
-  function iconFor(name: string): typeof Search {
-    if (isReadonlyTool(name)) return Search;
-    for (const key of Object.keys(TOOL_ICONS)) {
-      if (name.startsWith(key)) return TOOL_ICONS[key];
-    }
-    return Check;
-  }
-
-  function toneFor(name: string, ok: boolean): string {
+  function toneForKind(kind: ToolKind | undefined, ok: boolean): string {
     if (!ok) return 'text-error';
-    if (name.startsWith('delete') || name.startsWith('discard')) return 'text-error';
-    if (name.startsWith('create') || name.startsWith('complete') || name.startsWith('uncomplete')) {
-      return 'text-success';
-    }
+    if (kind === 'delete') return 'text-error';
+    if (kind === 'create' || kind === 'complete' || kind === 'uncomplete') return 'text-success';
     return 'text-base-content/50';
   }
 
@@ -222,12 +209,13 @@
                       <div class="flex flex-col gap-1.5 {showingReasoning ? 'mt-2' : ''}">
                         {#each msg.tools as tool, ti (ti)}
                           {#if ctrl.showAllTools || isMutatingTool(tool.name)}
-                            {@const ToolIcon = iconFor(tool.name)}
+                            {@const kind = toolKind(tool.name)}
+                            {@const ToolIcon = iconForKind(kind)}
                             <div
                               class="flex items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-2.5 py-1.5"
                             >
                               <span class="flex items-center gap-1.5 min-w-0">
-                                <ToolIcon class="size-3.5 shrink-0 {toneFor(tool.name, tool.ok)}" />
+                                <ToolIcon class="size-3.5 shrink-0 {toneForKind(kind, tool.ok)}" />
                                 <span class="text-xs truncate {tool.ok ? '' : 'text-error'}"
                                   >{tool.label}</span
                                 >
