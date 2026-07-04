@@ -6,6 +6,7 @@
   import ChatDisplayModal from './chat-display-modal.svelte';
   import { hasAnyKey } from '$lib/ai/keys';
   import { sanitizeHtml } from '$lib/ai/html';
+  import { usePageMenu } from '$lib/components/page-menu-state.svelte';
   import type { ProviderId } from '$lib/ai/providers';
   import Bot from 'lucide-svelte/icons/bot';
   import ArrowUp from 'lucide-svelte/icons/arrow-up';
@@ -52,6 +53,19 @@
   const hasKey = hasAnyKey();
   const ctrl = getChatPageState();
   const suggestions = ['Plan my week', 'Summarize my inbox', 'Draft a goal'];
+
+  usePageMenu(() =>
+    ctrl.streaming
+      ? []
+      : [
+          {
+            id: 'clear-chat',
+            label: 'Clear chat history',
+            icon: Trash2,
+            onclick: ctrl.clear,
+          },
+        ],
+  );
 
   let scrollEl: HTMLDivElement | undefined = $state();
   let inputEl: HTMLInputElement | undefined = $state();
