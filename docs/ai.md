@@ -18,10 +18,10 @@ core/shell split. This doc covers how the pieces fit together at runtime.
 
 | Route            | Purpose                                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------------------------- |
-| `/chat`          | The chat surface. First bottom-nav tab; root `/` redirects here.                                         |
+| `/chat`          | The chat surface. First bottom-nav tab (labeled "AI", Sparkles icon); root `/` redirects here.           |
 | `/settings/keys` | Per-provider API key management. Not in the bottom nav — reached from the top-bar menu and from `/chat`. |
 
-The Chat nav item matches both `/chat` and `/settings/keys`, so it stays highlighted while the
+The AI nav item matches both `/chat` and `/settings/keys`, so it stays highlighted while the
 user configures keys (see `src/routes/+layout.svelte`).
 
 If no provider has a key, `/chat` redirects to `/settings/keys` on mount.
@@ -226,11 +226,23 @@ UI details:
 - **Provider dropdown** — shown only when 2+ providers are configured.
 - **Model dropdown** — shown only when the current provider offers 2+ models. Populated from the
   static list immediately, refreshed from `loadModels` in the background.
-- **Reasoning panel** — a collapsible `<details>` labeled "Thinking…" while active, "Thought
-  process" once content/tools arrive.
-- **Evidence chips** — one per tool call, with an icon by action kind (`read`, `create`,
-  `complete`, `uncomplete`, `update`, `delete`, `convert`, `move`). Destructive tools show an
-  inline **Undo** button; after undo, an "Undone" label.
+- **AI avatar** — each assistant bubble is preceded by a Bot-icon avatar. Tapping it opens the
+  **Message display** bottom sheet (`chat-display-modal.svelte`).
+- **Message display sheet** — two global, persisted toggle switches:
+  - **Show thinking** (`faz:ai:showThinking`)
+  - **Show tool calls** (`faz:ai:showTools`)
+
+  Both default to **off**, so bubbles render only the answer text. The choices are app-wide and
+  survive reloads.
+
+- **Reasoning panel** — only rendered when _Show thinking_ is on. A collapsible `<details>`
+  labeled "Thinking…" while active, "Thought process" once content/tools arrive.
+- **Evidence chips** — only rendered when _Show tool calls_ is on. One per tool call, with an
+  icon by action kind (`read`, `create`, `complete`, `uncomplete`, `update`, `delete`,
+  `convert`, `move`). Destructive tools show an inline **Undo** button; after undo, an "Undone"
+  label. (Undo is therefore reachable only while tool calls are visible.)
+- **Loading fallback** — when the assistant is active but has no visible content (e.g. a
+  multi-tool run with both toggles off), a "Thinking…" spinner keeps the bubble from going blank.
 - **Stop** button replaces Send while streaming.
 
 ## Tests
