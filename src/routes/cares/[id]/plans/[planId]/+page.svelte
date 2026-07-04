@@ -18,7 +18,11 @@
     OVERDUE_BEHAVIOR,
   } from '$lib/types';
   import type { PlanType, FixedDaysSubtype } from '$lib/types';
-  import { buildRecurrence, isValidRecurrence } from '$lib/engines/recurrence-wizard';
+  import {
+    buildRecurrence,
+    isValidRecurrence,
+    isIntervalPlanType,
+  } from '$lib/engines/recurrence-wizard';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import IntervalPicker from '$lib/components/interval-picker.svelte';
@@ -223,7 +227,7 @@
           class="select select-sm"
           bind:value={planType}
           onchange={() => {
-            if (planType.startsWith('INTERVAL')) intervalPickerOpen = true;
+            if (isIntervalPlanType(planType)) intervalPickerOpen = true;
           }}
         >
           <option value={PLAN_TYPE.INTERVAL_FIXED.value}>Fixed interval (e.g. every 2 weeks)</option
@@ -234,7 +238,7 @@
           <option value={PLAN_TYPE.FIXED_DAYS.value}>Specific days (e.g. every wednesday)</option>
         </select>
 
-        {#if planType.startsWith('INTERVAL')}
+        {#if isIntervalPlanType(planType)}
           <span class="label-text">Interval</span>
           <IntervalPicker bind:interval={planInterval} bind:open={intervalPickerOpen} />
         {:else}

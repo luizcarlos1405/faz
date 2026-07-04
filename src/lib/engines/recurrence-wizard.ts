@@ -70,8 +70,15 @@ export function buildRecurrence(input: WizardRecurrenceInput): Recurrence {
   };
 }
 
+export function isIntervalPlanType(scheduleType: PlanType): boolean {
+  return (
+    scheduleType === PLAN_TYPE.INTERVAL_FIXED.value ||
+    scheduleType === PLAN_TYPE.INTERVAL_AFTER_DONE.value
+  );
+}
+
 export function isValidRecurrence(input: WizardRecurrenceInput): boolean {
-  if (input.scheduleType.startsWith('INTERVAL')) {
+  if (isIntervalPlanType(input.scheduleType)) {
     const { years, months, weeks, days } = input.interval;
     return (years ?? 0) + (months ?? 0) + (weeks ?? 0) + (days ?? 0) > 0;
   }

@@ -20,7 +20,11 @@
     OVERDUE_BEHAVIOR,
   } from '$lib/types';
   import type { PlanType, FixedDaysSubtype } from '$lib/types';
-  import { buildRecurrence, isValidRecurrence } from '$lib/engines/recurrence-wizard';
+  import {
+    buildRecurrence,
+    isValidRecurrence,
+    isIntervalPlanType,
+  } from '$lib/engines/recurrence-wizard';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import { Temporal } from '@js-temporal/polyfill';
@@ -304,7 +308,7 @@
               bind:value={planType}
               onchange={() => {
                 planStep = Math.max(planStep, 2);
-                if (planType.startsWith('INTERVAL')) intervalPickerOpen = true;
+                if (isIntervalPlanType(planType)) intervalPickerOpen = true;
               }}
             >
               <option value={PLAN_TYPE.INTERVAL_FIXED.value}
@@ -320,7 +324,7 @@
           {/if}
 
           {#if planStep >= 2}
-            {#if planType.startsWith('INTERVAL')}
+            {#if isIntervalPlanType(planType)}
               <label class="label" for="plan-interval">
                 <span class="label-text">Interval</span>
               </label>
@@ -433,7 +437,7 @@
                 class="btn btn-sm"
                 onclick={() => {
                   planStep++;
-                  if (planStep === 2 && planType.startsWith('INTERVAL')) intervalPickerOpen = true;
+                  if (planStep === 2 && isIntervalPlanType(planType)) intervalPickerOpen = true;
                 }}>Next</button
               >
             {/if}
