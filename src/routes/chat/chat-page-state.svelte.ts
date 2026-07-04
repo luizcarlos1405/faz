@@ -16,6 +16,17 @@ import type { ChatMessage } from '$lib/ai/protocol';
 
 const IDLE_TIMEOUT_MS = 60000;
 
+const SHOW_THINKING_KEY = 'faz:ai:showThinking';
+const SHOW_TOOLS_KEY = 'faz:ai:showTools';
+
+function readFlag(key: string): boolean {
+  return localStorage.getItem(key) === '1';
+}
+
+function writeFlag(key: string, value: boolean): void {
+  localStorage.setItem(key, value ? '1' : '0');
+}
+
 type ToolLogEntry = ToolEvent & { undone?: boolean };
 
 interface TurnMessage {
@@ -57,6 +68,8 @@ export function getChatPageState() {
   let streaming = $state(false);
   let providerId = $state<ProviderId>(getLastProviderId() ?? 'zai');
   let modelId = $state(effectiveModel(providerId));
+  let showThinking = $state(readFlag(SHOW_THINKING_KEY));
+  let showTools = $state(readFlag(SHOW_TOOLS_KEY));
   let controller: AbortController | null = null;
   let idleTimer: ReturnType<typeof setInterval> | null = null;
   let timedOut = false;
@@ -209,6 +222,16 @@ export function getChatPageState() {
     setModel(providerId, model);
   }
 
+  function setShowThinking(v: boolean): void {
+    showThinking = v;
+    writeFlag(SHOW_THINKING_KEY, v);
+  }
+
+  function setShowTools(v: boolean): void {
+    showTools = v;
+    writeFlag(SHOW_TOOLS_KEY, v);
+  }
+
   function clear(): void {
     if (streaming) return;
     messages = [];
@@ -248,11 +271,19 @@ export function getChatPageState() {
     get showModelSwitch() {
       return showModelSwitch;
     },
+    get showThinking() {
+      return showThinking;
+    },
+    get showTools() {
+      return showTools;
+    },
     send,
     stop,
     undoTool,
     switchProvider,
     switchModel,
+    setShowThinking,
+    setShowTools,
     clear,
   };
 }
