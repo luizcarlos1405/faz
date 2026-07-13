@@ -77,10 +77,12 @@ Domain types (`TaskDoc`, `GoalDoc`, `CareDoc`, `InboxItemDoc`, `Recurrence`, etc
 
 ### Routes (`src/routes/`)
 
-`/chat` (AI assistant), `/tasks`, `/inbox`, `/goals`, `/cares` — bottom nav
-tabs. Root `/` redirects to `/chat`. `/settings/keys` (API key management) is
-not in the nav — reached from the top-bar menu and from `/chat` when no
-provider is configured.
+`/tasks`, `/inbox`, `/goals`, `/cares`, `/chat` (AI assistant) — bottom nav
+tabs, in dock order (Tasks first). Root `/` resumes the last-visited tab from
+`localStorage` (`faz:lastRoute`, recorded by a `$effect` in `+layout.svelte`;
+defaults to `/tasks`). `/settings/keys` (API key management) is not in the
+nav — reached from the top-bar menu and from `/chat` when no provider is
+configured.
 
 ## Related Docs
 
