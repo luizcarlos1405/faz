@@ -9,6 +9,7 @@
   import Heart from 'lucide-svelte/icons/heart';
   import Sparkles from 'lucide-svelte/icons/sparkles';
   import { onMount } from 'svelte';
+  import { tabForPath } from '$lib/utils/nav-tabs';
   import { runSchedulerNow } from '$lib/scheduler';
   import TopBar from '$lib/components/top-bar.svelte';
   import ToastContainer from '$lib/components/toast-container.svelte';
@@ -18,13 +19,22 @@
 
   let { children }: { children: Snippet } = $props();
 
+  const LAST_ROUTE_KEY = 'faz:lastRoute';
+
   const navItems = [
-    { href: '/chat', label: 'AI', icon: Sparkles, matches: ['/chat', '/settings/keys'] },
     { href: '/tasks', label: 'Tasks', icon: ListChecks, matches: ['/tasks'] },
     { href: '/inbox', label: 'Inbox', icon: Inbox, matches: ['/inbox'] },
     { href: '/goals', label: 'Goals', icon: Target, matches: ['/goals'] },
     { href: '/cares', label: 'Cares', icon: Heart, matches: ['/cares'] },
+    { href: '/chat', label: 'AI', icon: Sparkles, matches: ['/chat', '/settings/keys'] },
   ] as const;
+
+  $effect(() => {
+    const hash = page.url.hash;
+    const path = hash.startsWith('#') ? hash.slice(1) : hash;
+    const tab = tabForPath(path);
+    if (tab) localStorage.setItem(LAST_ROUTE_KEY, tab);
+  });
 
   const webManifestHref = pwaInfo?.webManifest.href ?? '';
 
