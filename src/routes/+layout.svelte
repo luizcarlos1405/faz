@@ -9,7 +9,7 @@
   import Heart from 'lucide-svelte/icons/heart';
   import Sparkles from 'lucide-svelte/icons/sparkles';
   import { onMount } from 'svelte';
-  import { tabForPath } from '$lib/utils/nav-tabs';
+  import { LAST_ROUTE_KEY, tabForPath } from '$lib/utils/nav-tabs';
   import { runSchedulerNow } from '$lib/scheduler';
   import TopBar from '$lib/components/top-bar.svelte';
   import ToastContainer from '$lib/components/toast-container.svelte';
@@ -18,8 +18,6 @@
   import { pwaInfo } from 'virtual:pwa-info';
 
   let { children }: { children: Snippet } = $props();
-
-  const LAST_ROUTE_KEY = 'faz:lastRoute';
 
   const navItems = [
     { href: '/tasks', label: 'Tasks', icon: ListChecks, matches: ['/tasks'] },
