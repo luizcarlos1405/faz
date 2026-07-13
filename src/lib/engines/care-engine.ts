@@ -135,9 +135,7 @@ export function runScheduler(
       missedTasks.push(...overdue.missedTasks);
       discardedTaskIds.push(...overdue.discardedTaskIds);
 
-      const filtered = existingTasks.filter(
-        (t) => !overdue.discardedTaskIds.includes(t._id),
-      );
+      const filtered = existingTasks.filter((t) => !overdue.discardedTaskIds.includes(t._id));
 
       const task = evaluateTaskPlan(plan, today, filtered);
       if (task) {
