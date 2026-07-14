@@ -42,9 +42,16 @@
     bumpTaskRefresh();
   }
 
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      syncAndRefresh();
+    }
+  }
+
   onMount(() => {
     syncAndRefresh();
     const interval = setInterval(syncAndRefresh, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     if (pwaInfo) {
       import('virtual:pwa-register').then(({ registerSW }) => {
@@ -59,7 +66,10 @@
       });
     }
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   });
 </script>
 
