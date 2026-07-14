@@ -34,7 +34,6 @@
   } = $props();
 
   let busy = $state(false);
-  let allDone = $state(false);
   let errorMsg = $state<string | null>(null);
 
   function flashError(msg: string) {
@@ -42,14 +41,12 @@
     setTimeout(() => (errorMsg = null), 3000);
   }
 
+  const allDone = $derived(open && !task);
+
   $effect(() => {
-    if (open && !task && !allDone) {
-      allDone = true;
+    if (allDone) {
       const timer = setTimeout(onclose, 1500);
       return () => clearTimeout(timer);
-    }
-    if (task) {
-      allDone = false;
     }
   });
 
