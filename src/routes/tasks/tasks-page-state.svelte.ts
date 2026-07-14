@@ -140,14 +140,19 @@ export function getTasksPageState() {
   }
 
   async function postponeTask(id: string) {
-    const task = allTasks.find((t) => t._id === id);
-    if (!task) return;
+    let fresh: TaskDoc;
+    try {
+      fresh = await getTask(id);
+    } catch {
+      await load();
+      return;
+    }
 
-    const originalDoAt = task.doAt;
+    const originalDoAt = fresh.doAt;
     const tomorrow = Temporal.PlainDate.from(getToday()).add({ days: 1 }).toString();
 
-    task.doAt = tomorrow;
-    await updateTask(task);
+    fresh.doAt = tomorrow;
+    await updateTask(fresh);
     await load();
 
     toast.notify('Postponed to tomorrow', {
