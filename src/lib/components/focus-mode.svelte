@@ -35,6 +35,12 @@
 
   let busy = $state(false);
   let allDone = $state(false);
+  let errorMsg = $state<string | null>(null);
+
+  function flashError(msg: string) {
+    errorMsg = msg;
+    setTimeout(() => (errorMsg = null), 3000);
+  }
 
   $effect(() => {
     if (open && !task && !allDone) {
@@ -50,8 +56,12 @@
   async function handleDone() {
     if (busy) return;
     busy = true;
+    errorMsg = null;
     try {
       await oncomplete();
+    } catch (e) {
+      console.error('Focus mode done failed', e);
+      flashError('Could not complete task');
     } finally {
       busy = false;
     }
@@ -60,8 +70,12 @@
   async function handleSkip() {
     if (busy) return;
     busy = true;
+    errorMsg = null;
     try {
       await onskip();
+    } catch (e) {
+      console.error('Focus mode skip failed', e);
+      flashError('Could not skip task');
     } finally {
       busy = false;
     }
@@ -70,8 +84,12 @@
   async function handleTomorrow() {
     if (busy) return;
     busy = true;
+    errorMsg = null;
     try {
       await ontomorrow();
+    } catch (e) {
+      console.error('Focus mode tomorrow failed', e);
+      flashError('Could not postpone task');
     } finally {
       busy = false;
     }
@@ -145,6 +163,12 @@
       </div>
 
       <div class="h-[60px]"></div>
+
+      {#if errorMsg}
+        <p class="text-center text-sm text-error px-8 pb-2" transition:fade={{ duration: 150 }}>
+          {errorMsg}
+        </p>
+      {/if}
 
       {#if task && !allDone}
         <div class="px-10 pb-12">
