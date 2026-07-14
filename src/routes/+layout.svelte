@@ -11,6 +11,7 @@
   import { onMount } from 'svelte';
   import { LAST_ROUTE_KEY, tabForPath } from '$lib/utils/nav-tabs';
   import { runSchedulerNow } from '$lib/scheduler';
+  import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
   import TopBar from '$lib/components/top-bar.svelte';
   import ToastContainer from '$lib/components/toast-container.svelte';
   import ConfirmModal from '$lib/components/confirm-modal.svelte';
@@ -36,9 +37,14 @@
 
   const webManifestHref = pwaInfo?.webManifest.href ?? '';
 
+  async function syncAndRefresh() {
+    await runSchedulerNow();
+    bumpTaskRefresh();
+  }
+
   onMount(() => {
-    runSchedulerNow();
-    const interval = setInterval(() => runSchedulerNow(), 5 * 60 * 1000);
+    syncAndRefresh();
+    const interval = setInterval(syncAndRefresh, 5 * 60 * 1000);
 
     if (pwaInfo) {
       import('virtual:pwa-register').then(({ registerSW }) => {
