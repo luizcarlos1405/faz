@@ -14,7 +14,6 @@
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { flip } from 'svelte/animate';
-  import { resolve } from '$app/paths';
   import { tick } from 'svelte';
 
   const ctrl = getTasksPageState();
@@ -125,15 +124,7 @@
                   <div>{task.title}</div>
                   <div class="text-xs text-base-content/50 truncate">
                     {formatFriendlyDate(task.doAt)}
-                    {#if origin}
-                      &ensp;&middot;&ensp;<a
-                        href={resolve(
-                          origin.type === 'goal' ? `/goals/${origin.id}` : `/cares/${origin.id}`,
-                        )}
-                        class="hover:underline"
-                        onclick={(e) => e.stopPropagation()}>{origin.title}</a
-                      >
-                    {/if}
+                    {#if origin}&ensp;&middot;&ensp;{origin.title}{/if}
                   </div>
                 </div>
               </div>
@@ -171,15 +162,7 @@
               <div class="line-through">{task.title}</div>
               <div class="text-xs text-base-content/50 truncate">
                 {formatFriendlyDate(task.doAt)}
-                {#if origin}
-                  &ensp;&middot;&ensp;<a
-                    href={resolve(
-                      origin.type === 'goal' ? `/goals/${origin.id}` : `/cares/${origin.id}`,
-                    )}
-                    class="hover:underline"
-                    onclick={(e) => e.stopPropagation()}>{origin.title}</a
-                  >
-                {/if}
+                {#if origin}&ensp;&middot;&ensp;{origin.title}{/if}
               </div>
             </div>
           </li>
@@ -222,6 +205,7 @@
 <TaskEditModal
   open={!!ctrl.editingTask}
   task={ctrl.editingTask}
+  origin={ctrl.editingTask ? ctrl.getOriginInfo(ctrl.editingTask) : null}
   onclose={ctrl.closeEdit}
   onsave={ctrl.saveEdit}
   ontransformgoal={ctrl.transformToGoal}

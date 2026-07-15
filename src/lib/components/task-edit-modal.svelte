@@ -6,10 +6,18 @@
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import { slide } from 'svelte/transition';
+  import { resolve } from '$app/paths';
+
+  interface OriginInfo {
+    type: 'goal' | 'care';
+    id: string;
+    title: string;
+  }
 
   let {
     open,
     task,
+    origin = null as OriginInfo | null,
     onclose,
     onsave,
     ontransformgoal,
@@ -18,6 +26,7 @@
   }: {
     open: boolean;
     task?: TaskDoc | null;
+    origin?: OriginInfo | null;
     onclose: () => void;
     onsave: (title: string, doAt: string) => void;
     ontransformgoal: () => void;
@@ -55,9 +64,22 @@
 
 <dialog class="modal modal-bottom" class:modal-open={open}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Edit task</h3>
+    <h3 class="font-bold text-lg mb-4">Task details</h3>
 
     <div class="flex flex-col gap-3">
+      {#if origin}
+        <a
+          href={resolve(origin.type === 'goal' ? `/goals/${origin.id}` : `/cares/${origin.id}`)}
+          class="flex items-center gap-1.5 text-sm text-base-content/60 hover:underline w-fit"
+        >
+          {#if origin.type === 'goal'}
+            <Target class="size-4" />
+          {:else}
+            <Heart class="size-4" />
+          {/if}
+          {origin.title}
+        </a>
+      {/if}
       <input
         type="text"
         class="input input-bordered w-full"
