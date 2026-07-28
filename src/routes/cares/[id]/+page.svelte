@@ -308,6 +308,9 @@
               bind:value={planType}
               onchange={() => {
                 planStep = Math.max(planStep, 2);
+                if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
+                  planOverdueBehavior = OVERDUE_BEHAVIOR.KEEP.value;
+                }
                 if (isIntervalPlanType(planType)) intervalPickerOpen = true;
               }}
             >
@@ -409,7 +412,7 @@
             />
           {/if}
 
-          {#if planStep >= 5}
+          {#if planStep >= 5 && planType !== PLAN_TYPE.INTERVAL_AFTER_DONE.value}
             <label class="label" for="plan-overdue">
               <span class="label-text">If the date passes</span>
             </label>

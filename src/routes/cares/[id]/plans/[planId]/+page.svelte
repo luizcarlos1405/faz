@@ -101,6 +101,10 @@
           }));
         }
       }
+
+      if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
+        planOverdueBehavior = OVERDUE_BEHAVIOR.KEEP.value;
+      }
     }
   });
 
@@ -227,6 +231,9 @@
           class="select select-sm"
           bind:value={planType}
           onchange={() => {
+            if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
+              planOverdueBehavior = OVERDUE_BEHAVIOR.KEEP.value;
+            }
             if (isIntervalPlanType(planType)) intervalPickerOpen = true;
           }}
         >
@@ -310,14 +317,16 @@
         </label>
         <input id="plan-start-date" type="date" class="input input-sm" bind:value={planStartDate} />
 
-        <label class="label" for="plan-overdue">
-          <span class="label-text">If the date passes</span>
-        </label>
-        <select id="plan-overdue" class="select select-sm" bind:value={planOverdueBehavior}>
-          <option value={OVERDUE_BEHAVIOR.KEEP.value}>Keep it</option>
-          <option value={OVERDUE_BEHAVIOR.MISSED.value}>Mark missed</option>
-          <option value={OVERDUE_BEHAVIOR.DISCARD.value}>Discard</option>
-        </select>
+        {#if planType !== PLAN_TYPE.INTERVAL_AFTER_DONE.value}
+          <label class="label" for="plan-overdue">
+            <span class="label-text">If the date passes</span>
+          </label>
+          <select id="plan-overdue" class="select select-sm" bind:value={planOverdueBehavior}>
+            <option value={OVERDUE_BEHAVIOR.KEEP.value}>Keep it</option>
+            <option value={OVERDUE_BEHAVIOR.MISSED.value}>Mark missed</option>
+            <option value={OVERDUE_BEHAVIOR.DISCARD.value}>Discard</option>
+          </select>
+        {/if}
 
         <div class="flex justify-end mt-2">
           <button class="btn btn-primary btn-sm" disabled={!canSave()} onclick={handleSave}>
