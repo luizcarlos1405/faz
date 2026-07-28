@@ -7,7 +7,24 @@ import {
   INTERVAL_SUBTYPE,
   FIXED_DAYS_SUBTYPE,
 } from '$lib/types';
-import type { TaskDoc, TaskPlan, CareDoc, DurationLike, OverdueBehavior } from '$lib/types';
+import type {
+  TaskDoc,
+  TaskPlan,
+  CareDoc,
+  DurationLike,
+  OverdueBehavior,
+  Recurrence,
+  IntervalAfterDoneRecurrence,
+} from '$lib/types';
+
+export function isAfterDoneRecurrence(
+  recurrence: Recurrence,
+): recurrence is IntervalAfterDoneRecurrence {
+  return (
+    recurrence.type === RECURRENCE_TYPE.INTERVAL.value &&
+    recurrence.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
+  );
+}
 
 export function evaluateTaskPlan(
   plan: TaskPlan,
@@ -18,10 +35,7 @@ export function evaluateTaskPlan(
   if (r.type === RECURRENCE_TYPE.INTERVAL.value && r.subtype === INTERVAL_SUBTYPE.FIXED.value) {
     return evaluateIntervalFixed(plan, today);
   }
-  if (
-    r.type === RECURRENCE_TYPE.INTERVAL.value &&
-    r.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
-  ) {
+  if (isAfterDoneRecurrence(r)) {
     return evaluateIntervalAfterDone(plan, today, existingTasks);
   }
   if (r.type === RECURRENCE_TYPE.FIXED_DAYS.value) {
@@ -57,8 +71,7 @@ export function evaluateIntervalAfterDone(
   existingTasks: TaskDoc[],
 ): TaskDoc | null {
   const r = plan.recurrence;
-  if (r.type !== RECURRENCE_TYPE.INTERVAL.value || r.subtype !== INTERVAL_SUBTYPE.AFTER_DONE.value)
-    return null;
+  if (!isAfterDoneRecurrence(r)) return null;
 
   const hasActive = existingTasks.some((t) => t.status === TASK_STATUS.TODO.value);
   if (hasActive) return null;
@@ -155,6 +168,10 @@ export function applyOverdueBehavior(
   today: Temporal.PlainDate,
   tasks: TaskDoc[],
 ): { missedTasks: TaskDoc[]; discardedTaskIds: string[] } {
+  if (isAfterDoneRecurrence(plan.recurrence)) {
+    return { missedTasks: [], discardedTaskIds: [] };
+  }
+
   const behavior: OverdueBehavior = plan.overdueBehavior ?? OVERDUE_BEHAVIOR.KEEP.value;
 
   const overdueTodo = tasks.filter(
