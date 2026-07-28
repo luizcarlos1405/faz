@@ -89,7 +89,8 @@ const recurrenceSchema = {
 const overdueBehaviorSchema = {
   type: 'string',
   enum: OVERDUE_BEHAVIOR_ENUM,
-  description: 'What happens when an occurrence is overdue. Defaults to KEEP.',
+  description:
+    'What happens when an occurrence is overdue. Defaults to KEEP. Ignored (forced to KEEP) for after-completion schedules.',
 };
 
 export const TOOL_SPECS: ToolSpec[] = [

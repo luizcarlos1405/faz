@@ -46,6 +46,7 @@ import {
   describeRecurrence,
   type WizardRecurrenceInput,
 } from '$lib/engines/recurrence-wizard';
+import { isAfterDoneRecurrence } from '$lib/engines/care-engine';
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 import { snapshotTask } from '$lib/utils/task-undo';
@@ -266,7 +267,9 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       const care = await getOrFail('Add plan', careId, () => getCare(careId));
       if ('ok' in care) return care;
       const recurrence = buildRecurrence(input);
-      const overdueBehavior = validateOverdue(args.overdueBehavior);
+      const overdueBehavior = isAfterDoneRecurrence(recurrence)
+        ? OVERDUE_BEHAVIOR.KEEP.value
+        : validateOverdue(args.overdueBehavior);
       if (overdueBehavior === INVALID)
         return fail(
           'Add plan failed',
@@ -291,6 +294,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       if ('ok' in care) return care;
       if (!care.taskPlans.some((tp) => tp._id === planId))
         return fail('Update plan failed', `No plan ${planId} in care ${careId}.`);
+      const existingPlan = care.taskPlans.find((tp) => tp._id === planId)!;
       const updates: Partial<TaskPlan> = {};
       const title = str(args.title);
       if (title) updates.title = title;
@@ -301,7 +305,10 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
         updates.recurrence = buildRecurrence(input);
       }
       if (args.overdueBehavior !== undefined) {
-        const ob = validateOverdue(args.overdueBehavior);
+        const effectiveRecurrence = updates.recurrence ?? existingPlan.recurrence;
+        const ob = isAfterDoneRecurrence(effectiveRecurrence)
+          ? OVERDUE_BEHAVIOR.KEEP.value
+          : validateOverdue(args.overdueBehavior);
         if (ob === INVALID)
           return fail(
             'Update plan failed',
