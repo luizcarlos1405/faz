@@ -3,6 +3,7 @@ export const DOC_TYPE = {
   TASK: { value: 'Task', idPrefix: 'task_' },
   GOAL: { value: 'Goal', idPrefix: 'goal_' },
   CARE: { value: 'Care', idPrefix: 'care_' },
+  ERROR: { value: 'Error', idPrefix: 'error_' },
 } as const;
 
 export const TASK_STATUS = {
@@ -198,4 +199,14 @@ export interface CareDoc {
   updatedAt: string;
 }
 
-export type FazDoc = InboxItemDoc | TaskDoc | GoalDoc | CareDoc;
+export interface ErrorDoc {
+  _id: string;
+  _rev?: string;
+  type: typeof DOC_TYPE.ERROR.value;
+  code: string;
+  message: string;
+  details?: string;
+  createdAt: string;
+}
+
+export type FazDoc = InboxItemDoc | TaskDoc | GoalDoc | CareDoc | ErrorDoc;

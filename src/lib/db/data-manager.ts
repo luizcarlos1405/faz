@@ -1,5 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { getDb, resetDb } from './database';
+import { DOC_TYPE } from '$lib/types';
 
 export interface FazExport {
   app: 'faz';
@@ -7,11 +8,17 @@ export interface FazExport {
   docs: Record<string, unknown>[];
 }
 
+const isUserDoc = (doc: Record<string, unknown> | undefined): boolean =>
+  !!doc && doc.type !== DOC_TYPE.ERROR.value;
+
 export async function exportAllData(): Promise<FazExport> {
   const db = await getDb();
   const result = await db.allDocs({ include_docs: true });
   const docs = result.rows
-    .filter((row) => !row.id.startsWith('_design/') && row.doc)
+    .filter(
+      (row) =>
+        !row.id.startsWith('_design/') && isUserDoc(row.doc as Record<string, unknown> | undefined),
+    )
     .map((row) => row.doc as unknown as Record<string, unknown>);
   return {
     app: 'faz',
@@ -22,7 +29,7 @@ export async function exportAllData(): Promise<FazExport> {
 
 export async function importData(data: FazExport): Promise<{ imported: number; skipped: number }> {
   const db = await getDb();
-  const docs = data.docs.map((doc) => {
+  const docs = data.docs.filter(isUserDoc).map((doc) => {
     const { _rev, ...rest } = doc;
     return rest;
   });
