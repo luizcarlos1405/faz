@@ -1,9 +1,31 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { getAllCares, updateCare } from './db/care-repo';
 import { createTask, getTasksByTaskPlan, markTaskMissed, removeTask } from './db/task-repo';
+import { logError } from './db/error-repo';
 import { runScheduler } from './engines/care-engine';
 
-export async function runSchedulerNow(): Promise<number> {
+let inflight: Promise<number> | null = null;
+
+export function runSchedulerNow(): Promise<number> {
+  if (inflight) {
+    const stack = new Error().stack ?? '';
+    console.error('[scheduler] concurrent runSchedulerNow call prevented — coalescing', {
+      stack,
+    });
+    logError({
+      code: 'SCHEDULER_CONCURRENT',
+      message: 'runSchedulerNow was called while another run was already in progress.',
+      details: { stack },
+    }).catch(() => {});
+    return inflight;
+  }
+  inflight = doRun().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+async function doRun(): Promise<number> {
   const today = Temporal.Now.plainDateISO();
   const cares = await getAllCares();
   const allPlanIds = cares.flatMap((c) => c.taskPlans.map((tp) => tp._id));
