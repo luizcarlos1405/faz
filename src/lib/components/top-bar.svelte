@@ -7,13 +7,25 @@
   import Database from 'lucide-svelte/icons/database';
   import KeyRound from 'lucide-svelte/icons/key-round';
   import DataModal from './data-modal.svelte';
+  import ErrorLogModal from './error-log-modal.svelte';
   import { getPageMenuState } from './page-menu-state.svelte';
 
   const pageMenu = getPageMenuState();
   let showThemeModal = $state(false);
   let showDataModal = $state(false);
+  let showErrorLog = $state(false);
   let currentTheme = $state('light');
   let themeTab = $state<'all' | 'dark' | 'light'>('all');
+  let logoClicks: number[] = [];
+
+  function handleLogoClick() {
+    const now = Date.now();
+    logoClicks = [...logoClicks, now].filter((t) => now - t <= 5000);
+    if (logoClicks.length >= 8) {
+      logoClicks = [];
+      showErrorLog = true;
+    }
+  }
 
   const darkThemes = new Set([
     'dark',
@@ -102,12 +114,19 @@
 </script>
 
 <div class="navbar px-4 z-50 bg-base-100 backdrop-blur border-b border-base-300">
-  <div class="navbar-start gap-2">
-    <div
-      class="h-6 w-6 bg-primary"
-      style="mask-image: url('/logo.svg'); -webkit-mask-image: url('/logo.svg'); mask-size: contain; -webkit-mask-size: contain; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-position: center; -webkit-mask-position: center;"
-    ></div>
-    <span class="text-xl font-bold tracking-tight">Faz</span>
+  <div class="navbar-start">
+    <button
+      type="button"
+      aria-label="Faz"
+      onclick={handleLogoClick}
+      class="flex items-center gap-2 bg-transparent border-0 p-0 cursor-pointer"
+    >
+      <div
+        class="h-6 w-6 bg-primary"
+        style="mask-image: url('/logo.svg'); -webkit-mask-image: url('/logo.svg'); mask-size: contain; -webkit-mask-size: contain; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-position: center; -webkit-mask-position: center;"
+      ></div>
+      <span class="text-xl font-bold tracking-tight">Faz</span>
+    </button>
   </div>
   <div class="navbar-end">
     <div class="dropdown dropdown-end">
@@ -200,3 +219,5 @@
 </dialog>
 
 <DataModal open={showDataModal} onclose={() => (showDataModal = false)} />
+
+<ErrorLogModal open={showErrorLog} onclose={() => (showErrorLog = false)} />
