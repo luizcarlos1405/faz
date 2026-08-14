@@ -101,7 +101,7 @@ browser-level tests, read it for setup details and conventions.
 
 ## Style
 
-- Spaces, single quotes, no trailing commas, 100 char width (`.prettierrc`)
+- Spaces, single quotes, trailing commas, 100 char width (`.prettierrc`)
 - No comments unless explicitly asked
 - Primary actions to the right: `cancel | save` never `save | cancel`. - Icons: `lucide-svelte`
 - UI: DaisyUI components (dock nav, etc.)
