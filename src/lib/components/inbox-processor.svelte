@@ -13,15 +13,7 @@
   let { open, inboxItem, onDone }: { open: boolean; inboxItem?: InboxItemDoc; onDone: () => void } =
     $props();
 
-  let ctrl = $state<ReturnType<typeof getInboxProcessorState> | null>(null);
-
-  $effect(() => {
-    if (inboxItem) {
-      ctrl = getInboxProcessorState(inboxItem);
-    } else {
-      ctrl = null;
-    }
-  });
+  const ctrl = $derived(inboxItem ? getInboxProcessorState(inboxItem) : null);
 
   let carePlanTitle: string = $state('');
   let carePlanInterval: { years: number; months: number; weeks: number; days: number } = $state({
