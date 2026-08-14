@@ -21,13 +21,13 @@ let
     libgbm
     libGL
     libxkbcommon
-    libX11
+    xorg.libX11
     libxcb
-    libXcomposite
-    libXdamage
-    libXext
-    libXfixes
-    libXrandr
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXrandr
     libxshmfence
     mesa
     nspr
@@ -35,12 +35,12 @@ let
     pango
     systemd
     wayland
-    xcbutil
-    xcbutilcursor
-    xcbutilimage
-    xcbutilkeysyms
-    xcbutilrenderutil
-    xcbutilwm
+    xorg.xcbutil
+    xorg.xcbutilcursor
+    xorg.xcbutilimage
+    xorg.xcbutilkeysyms
+    xorg.xcbutilrenderutil
+    xorg.xcbutilwm
   ];
 in
 
