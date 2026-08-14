@@ -1,5 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill';
 
+const SHORT_WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+export function formatShortWeekday(isoDate: string): string {
+  return SHORT_WEEKDAYS[Temporal.PlainDate.from(isoDate).dayOfWeek - 1];
+}
+
 export function formatFriendlyDate(
   isoDate: string,
   today: Temporal.PlainDate = Temporal.Now.plainDateISO(),

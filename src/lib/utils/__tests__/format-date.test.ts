@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Temporal } from '@js-temporal/polyfill';
-import { formatFriendlyDate } from '../format-date';
+import { formatFriendlyDate, formatShortWeekday } from '../format-date';
 
 function pd(iso: string): Temporal.PlainDate {
   return Temporal.PlainDate.from(iso);
@@ -56,5 +56,19 @@ describe('formatFriendlyDate', () => {
   it('year boundary yesterday returns Yesterday', () => {
     const result = formatFriendlyDate('2025-12-31', pd('2026-01-01'));
     expect(result).toBe('Yesterday');
+  });
+});
+
+describe('formatShortWeekday', () => {
+  it('returns FRI for a Friday', () => {
+    expect(formatShortWeekday('2026-08-14')).toBe('FRI');
+  });
+
+  it('returns SUN for a Sunday', () => {
+    expect(formatShortWeekday('2026-08-16')).toBe('SUN');
+  });
+
+  it('returns MON for a Monday', () => {
+    expect(formatShortWeekday('2026-08-17')).toBe('MON');
   });
 });

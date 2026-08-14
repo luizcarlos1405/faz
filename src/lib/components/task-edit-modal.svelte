@@ -7,6 +7,7 @@
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import { slide } from 'svelte/transition';
   import { resolve } from '$app/paths';
+  import { formatShortWeekday } from '$lib/utils/format-date';
 
   interface OriginInfo {
     type: 'goal' | 'care';
@@ -38,6 +39,10 @@
   let editDate = $state('');
   let showConvert = $state(false);
   let tomorrowOffset = $state(0);
+
+  const tomorrowWeekday = $derived(
+    tomorrowOffset > 1 && editDate ? formatShortWeekday(editDate) : '',
+  );
 
   $effect(() => {
     if (task) {
@@ -97,7 +102,7 @@
         <div class="indicator">
           {#if tomorrowOffset > 1}
             <span class="indicator-item indicator-start badge badge-accent"
-              >+{tomorrowOffset} days</span
+              >+{tomorrowOffset} days, {tomorrowWeekday}</span
             >
           {/if}
           <button class="btn join-item" class:btn-secondary={!!tomorrowOffset} onclick={setTomorrow}
