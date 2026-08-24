@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
-import { calculateGoalStatus } from '$lib/engines/goal-engine';
+import { calculateGoalStatus, isGoalArchived } from '$lib/engines/goal-engine';
 import { getTasksByGoal } from './task-repo';
 import { DOC_TYPE, GOAL_STATUS, type GoalDoc } from '$lib/types';
 
@@ -52,6 +52,22 @@ export async function restoreGoal(doc: GoalDoc): Promise<GoalDoc> {
   const result = await db.put(toPut);
   toPut._rev = result.rev;
   return toPut;
+}
+
+export async function archiveGoal(id: string): Promise<GoalDoc> {
+  const goal = await getGoal(id);
+  if (isGoalArchived(goal)) return goal;
+  goal.archivedAt = Temporal.Now.instant().toString();
+  return updateGoal(goal);
+}
+
+export async function unarchiveGoal(id: string): Promise<GoalDoc> {
+  const goal = await getGoal(id);
+  if (!isGoalArchived(goal)) return goal;
+  delete goal.archivedAt;
+  const active = (await getAllGoals()).filter((g) => !isGoalArchived(g));
+  goal.goalsListOrder = nextOrder(active.map((g) => g.goalsListOrder));
+  return updateGoal(goal);
 }
 
 export async function getAllGoals(): Promise<GoalDoc[]> {
