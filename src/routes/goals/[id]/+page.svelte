@@ -12,6 +12,8 @@
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
   import Pencil from 'lucide-svelte/icons/pencil';
   import Check from 'lucide-svelte/icons/check';
+  import Archive from 'lucide-svelte/icons/archive';
+  import ArchiveRestore from 'lucide-svelte/icons/archive-restore';
   import { tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
@@ -19,6 +21,7 @@
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { flip } from 'svelte/animate';
+  import { usePageMenu } from '$lib/components/page-menu-state.svelte';
   import { TASK_STATUS, GOAL_STATUS } from '$lib/types';
 
   const goalId = page.params.id!;
@@ -89,6 +92,33 @@
       goto(resolve('/goals'));
     }
   }
+
+  async function handleArchive() {
+    await ctrl.archive();
+    goto(resolve('/goals'));
+  }
+
+  usePageMenu(() =>
+    !ctrl.goal
+      ? []
+      : ctrl.isArchived
+        ? [
+            {
+              id: 'unarchive-goal',
+              label: 'Unarchive goal',
+              icon: ArchiveRestore,
+              onclick: ctrl.unarchive,
+            },
+          ]
+        : [
+            {
+              id: 'archive-goal',
+              label: 'Archive goal',
+              icon: Archive,
+              onclick: handleArchive,
+            },
+          ],
+  );
 </script>
 
 <div class="p-4">
@@ -133,6 +163,12 @@
         </button>
       {/if}
       <span class="badge {statusBadge[ctrl.goal.status]}">{statusLabel[ctrl.goal.status]}</span>
+      {#if ctrl.isArchived}
+        <span class="badge badge-ghost gap-1">
+          <Archive class="size-3" />
+          Archived
+        </span>
+      {/if}
     </div>
 
     {#if ctrl.goal.status === GOAL_STATUS.REVIEW.value}

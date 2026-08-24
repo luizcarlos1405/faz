@@ -185,6 +185,15 @@ export function getGoalDetailState(goalId: string) {
     await removeGoalRepo(goalId);
   }
 
+  async function archive() {
+    await archiveGoal(goalId);
+  }
+
+  async function unarchive() {
+    await unarchiveGoal(goalId);
+    await load();
+  }
+
   async function renameGoal(newTitle: string) {
     if (!goal) return;
     const trimmed = newTitle.trim();
@@ -301,11 +310,16 @@ export function getGoalDetailState(goalId: string) {
     get editingTask() {
       return editingTask;
     },
+    get isArchived() {
+      return goal?.archivedAt != null;
+    },
     load,
     addTask,
     toggleTask,
     markCompleted,
     deleteGoal,
+    archive,
+    unarchive,
     renameGoal,
     openEdit,
     closeEdit,
