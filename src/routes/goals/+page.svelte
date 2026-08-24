@@ -50,7 +50,7 @@
 <div class="p-4 relative">
   <h1 class="text-2xl font-bold mb-4">Goals</h1>
 
-  <div class="join w-full mb-6 sticky top-4 z-10">
+  <div class="join w-full mb-4 sticky top-4 z-10">
     <input
       type="text"
       class="input join-item flex-1"
@@ -64,14 +64,33 @@
     </button>
   </div>
 
+  <div role="tablist" class="tabs tabs-box mb-4">
+    <button
+      role="tab"
+      class="tab flex-1"
+      class:tab-active={ctrl.tab === 'active'}
+      onclick={() => (ctrl.tab = 'active')}>Active</button
+    >
+    <button
+      role="tab"
+      class="tab flex-1"
+      class:tab-active={ctrl.tab === 'archived'}
+      onclick={() => (ctrl.tab = 'archived')}>Archived</button
+    >
+  </div>
+
   {#if ctrl.loading}
     <div class="flex justify-center py-8">
       <LoaderCircle class="size-6 animate-spin text-base-content/40" />
     </div>
-  {:else if ctrl.goals.length === 0}
+  {:else if ctrl.visibleGoals.length === 0}
     <div class="text-center py-12 text-base-content/50">
       <Target class="size-12 mx-auto mb-3 opacity-40" />
-      <p>No goals yet. Add one above.</p>
+      {#if ctrl.tab === 'active'}
+        <p>No goals yet. Add one above.</p>
+      {:else}
+        <p>Nothing archived yet.</p>
+      {/if}
     </div>
   {:else}
     <ul
@@ -92,7 +111,7 @@
         },
       })}
     >
-      {#each ctrl.goals as goal (goal._id)}
+      {#each ctrl.visibleGoals as goal (goal._id)}
         <li
           class="list-row bg-base-100 w-full"
           data-goal-id={goal._id}
@@ -103,13 +122,15 @@
             <span class="badge badge-sm {statusBadge[goal.status]}">{statusLabel[goal.status]}</span
             >
           </a>
-          <div
-            class:cursor-grab={!isDragging}
-            class:cursor-grabbing={isDragging}
-            class="drag-handle flex pr-2 ml-auto items-center"
-          >
-            <GripVertical class="size-6 text-base-content/30" />
-          </div>
+          {#if ctrl.tab === 'active'}
+            <div
+              class:cursor-grab={!isDragging}
+              class:cursor-grabbing={isDragging}
+              class="drag-handle flex pr-2 ml-auto items-center"
+            >
+              <GripVertical class="size-6 text-base-content/30" />
+            </div>
+          {/if}
         </li>
       {/each}
     </ul>

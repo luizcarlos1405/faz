@@ -7,6 +7,8 @@ import {
   removeGoal as removeGoalRepo,
   reorderGoals,
   recalcGoalStatus,
+  archiveGoal,
+  unarchiveGoal,
 } from '$lib/db/goal-repo';
 import {
   getTasksByGoal,
@@ -23,6 +25,7 @@ import { createCare } from '$lib/db/care-repo';
 import { getToastState } from '$lib/components/toast-state.svelte';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
+import { partitionGoalsByArchive } from '$lib/engines/goal-engine';
 import { TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
@@ -33,6 +36,9 @@ export function getGoalsPageState() {
   let goals = $state<GoalDoc[]>([]);
   let newTitle = $state('');
   let loading = $state(true);
+  let tab = $state<'active' | 'archived'>('active');
+
+  const visibleGoals = $derived(partitionGoalsByArchive(goals)[tab]);
 
   async function load() {
     goals = await getAllGoals();
@@ -44,6 +50,7 @@ export function getGoalsPageState() {
     if (!title) return undefined;
     const created = await createGoal(title);
     newTitle = '';
+    tab = 'active';
     await load();
     return created._id;
   }
@@ -60,19 +67,32 @@ export function getGoalsPageState() {
   }
 
   function reorder(fromIndex: number, toIndex: number) {
-    goals = reorderItems(goals, fromIndex, toIndex, (g, i) => {
+    if (tab !== 'active') return;
+    const { active, archived } = partitionGoalsByArchive(goals);
+    const reorderedActive = reorderItems(active, fromIndex, toIndex, (g, i) => {
       g.goalsListOrder = i;
     });
+    goals = [...reorderedActive, ...archived];
   }
 
   async function persistOrder() {
-    const goalIds = goals.map((g) => g._id);
+    if (tab !== 'active') return;
+    const goalIds = partitionGoalsByArchive(goals).active.map((g) => g._id);
     await reorderGoals(goalIds);
   }
 
   return {
     get goals() {
       return goals;
+    },
+    get visibleGoals() {
+      return visibleGoals;
+    },
+    get tab() {
+      return tab;
+    },
+    set tab(v: 'active' | 'archived') {
+      tab = v;
     },
     get newTitle() {
       return newTitle;
