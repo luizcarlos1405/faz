@@ -6,7 +6,11 @@ import { calculateGoalStatus, isGoalPaused } from '$lib/engines/goal-engine';
 import { getTasksByGoal } from './task-repo';
 import { DOC_TYPE, GOAL_STATUS, type GoalDoc } from '$lib/types';
 
-export async function createGoal(title: string, originInboxItemId?: string): Promise<GoalDoc> {
+export async function createGoal(
+  title: string,
+  originInboxItemId?: string,
+  paused = false,
+): Promise<GoalDoc> {
   const now = Temporal.Now.instant().toString();
   const existing = await getAllGoals();
   const doc: GoalDoc = {
@@ -14,11 +18,14 @@ export async function createGoal(title: string, originInboxItemId?: string): Pro
     type: DOC_TYPE.GOAL.value,
     title,
     status: GOAL_STATUS.NOT_STARTED.value,
-    goalsListOrder: nextOrder(existing.map((g) => g.goalsListOrder)),
+    goalsListOrder: nextOrder(
+      existing.filter((g) => g.pausedAt == null).map((g) => g.goalsListOrder),
+    ),
     originInboxItemId,
     createdAt: now,
     updatedAt: now,
   };
+  if (paused) doc.pausedAt = now;
   const db = await getDb();
   const result = await db.put(doc);
   doc._rev = result.rev;

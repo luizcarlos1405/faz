@@ -48,9 +48,8 @@ export function getGoalsPageState() {
   async function add(): Promise<string | undefined> {
     const title = newTitle.trim();
     if (!title) return undefined;
-    const created = await createGoal(title);
+    const created = await createGoal(title, undefined, tab === 'paused');
     newTitle = '';
-    tab = 'active';
     await load();
     return created._id;
   }
