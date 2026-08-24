@@ -171,6 +171,7 @@ export interface GoalDoc {
   title: string;
   status: GoalStatus;
   goalsListOrder?: number;
+  archivedAt?: string;
   originInboxItemId?: string;
   createdAt: string;
   updatedAt: string;

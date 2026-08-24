@@ -8,3 +8,18 @@ export function calculateGoalStatus(goal: GoalDoc, tasks: TaskDoc[]): GoalStatus
 
   return GOAL_STATUS.IN_PROGRESS.value;
 }
+
+export function isGoalArchived(goal: GoalDoc): boolean {
+  return goal.archivedAt != null;
+}
+
+export function partitionGoalsByArchive(goals: GoalDoc[]): {
+  active: GoalDoc[];
+  archived: GoalDoc[];
+} {
+  const active = goals.filter((g) => !isGoalArchived(g));
+  const archived = goals
+    .filter((g) => isGoalArchived(g))
+    .toSorted((a, b) => (b.archivedAt ?? '').localeCompare(a.archivedAt ?? ''));
+  return { active, archived };
+}
