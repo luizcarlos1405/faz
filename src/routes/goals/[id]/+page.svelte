@@ -12,8 +12,8 @@
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
   import Pencil from 'lucide-svelte/icons/pencil';
   import Check from 'lucide-svelte/icons/check';
-  import Archive from 'lucide-svelte/icons/archive';
-  import ArchiveRestore from 'lucide-svelte/icons/archive-restore';
+  import Pause from 'lucide-svelte/icons/pause';
+  import Play from 'lucide-svelte/icons/play';
   import { tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
@@ -93,29 +93,29 @@
     }
   }
 
-  async function handleArchive() {
-    await ctrl.archive();
+  async function handlePause() {
+    await ctrl.pause();
     goto(resolve('/goals'));
   }
 
   usePageMenu(() =>
     !ctrl.goal
       ? []
-      : ctrl.isArchived
+      : ctrl.isPaused
         ? [
             {
-              id: 'unarchive-goal',
-              label: 'Unarchive goal',
-              icon: ArchiveRestore,
-              onclick: ctrl.unarchive,
+              id: 'resume-goal',
+              label: 'Resume goal',
+              icon: Play,
+              onclick: ctrl.resume,
             },
           ]
         : [
             {
-              id: 'archive-goal',
-              label: 'Archive goal',
-              icon: Archive,
-              onclick: handleArchive,
+              id: 'pause-goal',
+              label: 'Pause goal',
+              icon: Pause,
+              onclick: handlePause,
             },
           ],
   );
@@ -163,10 +163,10 @@
         </button>
       {/if}
       <span class="badge {statusBadge[ctrl.goal.status]}">{statusLabel[ctrl.goal.status]}</span>
-      {#if ctrl.isArchived}
+      {#if ctrl.isPaused}
         <span class="badge badge-ghost gap-1">
-          <Archive class="size-3" />
-          Archived
+          <Pause class="size-3" />
+          Paused
         </span>
       {/if}
     </div>

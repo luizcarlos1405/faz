@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateGoalStatus, isGoalArchived, partitionGoalsByArchive } from '../goal-engine';
+import { calculateGoalStatus, isGoalPaused, partitionGoalsByPause } from '../goal-engine';
 import { DOC_TYPE, TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function makeGoal(
@@ -68,59 +68,59 @@ describe('calculateGoalStatus', () => {
   });
 });
 
-describe('isGoalArchived', () => {
-  it('returns false when archivedAt is missing', () => {
-    expect(isGoalArchived(makeGoal())).toBe(false);
+describe('isGoalPaused', () => {
+  it('returns false when pausedAt is missing', () => {
+    expect(isGoalPaused(makeGoal())).toBe(false);
   });
 
-  it('returns true when archivedAt is set', () => {
-    expect(
-      isGoalArchived(makeGoal(GOAL_STATUS.NOT_STARTED.value, { archivedAt: '2026-01-02' })),
-    ).toBe(true);
+  it('returns true when pausedAt is set', () => {
+    expect(isGoalPaused(makeGoal(GOAL_STATUS.NOT_STARTED.value, { pausedAt: '2026-01-02' }))).toBe(
+      true,
+    );
   });
 });
 
-describe('partitionGoalsByArchive', () => {
+describe('partitionGoalsByPause', () => {
   it('returns empty lists for empty input', () => {
-    expect(partitionGoalsByArchive([])).toEqual({ active: [], archived: [] });
+    expect(partitionGoalsByPause([])).toEqual({ active: [], paused: [] });
   });
 
-  it('puts all goals in active when none are archived', () => {
+  it('puts all goals in active when none are paused', () => {
     const goals = [makeGoal(), makeGoal()];
-    const { active, archived } = partitionGoalsByArchive(goals);
+    const { active, paused } = partitionGoalsByPause(goals);
     expect(active).toEqual(goals);
-    expect(archived).toEqual([]);
+    expect(paused).toEqual([]);
   });
 
-  it('puts all goals in archived when all are archived, most recent first', () => {
+  it('puts all goals in paused when all are paused, most recent first', () => {
     const goals = [
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_1', archivedAt: '2026-01-01' }),
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_2', archivedAt: '2026-03-01' }),
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_3', archivedAt: '2026-02-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_1', pausedAt: '2026-01-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_2', pausedAt: '2026-03-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_3', pausedAt: '2026-02-01' }),
     ];
-    const { active, archived } = partitionGoalsByArchive(goals);
+    const { active, paused } = partitionGoalsByPause(goals);
     expect(active).toEqual([]);
-    expect(archived.map((g) => g._id)).toEqual(['goal_2', 'goal_3', 'goal_1']);
+    expect(paused.map((g) => g._id)).toEqual(['goal_2', 'goal_3', 'goal_1']);
   });
 
   it('partitions a mixed list preserving active input order', () => {
     const goals = [
       makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_a' }),
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_b', archivedAt: '2026-01-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_b', pausedAt: '2026-01-01' }),
       makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_c' }),
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_d', archivedAt: '2026-02-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_d', pausedAt: '2026-02-01' }),
     ];
-    const { active, archived } = partitionGoalsByArchive(goals);
+    const { active, paused } = partitionGoalsByPause(goals);
     expect(active.map((g) => g._id)).toEqual(['goal_a', 'goal_c']);
-    expect(archived.map((g) => g._id)).toEqual(['goal_d', 'goal_b']);
+    expect(paused.map((g) => g._id)).toEqual(['goal_d', 'goal_b']);
   });
 
   it('does not mutate the input array', () => {
     const goals = [
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_1', archivedAt: '2026-01-01' }),
-      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_2', archivedAt: '2026-02-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_1', pausedAt: '2026-01-01' }),
+      makeGoal(GOAL_STATUS.NOT_STARTED.value, { _id: 'goal_2', pausedAt: '2026-02-01' }),
     ];
-    partitionGoalsByArchive(goals);
+    partitionGoalsByPause(goals);
     expect(goals.map((g) => g._id)).toEqual(['goal_1', 'goal_2']);
   });
 });

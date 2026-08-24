@@ -7,8 +7,8 @@ import {
   removeGoal as removeGoalRepo,
   reorderGoals,
   recalcGoalStatus,
-  archiveGoal,
-  unarchiveGoal,
+  pauseGoal,
+  resumeGoal,
 } from '$lib/db/goal-repo';
 import {
   getTasksByGoal,
@@ -25,7 +25,7 @@ import { createCare } from '$lib/db/care-repo';
 import { getToastState } from '$lib/components/toast-state.svelte';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
-import { partitionGoalsByArchive } from '$lib/engines/goal-engine';
+import { partitionGoalsByPause } from '$lib/engines/goal-engine';
 import { TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
@@ -36,9 +36,9 @@ export function getGoalsPageState() {
   let goals = $state<GoalDoc[]>([]);
   let newTitle = $state('');
   let loading = $state(true);
-  let tab = $state<'active' | 'archived'>('active');
+  let tab = $state<'active' | 'paused'>('active');
 
-  const visibleGoals = $derived(partitionGoalsByArchive(goals)[tab]);
+  const visibleGoals = $derived(partitionGoalsByPause(goals)[tab]);
 
   async function load() {
     goals = await getAllGoals();
@@ -68,16 +68,16 @@ export function getGoalsPageState() {
 
   function reorder(fromIndex: number, toIndex: number) {
     if (tab !== 'active') return;
-    const { active, archived } = partitionGoalsByArchive(goals);
+    const { active, paused } = partitionGoalsByPause(goals);
     const reorderedActive = reorderItems(active, fromIndex, toIndex, (g, i) => {
       g.goalsListOrder = i;
     });
-    goals = [...reorderedActive, ...archived];
+    goals = [...reorderedActive, ...paused];
   }
 
   async function persistOrder() {
     if (tab !== 'active') return;
-    const goalIds = partitionGoalsByArchive(goals).active.map((g) => g._id);
+    const goalIds = partitionGoalsByPause(goals).active.map((g) => g._id);
     await reorderGoals(goalIds);
   }
 
@@ -91,7 +91,7 @@ export function getGoalsPageState() {
     get tab() {
       return tab;
     },
-    set tab(v: 'active' | 'archived') {
+    set tab(v: 'active' | 'paused') {
       tab = v;
     },
     get newTitle() {
@@ -185,12 +185,12 @@ export function getGoalDetailState(goalId: string) {
     await removeGoalRepo(goalId);
   }
 
-  async function archive() {
-    await archiveGoal(goalId);
+  async function pause() {
+    await pauseGoal(goalId);
   }
 
-  async function unarchive() {
-    await unarchiveGoal(goalId);
+  async function resume() {
+    await resumeGoal(goalId);
     await load();
   }
 
@@ -310,16 +310,16 @@ export function getGoalDetailState(goalId: string) {
     get editingTask() {
       return editingTask;
     },
-    get isArchived() {
-      return goal?.archivedAt != null;
+    get isPaused() {
+      return goal?.pausedAt != null;
     },
     load,
     addTask,
     toggleTask,
     markCompleted,
     deleteGoal,
-    archive,
-    unarchive,
+    pause,
+    resume,
     renameGoal,
     openEdit,
     closeEdit,

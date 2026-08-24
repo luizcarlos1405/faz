@@ -9,17 +9,17 @@ export function calculateGoalStatus(goal: GoalDoc, tasks: TaskDoc[]): GoalStatus
   return GOAL_STATUS.IN_PROGRESS.value;
 }
 
-export function isGoalArchived(goal: GoalDoc): boolean {
-  return goal.archivedAt != null;
+export function isGoalPaused(goal: GoalDoc): boolean {
+  return goal.pausedAt != null;
 }
 
-export function partitionGoalsByArchive(goals: GoalDoc[]): {
+export function partitionGoalsByPause(goals: GoalDoc[]): {
   active: GoalDoc[];
-  archived: GoalDoc[];
+  paused: GoalDoc[];
 } {
-  const active = goals.filter((g) => !isGoalArchived(g));
-  const archived = goals
-    .filter((g) => isGoalArchived(g))
-    .toSorted((a, b) => (b.archivedAt ?? '').localeCompare(a.archivedAt ?? ''));
-  return { active, archived };
+  const active = goals.filter((g) => !isGoalPaused(g));
+  const paused = goals
+    .filter((g) => isGoalPaused(g))
+    .toSorted((a, b) => (b.pausedAt ?? '').localeCompare(a.pausedAt ?? ''));
+  return { active, paused };
 }

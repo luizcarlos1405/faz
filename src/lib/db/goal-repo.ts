@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder } from '$lib/engines/ordering';
-import { calculateGoalStatus, isGoalArchived } from '$lib/engines/goal-engine';
+import { calculateGoalStatus, isGoalPaused } from '$lib/engines/goal-engine';
 import { getTasksByGoal } from './task-repo';
 import { DOC_TYPE, GOAL_STATUS, type GoalDoc } from '$lib/types';
 
@@ -54,18 +54,18 @@ export async function restoreGoal(doc: GoalDoc): Promise<GoalDoc> {
   return toPut;
 }
 
-export async function archiveGoal(id: string): Promise<GoalDoc> {
+export async function pauseGoal(id: string): Promise<GoalDoc> {
   const goal = await getGoal(id);
-  if (isGoalArchived(goal)) return goal;
-  goal.archivedAt = Temporal.Now.instant().toString();
+  if (isGoalPaused(goal)) return goal;
+  goal.pausedAt = Temporal.Now.instant().toString();
   return updateGoal(goal);
 }
 
-export async function unarchiveGoal(id: string): Promise<GoalDoc> {
+export async function resumeGoal(id: string): Promise<GoalDoc> {
   const goal = await getGoal(id);
-  if (!isGoalArchived(goal)) return goal;
-  delete goal.archivedAt;
-  const active = (await getAllGoals()).filter((g) => !isGoalArchived(g));
+  if (!isGoalPaused(goal)) return goal;
+  delete goal.pausedAt;
+  const active = (await getAllGoals()).filter((g) => !isGoalPaused(g));
   goal.goalsListOrder = nextOrder(active.map((g) => g.goalsListOrder));
   return updateGoal(goal);
 }

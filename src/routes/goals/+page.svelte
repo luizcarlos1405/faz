@@ -74,8 +74,8 @@
     <button
       role="tab"
       class="tab flex-1"
-      class:tab-active={ctrl.tab === 'archived'}
-      onclick={() => (ctrl.tab = 'archived')}>Archived</button
+      class:tab-active={ctrl.tab === 'paused'}
+      onclick={() => (ctrl.tab = 'paused')}>Paused</button
     >
   </div>
 
@@ -89,7 +89,7 @@
       {#if ctrl.tab === 'active'}
         <p>No goals yet. Add one above.</p>
       {:else}
-        <p>Nothing archived yet.</p>
+        <p>Nothing paused yet.</p>
       {/if}
     </div>
   {:else}
