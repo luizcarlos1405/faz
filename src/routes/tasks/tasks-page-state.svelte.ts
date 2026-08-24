@@ -11,8 +11,9 @@ import {
   restoreTask,
   getNextTaskForGoals,
 } from '$lib/db/task-repo';
-import { createGoal, getGoal, recalcGoalStatus } from '$lib/db/goal-repo';
+import { createGoal, getGoal, getAllGoals, recalcGoalStatus } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
+import { isGoalArchived } from '$lib/engines/goal-engine';
 import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
@@ -50,7 +51,15 @@ export function getTasksPageState() {
     const today = getToday();
     [allTasks, doneTodayList] = await Promise.all([getVisibleTasks(today), getDoneToday(today)]);
 
-    const goalIds = [...new SvelteSet(allTasks.filter((t) => t.goalId).map((t) => t.goalId!))];
+    const archivedGoalIds = new SvelteSet(
+      (await getAllGoals()).filter(isGoalArchived).map((g) => g._id),
+    );
+
+    const goalIds = [
+      ...new SvelteSet(
+        allTasks.filter((t) => t.goalId && !archivedGoalIds.has(t.goalId)).map((t) => t.goalId!),
+      ),
+    ];
     const topTaskPerGoal =
       goalIds.length > 0 ? await getNextTaskForGoals(goalIds) : new SvelteMap<string, TaskDoc>();
 
