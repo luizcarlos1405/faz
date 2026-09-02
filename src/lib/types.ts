@@ -177,6 +177,12 @@ export interface GoalDoc {
   updatedAt: string;
 }
 
+export interface FailedPlanEvaluation {
+  planId: string;
+  careId: string;
+  error: string;
+}
+
 export interface TaskPlan {
   _id: string;
   title: string;

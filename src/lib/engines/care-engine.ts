@@ -12,6 +12,7 @@ import type {
   TaskPlan,
   CareDoc,
   DurationLike,
+  FailedPlanEvaluation,
   OverdueBehavior,
   Recurrence,
   IntervalAfterDoneRecurrence,
@@ -24,6 +25,108 @@ export function isAfterDoneRecurrence(
     recurrence.type === RECURRENCE_TYPE.INTERVAL.value &&
     recurrence.subtype === INTERVAL_SUBTYPE.AFTER_DONE.value
   );
+}
+
+const INTERVAL_FIELDS = ['years', 'months', 'weeks', 'days'] as const;
+
+export function validateInterval(interval: DurationLike): string | null {
+  let total = 0;
+  for (const field of INTERVAL_FIELDS) {
+    const value = interval[field];
+    if (value === undefined) continue;
+    if (!Number.isInteger(value) || value < 0) {
+      return `interval.${field} must be a non-negative integer, got ${String(value)}`;
+    }
+    total += value;
+  }
+  if (total <= 0) return 'interval must total more than zero';
+  return null;
+}
+
+function isIsoDate(value: string): boolean {
+  try {
+    Temporal.PlainDate.from(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function asUnknownField(value: unknown): string {
+  return String(value);
+}
+
+export function validateRecurrence(recurrence: Recurrence): string | null {
+  if (
+    recurrence.type !== RECURRENCE_TYPE.INTERVAL.value &&
+    recurrence.type !== RECURRENCE_TYPE.FIXED_DAYS.value
+  ) {
+    return `unknown recurrence type ${asUnknownField((recurrence as { type?: unknown }).type)}`;
+  }
+
+  if (!isIsoDate(recurrence.startDate)) {
+    return `startDate ${asUnknownField(recurrence.startDate)} is not a valid ISO date`;
+  }
+
+  if (recurrence.type === RECURRENCE_TYPE.INTERVAL.value) {
+    if (
+      recurrence.subtype !== INTERVAL_SUBTYPE.FIXED.value &&
+      recurrence.subtype !== INTERVAL_SUBTYPE.AFTER_DONE.value
+    ) {
+      return `unknown INTERVAL subtype ${asUnknownField((recurrence as { subtype?: unknown }).subtype)}`;
+    }
+    const intervalError = validateInterval(recurrence.interval);
+    if (intervalError) return intervalError;
+    return null;
+  }
+
+  if (recurrence.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
+    if (recurrence.daysOfWeek.length === 0) return 'daysOfWeek must not be empty';
+    for (const dow of recurrence.daysOfWeek) {
+      if (!Number.isInteger(dow) || dow < 1 || dow > 7) {
+        return `daysOfWeek value ${asUnknownField(dow)} is outside 1-7`;
+      }
+    }
+    return null;
+  }
+
+  if (recurrence.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
+    if (recurrence.daysOfMonth.length === 0) return 'daysOfMonth must not be empty';
+    for (const dom of recurrence.daysOfMonth) {
+      if (!Number.isInteger(dom) || dom < 1 || dom > 31) {
+        return `daysOfMonth value ${asUnknownField(dom)} is outside 1-31`;
+      }
+    }
+    return null;
+  }
+
+  if (recurrence.subtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value) {
+    if (recurrence.dates.length === 0) return 'dates must not be empty';
+    for (const { month, day } of recurrence.dates) {
+      if (!Number.isInteger(month) || month < 1 || month > 12) {
+        return `dates month ${asUnknownField(month)} is outside 1-12`;
+      }
+      if (!Number.isInteger(day) || day < 1 || day > 31) {
+        return `dates day ${asUnknownField(day)} is outside 1-31`;
+      }
+    }
+    return null;
+  }
+
+  return `unknown FIXED_DAYS subtype ${asUnknownField((recurrence as { subtype?: unknown }).subtype)}`;
+}
+
+export function validateTaskPlan(plan: TaskPlan): string | null {
+  const recurrenceError = validateRecurrence(plan.recurrence);
+  if (recurrenceError) return recurrenceError;
+  if (
+    isAfterDoneRecurrence(plan.recurrence) &&
+    plan.lastDoneDate !== undefined &&
+    !isIsoDate(plan.lastDoneDate)
+  ) {
+    return `lastDoneDate ${asUnknownField(plan.lastDoneDate)} is not a valid ISO date`;
+  }
+  return null;
 }
 
 export function evaluateTaskPlan(
@@ -139,33 +242,49 @@ export function runScheduler(
   updatedPlans: Map<string, TaskPlan>;
   missedTasks: TaskDoc[];
   discardedTaskIds: string[];
+  failedPlans: FailedPlanEvaluation[];
 } {
   const generatedTasks: TaskDoc[] = [];
   const updatedPlans = new Map<string, TaskPlan>();
   const missedTasks: TaskDoc[] = [];
   const discardedTaskIds: string[] = [];
+  const failedPlans: FailedPlanEvaluation[] = [];
 
   for (const care of cares) {
     for (const plan of care.taskPlans) {
-      const existingTasks = getTasksForPlan(plan._id);
+      try {
+        const validationError = validateTaskPlan(plan);
+        if (validationError) {
+          failedPlans.push({ planId: plan._id, careId: care._id, error: validationError });
+          continue;
+        }
 
-      const overdue = applyOverdueBehavior(plan, today, existingTasks);
-      missedTasks.push(...overdue.missedTasks);
-      discardedTaskIds.push(...overdue.discardedTaskIds);
+        const existingTasks = getTasksForPlan(plan._id);
 
-      const filtered = existingTasks.filter((t) => !overdue.discardedTaskIds.includes(t._id));
+        const overdue = applyOverdueBehavior(plan, today, existingTasks);
+        missedTasks.push(...overdue.missedTasks);
+        discardedTaskIds.push(...overdue.discardedTaskIds);
 
-      const task = evaluateTaskPlan(plan, today, filtered);
-      if (task) {
-        task.careId = care._id;
-        generatedTasks.push(task);
-        const updated = { ...plan, lastDoAtDate: task.doAt };
-        updatedPlans.set(plan._id, updated);
+        const filtered = existingTasks.filter((t) => !overdue.discardedTaskIds.includes(t._id));
+
+        const task = evaluateTaskPlan(plan, today, filtered);
+        if (task) {
+          task.careId = care._id;
+          generatedTasks.push(task);
+          const updated = { ...plan, lastDoAtDate: task.doAt };
+          updatedPlans.set(plan._id, updated);
+        }
+      } catch (e) {
+        failedPlans.push({
+          planId: plan._id,
+          careId: care._id,
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
     }
   }
 
-  return { tasks: generatedTasks, updatedPlans, missedTasks, discardedTaskIds };
+  return { tasks: generatedTasks, updatedPlans, missedTasks, discardedTaskIds, failedPlans };
 }
 
 export function applyOverdueBehavior(

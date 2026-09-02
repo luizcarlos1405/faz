@@ -7,6 +7,9 @@ import {
   evaluateTaskPlan,
   runScheduler,
   applyOverdueBehavior,
+  validateInterval,
+  validateRecurrence,
+  validateTaskPlan,
 } from '../care-engine';
 import {
   DOC_TYPE,
@@ -19,6 +22,7 @@ import {
   type TaskPlan,
   type TaskDoc,
   type CareDoc,
+  type Recurrence,
 } from '$lib/types';
 
 function makePlan(
@@ -1651,5 +1655,215 @@ describe('runScheduler malformed-plan isolation', () => {
 
     expect(result.tasks).toEqual([]);
     expect(failedPlansOf(result)).toEqual([]);
+  });
+});
+
+describe('validateInterval', () => {
+  it('accepts positive integer intervals', () => {
+    expect(validateInterval({ days: 7 })).toBeNull();
+    expect(validateInterval({ months: 1 })).toBeNull();
+    expect(validateInterval({ years: 1, months: 2, weeks: 3, days: 4 })).toBeNull();
+  });
+
+  it('treats missing fields as zero', () => {
+    expect(validateInterval({ days: 1 })).toBeNull();
+    expect(validateInterval({})).toMatch(/more than zero/);
+  });
+
+  it('rejects fractional fields', () => {
+    expect(validateInterval({ days: 0.5 })).toMatch(/non-negative integer/);
+  });
+
+  it('rejects negative fields even when they net positive', () => {
+    expect(validateInterval({ years: -1, days: 400 })).toMatch(/interval\.years/);
+  });
+
+  it('rejects all-zero intervals', () => {
+    expect(validateInterval({ days: 0 })).toMatch(/more than zero/);
+  });
+});
+
+describe('validateRecurrence', () => {
+  function asRecurrence(value: unknown): Recurrence {
+    return value as Recurrence;
+  }
+
+  it('accepts every valid recurrence shape', () => {
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { days: 7 },
+        startDate: '2026-01-01',
+      }),
+    ).toBeNull();
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+        interval: { months: 1 },
+        startDate: '2026-01-01',
+      }),
+    ).toBeNull();
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+        daysOfWeek: [1, 7],
+        startDate: '2026-01-01',
+      }),
+    ).toBeNull();
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+        daysOfMonth: [1, 31],
+        startDate: '2026-01-01',
+      }),
+    ).toBeNull();
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+        dates: [
+          { month: 12, day: 25 },
+          { month: 2, day: 29 },
+        ],
+        startDate: '2026-01-01',
+      }),
+    ).toBeNull();
+  });
+
+  it('rejects an invalid startDate', () => {
+    expect(
+      validateRecurrence(
+        asRecurrence({
+          type: RECURRENCE_TYPE.INTERVAL.value,
+          subtype: INTERVAL_SUBTYPE.FIXED.value,
+          interval: { days: 7 },
+          startDate: '2026-13-45',
+        }),
+      ),
+    ).toMatch(/startDate/);
+  });
+
+  it('rejects an unknown recurrence type', () => {
+    expect(
+      validateRecurrence(
+        asRecurrence({
+          type: 'BOGUS',
+          startDate: '2026-01-01',
+        }),
+      ),
+    ).toMatch(/unknown recurrence type/);
+  });
+
+  it('rejects an unknown INTERVAL subtype', () => {
+    expect(
+      validateRecurrence(
+        asRecurrence({
+          type: RECURRENCE_TYPE.INTERVAL.value,
+          subtype: 'BOGUS',
+          interval: { days: 7 },
+          startDate: '2026-01-01',
+        }),
+      ),
+    ).toMatch(/unknown INTERVAL subtype/);
+  });
+
+  it('rejects out-of-range daysOfWeek values', () => {
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+        daysOfWeek: [9],
+        startDate: '2026-01-01',
+      }),
+    ).toMatch(/daysOfWeek/);
+  });
+
+  it('rejects empty daysOfWeek', () => {
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+        daysOfWeek: [],
+        startDate: '2026-01-01',
+      }),
+    ).toMatch(/daysOfWeek/);
+  });
+
+  it('rejects out-of-range daysOfMonth values', () => {
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+        daysOfMonth: [0],
+        startDate: '2026-01-01',
+      }),
+    ).toMatch(/daysOfMonth/);
+  });
+
+  it('rejects out-of-range yearday month and day', () => {
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+        dates: [{ month: 13, day: 1 }],
+        startDate: '2026-01-01',
+      }),
+    ).toMatch(/month/);
+    expect(
+      validateRecurrence({
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+        dates: [{ month: 1, day: 32 }],
+        startDate: '2026-01-01',
+      }),
+    ).toMatch(/day/);
+  });
+});
+
+describe('validateTaskPlan', () => {
+  it('rejects a corrupt lastDoneDate on AFTER_DONE', () => {
+    expect(
+      validateTaskPlan({
+        ...makePlan({
+          type: RECURRENCE_TYPE.INTERVAL.value,
+          subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+          interval: { days: 3 },
+          startDate: '2026-01-01',
+        }),
+        lastDoneDate: 'not-a-date',
+      }),
+    ).toMatch(/lastDoneDate/);
+  });
+
+  it('accepts AFTER_DONE with a valid lastDoneDate', () => {
+    expect(
+      validateTaskPlan({
+        ...makePlan({
+          type: RECURRENCE_TYPE.INTERVAL.value,
+          subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+          interval: { days: 3 },
+          startDate: '2026-01-01',
+        }),
+        lastDoneDate: '2026-05-12',
+      }),
+    ).toBeNull();
+  });
+
+  it('ignores lastDoneDate on plans that do not consume it', () => {
+    expect(
+      validateTaskPlan({
+        ...makePlan({
+          type: RECURRENCE_TYPE.INTERVAL.value,
+          subtype: INTERVAL_SUBTYPE.FIXED.value,
+          interval: { days: 3 },
+          startDate: '2026-01-01',
+        }),
+        lastDoneDate: 'not-a-date',
+      }),
+    ).toBeNull();
   });
 });
