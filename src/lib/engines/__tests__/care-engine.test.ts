@@ -1867,3 +1867,69 @@ describe('validateTaskPlan', () => {
     ).toBeNull();
   });
 });
+
+describe('FIXED_DAYS chronological generation order', () => {
+  it('returns MONTHDAYS candidates chronologically regardless of stored order', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1, 15],
+      startDate: '2026-01-01',
+    });
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.map((t) => t.doAt)).toEqual(['2026-09-15', '2026-10-01']);
+  });
+
+  it('returns YEARDAYS candidates chronologically regardless of stored order', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+      dates: [
+        { month: 12, day: 25 },
+        { month: 7, day: 4 },
+      ],
+      startDate: '2026-01-01',
+    });
+    const today = Temporal.PlainDate.from('2026-06-01');
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.map((t) => t.doAt)).toEqual(['2026-07-04', '2026-12-25']);
+  });
+
+  it('returns WEEKDAYS candidates chronologically regardless of stored order', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [5, 1],
+      startDate: '2026-01-01',
+    });
+    const today = Temporal.PlainDate.from('2026-01-12');
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.map((t) => t.doAt)).toEqual(['2026-01-12', '2026-01-16']);
+  });
+
+  it('runScheduler generates the earliest occurrence first across runs', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1, 15],
+      startDate: '2026-01-01',
+    });
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Home',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+
+    const first = runScheduler([care], Temporal.PlainDate.from('2026-09-02'), () => []);
+    expect(first.tasks.map((t) => t.doAt)).toEqual(['2026-09-15']);
+    expect(first.updatedPlans.get('tp_test')?.lastDoAtDate).toBe('2026-09-15');
+
+    const second = runScheduler([care], Temporal.PlainDate.from('2026-09-03'), () => first.tasks);
+    expect(second.tasks.map((t) => t.doAt)).toEqual(['2026-10-01']);
+    expect(second.updatedPlans.get('tp_test')?.lastDoAtDate).toBe('2026-10-01');
+  });
+});
