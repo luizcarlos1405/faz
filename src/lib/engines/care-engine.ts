@@ -59,8 +59,10 @@ export function evaluateIntervalFixed(
   let multiple = 0;
 
   while (Temporal.PlainDate.compare(candidate, today) < 0) {
+    const next = addDuration(startDate, scaleDuration(r.interval, multiple + 1));
+    if (Temporal.PlainDate.compare(next, candidate) <= 0) return null;
     multiple++;
-    candidate = addDuration(startDate, scaleDuration(r.interval, multiple));
+    candidate = next;
   }
 
   if (hasTaskForDate(existingTasks, plan._id, candidate.toString())) return null;
