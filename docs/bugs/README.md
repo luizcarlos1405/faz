@@ -15,7 +15,7 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 | --------------------------------------------------------------------- | ---------------------------------------------------------- | --------- | -------- |
 | [001](./001-month-anchor-drift.md)                                    | Monthly interval plans drift off their anchor day          | FIXED     | High     |
 | [002](./002-scheduler-bricks-on-malformed-plan.md)                    | One malformed plan stops all scheduling app-wide           | FIXED     | High     |
-| [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | NEEDS FIX | Medium   |
+| [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | FIXED     | Medium   |
 | [004](./004-after-done-generates-past-dated-tasks.md)                 | AFTER_DONE plans generate tasks dated in the past          | NEEDS FIX | Medium   |
 | [005](./005-plan-mutations-orphan-generated-tasks.md)                 | Plan edits/deletes orphan already-generated tasks          | NEEDS FIX | Medium   |
 | [006](./006-zero-or-negative-interval-hangs-scheduler.md)             | Zero/negative interval hangs the scheduler (infinite loop) | NEEDS FIX | Low      |

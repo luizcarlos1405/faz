@@ -1,6 +1,6 @@
 # BUG-003: Evening completions missing from "Done today" (UTC date)
 
-- **Status:** NEEDS FIX
+- **Status:** FIXED (commit `0b4688b`)
 - **Severity:** Medium (user-visible data loss in a UI section)
 - **Area:** shell (`db/`)
 - **Files:** `src/lib/db/task-repo.ts` — `getDoneToday` (~line 125)
@@ -56,3 +56,14 @@ The helper stays pure (timezone injected), so it is unit-testable.
   `importers/google-tasks.ts` slices local-day strings from the Google export (date part
   is already what the user meant), and `data-modal.svelte` only builds a backup filename.
 - Remember the repo rule: never use `new Date()`; go through Temporal as above.
+
+## Resolution
+
+Fixed in two commits (TDD):
+
+- `409d245` — test: `completedOnLocalDate` pinned in
+  `src/lib/utils/__tests__/completed-date.test.ts`, alongside a stub that reproduced the
+  buggy `slice(0, 10)` behavior; two tests failed (Z-form instants land on the wrong local
+  day), mirroring production.
+- `0b4688b` — fix: helper implemented with `Temporal.Instant → toZonedDateTimeISO(timeZone)
+→ toPlainDate()`; `getDoneToday` now calls it with `Temporal.Now.timeZoneId()`.
