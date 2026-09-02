@@ -7,6 +7,7 @@ import {
   MONTH_SHORT_NAMES,
 } from '$lib/types';
 import type { Recurrence, PlanType, FixedDaysSubtype, DurationLike } from '$lib/types';
+import { validateInterval } from './care-engine';
 
 const DAY_SHORT_NAMES = ['', ...ISO_WEEKDAYS.map((e) => e.name)];
 
@@ -79,8 +80,7 @@ export function isIntervalPlanType(scheduleType: PlanType): boolean {
 
 export function isValidRecurrence(input: WizardRecurrenceInput): boolean {
   if (isIntervalPlanType(input.scheduleType)) {
-    const { years, months, weeks, days } = input.interval;
-    return (years ?? 0) + (months ?? 0) + (weeks ?? 0) + (days ?? 0) > 0;
+    return validateInterval(input.interval) === null;
   }
   if (input.daysSubtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) return input.daysOfWeek.length > 0;
   if (input.daysSubtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) return input.daysOfMonth.length > 0;
