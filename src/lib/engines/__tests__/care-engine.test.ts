@@ -1182,3 +1182,191 @@ describe('WEEKDAYS generates tasks only on correct days of the week', () => {
     }
   });
 });
+
+describe('FIXED_DAYS moved-occurrence guard', () => {
+  it('MONTHDAYS does not regenerate occurrence moved off its date', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-01';
+    const today = Temporal.PlainDate.from('2026-09-01');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-02' })];
+    expect(evaluateFixedDays(plan, today, moved)).toEqual([]);
+  });
+
+  it('MONTHDAYS still generates next occurrence after period passes', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-01';
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-02' })];
+    const result = evaluateFixedDays(plan, today, moved);
+    expect(result.length).toBe(1);
+    expect(result[0].doAt).toBe('2026-10-01');
+  });
+
+  it('WEEKDAYS does not regenerate today occurrence moved off today', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [1],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-07';
+    const today = Temporal.PlainDate.from('2026-09-07');
+    expect(today.dayOfWeek).toBe(1);
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-08' })];
+    expect(evaluateFixedDays(plan, today, moved)).toEqual([]);
+  });
+
+  it('WEEKDAYS equality guard does not block other days of the same plan', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [1, 3],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-09';
+    const today = Temporal.PlainDate.from('2026-09-07');
+    expect(today.dayOfWeek).toBe(1);
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-10' })];
+    const result = evaluateFixedDays(plan, today, moved);
+    expect(result.length).toBe(1);
+    expect(result[0].doAt).toBe('2026-09-07');
+  });
+
+  it('YEARDAYS does not regenerate moved occurrence', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.YEARDAYS.value,
+      dates: [{ month: 1, day: 15 }],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2027-01-15';
+    const today = Temporal.PlainDate.from('2027-01-15');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2027-01-20' })];
+    expect(evaluateFixedDays(plan, today, moved)).toEqual([]);
+  });
+
+  it('deleted occurrence is not resurrected within its period', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-01';
+    const today = Temporal.PlainDate.from('2026-09-01');
+    expect(evaluateFixedDays(plan, today, [])).toEqual([]);
+  });
+
+  it('resumes generation after the period passes with no tasks', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [1],
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-09-01';
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const result = evaluateFixedDays(plan, today, []);
+    expect(result.length).toBe(1);
+    expect(result[0].doAt).toBe('2026-10-01');
+  });
+});
+
+describe('INTERVAL FIXED candidate-date guard', () => {
+  function makeDailyPlan(): TaskPlan {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 1 },
+      startDate: '2026-09-01',
+    });
+    plan.lastDoAtDate = '2026-09-01';
+    return plan;
+  }
+
+  it('does not generate when an existing task sits on the candidate date', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-02' })];
+    expect(evaluateIntervalFixed(plan, today, moved)).toBeNull();
+  });
+
+  it('still generates when candidate date is free', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const result = evaluateIntervalFixed(plan, today, []);
+    expect(result).not.toBeNull();
+    expect(result!.doAt).toBe('2026-09-02');
+  });
+
+  it('guard is scoped to the plan', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const otherPlan = [makeTask({ taskPlanId: 'tp_other', doAt: '2026-09-02' })];
+    const result = evaluateIntervalFixed(plan, today, otherPlan);
+    expect(result).not.toBeNull();
+    expect(result!.doAt).toBe('2026-09-02');
+  });
+
+  it('evaluateTaskPlan passes existingTasks to evaluateIntervalFixed', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-02' })];
+    expect(evaluateTaskPlan(plan, today, moved)).toBeNull();
+  });
+});
+
+describe('runScheduler moved-occurrence end to end', () => {
+  function makeCareWithMonthlyPlan(): CareDoc {
+    const plan: TaskPlan = {
+      _id: 'tp_monthly',
+      title: 'Repasse',
+      recurrence: {
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+        daysOfMonth: [1],
+        startDate: '2026-01-01',
+      },
+      lastDoAtDate: '2026-09-01',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    return {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'SecFin',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+  }
+
+  it('does not recreate moved occurrence and leaves lastDoAtDate untouched', () => {
+    const care = makeCareWithMonthlyPlan();
+    const today = Temporal.PlainDate.from('2026-09-01');
+    const moved = [makeTask({ _id: 'task_moved', taskPlanId: 'tp_monthly', doAt: '2026-09-02' })];
+    const result = runScheduler([care], today, () => moved);
+    expect(result.tasks).toEqual([]);
+    expect(result.updatedPlans.size).toBe(0);
+  });
+
+  it('generates next occurrence the following day and advances lastDoAtDate', () => {
+    const care = makeCareWithMonthlyPlan();
+    const today = Temporal.PlainDate.from('2026-09-02');
+    const moved = [makeTask({ _id: 'task_moved', taskPlanId: 'tp_monthly', doAt: '2026-09-02' })];
+    const result = runScheduler([care], today, () => moved);
+    expect(result.tasks.length).toBe(1);
+    expect(result.tasks[0].doAt).toBe('2026-10-01');
+    expect(result.updatedPlans.get('tp_monthly')!.lastDoAtDate).toBe('2026-10-01');
+  });
+});
