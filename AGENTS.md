@@ -97,6 +97,11 @@ repo, state, component).
 [Integration tests](./docs/integration-tests.md): when adding or modifying
 browser-level tests, read it for setup details and conventions.
 
+[Known bugs](./docs/bugs/README.md): tracked bug reports (`NEEDS FIX`/`FIXED`),
+one file per bug with root cause, repro and suggested tests. When fixing a listed
+bug, follow its file and flip the status; when you discover a new bug, document it
+there.
+
 [DaisyUI](https://daisyui.com/llms.txt): when doing UI work.
 
 ## Style
