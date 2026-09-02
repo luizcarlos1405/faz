@@ -56,7 +56,7 @@ describe('evaluateIntervalFixed', () => {
       startDate: '2026-01-15',
     });
     const today = Temporal.PlainDate.from('2026-01-15');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result).not.toBeNull();
     expect(result!.doAt).toBe('2026-01-15');
   });
@@ -69,7 +69,7 @@ describe('evaluateIntervalFixed', () => {
       startDate: '2026-01-01',
     });
     const today = Temporal.PlainDate.from('2026-01-20');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result!.doAt).toBe('2026-01-22');
   });
 
@@ -82,7 +82,7 @@ describe('evaluateIntervalFixed', () => {
     });
     plan.lastDoAtDate = '2026-01-15';
     const today = Temporal.PlainDate.from('2026-01-22');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result!.doAt).toBe('2026-01-22');
   });
 
@@ -94,7 +94,7 @@ describe('evaluateIntervalFixed', () => {
       startDate: '2026-01-15',
     });
     const today = Temporal.PlainDate.from('2026-01-10');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result!.doAt).toBe('2026-01-15');
   });
 });
@@ -520,7 +520,7 @@ describe('evaluateIntervalFixed edge cases', () => {
     });
     plan.lastDoAtDate = '2026-01-31';
     const today = Temporal.PlainDate.from('2026-03-01');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result).not.toBeNull();
     const doAt = Temporal.PlainDate.from(result!.doAt);
     expect(doAt.year).toBe(2026);
@@ -535,7 +535,7 @@ describe('evaluateIntervalFixed edge cases', () => {
       startDate: '2026-01-05',
     });
     const today = Temporal.PlainDate.from('2026-01-19');
-    const result = evaluateIntervalFixed(plan, today);
+    const result = evaluateIntervalFixed(plan, today, []);
     expect(result!.doAt).toBe('2026-01-19');
   });
 
@@ -547,7 +547,7 @@ describe('evaluateIntervalFixed edge cases', () => {
       startDate: '2026-01-01',
     });
     const today = Temporal.PlainDate.from('2026-01-15');
-    expect(evaluateIntervalFixed(plan, today)).toBeNull();
+    expect(evaluateIntervalFixed(plan, today, [])).toBeNull();
   });
 });
 

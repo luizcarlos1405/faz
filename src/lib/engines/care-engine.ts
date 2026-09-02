@@ -33,7 +33,7 @@ export function evaluateTaskPlan(
 ): TaskDoc | null {
   const r = plan.recurrence;
   if (r.type === RECURRENCE_TYPE.INTERVAL.value && r.subtype === INTERVAL_SUBTYPE.FIXED.value) {
-    return evaluateIntervalFixed(plan, today);
+    return evaluateIntervalFixed(plan, today, existingTasks);
   }
   if (isAfterDoneRecurrence(r)) {
     return evaluateIntervalAfterDone(plan, today, existingTasks);
@@ -45,7 +45,11 @@ export function evaluateTaskPlan(
   return null;
 }
 
-export function evaluateIntervalFixed(plan: TaskPlan, today: Temporal.PlainDate): TaskDoc | null {
+export function evaluateIntervalFixed(
+  plan: TaskPlan,
+  today: Temporal.PlainDate,
+  existingTasks: TaskDoc[],
+): TaskDoc | null {
   const r = plan.recurrence;
   if (r.type !== RECURRENCE_TYPE.INTERVAL.value || r.subtype !== INTERVAL_SUBTYPE.FIXED.value)
     return null;
@@ -61,6 +65,8 @@ export function evaluateIntervalFixed(plan: TaskPlan, today: Temporal.PlainDate)
   while (Temporal.PlainDate.compare(candidate, today) < 0) {
     candidate = addDuration(candidate, r.interval);
   }
+
+  if (hasTaskForDate(existingTasks, plan._id, candidate.toString())) return null;
 
   return makeTask(plan, candidate.toString());
 }
@@ -102,21 +108,21 @@ export function evaluateFixedDays(
   if (r.subtype === FIXED_DAYS_SUBTYPE.WEEKDAYS.value) {
     for (const dow of r.daysOfWeek) {
       const next = nextWeekday(effectiveStart, dow);
-      if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {
+      if (shouldGenerateForDate(plan, existingTasks, next.toString())) {
         tasks.push(makeTask(plan, next.toString()));
       }
     }
   } else if (r.subtype === FIXED_DAYS_SUBTYPE.MONTHDAYS.value) {
     for (const dom of r.daysOfMonth) {
       const next = nextMonthday(effectiveStart, dom);
-      if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {
+      if (shouldGenerateForDate(plan, existingTasks, next.toString())) {
         tasks.push(makeTask(plan, next.toString()));
       }
     }
   } else if (r.subtype === FIXED_DAYS_SUBTYPE.YEARDAYS.value) {
     for (const { month, day } of r.dates) {
       const next = nextYearday(effectiveStart, month, day);
-      if (!hasTaskForDate(existingTasks, plan._id, next.toString())) {
+      if (shouldGenerateForDate(plan, existingTasks, next.toString())) {
         tasks.push(makeTask(plan, next.toString()));
       }
     }
@@ -223,6 +229,10 @@ function makeTask(plan: TaskPlan, doAt: string): TaskDoc {
 
 function hasTaskForDate(tasks: TaskDoc[], planId: string, doAt: string): boolean {
   return tasks.some((t) => t.taskPlanId === planId && t.doAt === doAt);
+}
+
+function shouldGenerateForDate(plan: TaskPlan, existingTasks: TaskDoc[], dateStr: string): boolean {
+  return plan.lastDoAtDate !== dateStr && !hasTaskForDate(existingTasks, plan._id, dateStr);
 }
 
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
