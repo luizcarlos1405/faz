@@ -54,16 +54,13 @@ export function evaluateIntervalFixed(
   if (r.type !== RECURRENCE_TYPE.INTERVAL.value || r.subtype !== INTERVAL_SUBTYPE.FIXED.value)
     return null;
 
-  let candidate: Temporal.PlainDate;
-
-  if (plan.lastDoAtDate) {
-    candidate = addDuration(Temporal.PlainDate.from(plan.lastDoAtDate), r.interval);
-  } else {
-    candidate = Temporal.PlainDate.from(r.startDate);
-  }
+  const startDate = Temporal.PlainDate.from(r.startDate);
+  let candidate = startDate;
+  let multiple = 0;
 
   while (Temporal.PlainDate.compare(candidate, today) < 0) {
-    candidate = addDuration(candidate, r.interval);
+    multiple++;
+    candidate = addDuration(startDate, scaleDuration(r.interval, multiple));
   }
 
   if (hasTaskForDate(existingTasks, plan._id, candidate.toString())) return null;
@@ -211,6 +208,15 @@ function addDuration(date: Temporal.PlainDate, duration: DurationLike): Temporal
     days: duration.days ?? 0,
   });
   return date.add(d);
+}
+
+function scaleDuration(duration: DurationLike, multiple: number): DurationLike {
+  return {
+    years: (duration.years ?? 0) * multiple,
+    months: (duration.months ?? 0) * multiple,
+    weeks: (duration.weeks ?? 0) * multiple,
+    days: (duration.days ?? 0) * multiple,
+  };
 }
 
 function makeTask(plan: TaskPlan, doAt: string): TaskDoc {
