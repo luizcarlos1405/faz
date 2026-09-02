@@ -230,7 +230,7 @@ export function evaluateFixedDays(
     }
   }
 
-  return tasks;
+  return tasks.toSorted((a, b) => a.doAt.localeCompare(b.doAt));
 }
 
 export function runScheduler(
