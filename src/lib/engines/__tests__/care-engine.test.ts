@@ -73,7 +73,7 @@ describe('evaluateIntervalFixed', () => {
     expect(result!.doAt).toBe('2026-01-22');
   });
 
-  it('uses lastDoAtDate as anchor when present', () => {
+  it('generates on the startDate grid even when lastDoAtDate is present', () => {
     const plan = makePlan({
       type: RECURRENCE_TYPE.INTERVAL.value,
       subtype: INTERVAL_SUBTYPE.FIXED.value,
@@ -522,9 +522,7 @@ describe('evaluateIntervalFixed edge cases', () => {
     const today = Temporal.PlainDate.from('2026-03-01');
     const result = evaluateIntervalFixed(plan, today, []);
     expect(result).not.toBeNull();
-    const doAt = Temporal.PlainDate.from(result!.doAt);
-    expect(doAt.year).toBe(2026);
-    expect(doAt.month).toBeGreaterThanOrEqual(2);
+    expect(result!.doAt).toBe('2026-03-31');
   });
 
   it('handles weekly interval', () => {
@@ -1368,5 +1366,84 @@ describe('runScheduler moved-occurrence end to end', () => {
     expect(result.tasks.length).toBe(1);
     expect(result.tasks[0].doAt).toBe('2026-10-01');
     expect(result.updatedPlans.get('tp_monthly')!.lastDoAtDate).toBe('2026-10-01');
+  });
+});
+
+describe('INTERVAL FIXED month-anchor stability', () => {
+  function monthlyPlan(): TaskPlan {
+    return {
+      _id: 'tp_anchor',
+      title: 'Monthly',
+      recurrence: {
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { months: 1 },
+        startDate: '2027-01-31',
+      },
+      createdAt: '2027-01-01T00:00:00Z',
+      updatedAt: '2027-01-01T00:00:00Z',
+    };
+  }
+
+  function makeMonthlyCare(plan: TaskPlan): CareDoc {
+    return {
+      _id: 'care_anchor',
+      type: DOC_TYPE.CARE.value,
+      title: 'Anchor',
+      taskPlans: [plan],
+      createdAt: '2027-01-01T00:00:00Z',
+      updatedAt: '2027-01-01T00:00:00Z',
+    };
+  }
+
+  it('keeps the anchor day across a shorter month (Jan 31 -> Feb 28 -> Mar 31)', () => {
+    const run1 = runScheduler(
+      [makeMonthlyCare(monthlyPlan())],
+      Temporal.PlainDate.from('2027-01-31'),
+      () => [],
+    );
+    expect(run1.tasks[0].doAt).toBe('2027-01-31');
+
+    const plan2 = run1.updatedPlans.get('tp_anchor')!;
+    const run2 = runScheduler(
+      [makeMonthlyCare(plan2)],
+      Temporal.PlainDate.from('2027-02-28'),
+      () => [],
+    );
+    expect(run2.tasks[0].doAt).toBe('2027-02-28');
+
+    const plan3 = run2.updatedPlans.get('tp_anchor')!;
+    const run3 = runScheduler(
+      [makeMonthlyCare(plan3)],
+      Temporal.PlainDate.from('2027-03-01'),
+      () => [],
+    );
+    expect(run3.tasks[0].doAt).toBe('2027-03-31');
+  });
+
+  it('does not anchor on a clamped lastDoAtDate (Jan 30 -> Feb 28 -> Mar 30)', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { months: 1 },
+      startDate: '2027-01-30',
+    });
+    plan.lastDoAtDate = '2027-02-28';
+    const today = Temporal.PlainDate.from('2027-03-01');
+    const result = evaluateIntervalFixed(plan, today, []);
+    expect(result!.doAt).toBe('2027-03-30');
+  });
+
+  it('ignores off-grid lastDoAtDate when computing the next occurrence', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+    plan.lastDoAtDate = '2026-01-17';
+    const today = Temporal.PlainDate.from('2026-01-22');
+    const result = evaluateIntervalFixed(plan, today, []);
+    expect(result!.doAt).toBe('2026-01-22');
   });
 });
