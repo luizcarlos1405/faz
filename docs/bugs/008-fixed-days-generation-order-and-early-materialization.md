@@ -1,6 +1,7 @@
 # BUG-008: FIXED_DAYS generates out of order and materializes far ahead
 
-- **Status:** NEEDS FIX
+- **Status:** FIXED (out-of-order generation; commits `fd33cba` tests, `c3ec3e9` fix).
+  The optional lookahead cap (part 2) was not implemented — product decision left open.
 - **Severity:** Low (no duplicates/misses, but surprising behavior and wider exposure to other bugs)
 - **Area:** core engine
 - **Files:** `src/lib/engines/care-engine.ts` — `evaluateTaskPlan` `tasks[0]` cap (~41-44), `evaluateFixedDays` iteration order (~108-129), `runScheduler` `lastDoAtDate` write (~163)
@@ -57,6 +58,21 @@ run generates `2026-09-15` and sets `lastDoAtDate: '2026-09-15'` (regression).
 - Existing WEEKDAYS ordering tests (e.g. `[1, 3, 5]` from `2026-05-15`) stay green —
   they assert set membership/dates, and sorting must not change which dates are
   produced.
+
+## Resolution
+
+Fixed in two commits (TDD):
+
+- `fd33cba` — tests: `FIXED_DAYS chronological generation order` in
+  `care-engine.test.ts` pins chronological output for MONTHDAYS, YEARDAYS and WEEKDAYS
+  regardless of stored array order, plus a two-run `runScheduler` sequence asserting the
+  earliest occurrence (`2026-09-15`) is generated before `2026-10-01` with no
+  `lastDoAtDate` regression.
+- `c3ec3e9` — fix: `evaluateFixedDays` returns `tasks.toSorted((a, b) =>
+a.doAt.localeCompare(b.doAt))`, so `evaluateTaskPlan`'s `tasks[0]` cap always picks the
+  earliest missing occurrence.
+
+The optional lookahead cap (part 2) is a product decision and was **not** implemented.
 
 ## Interactions / notes
 
