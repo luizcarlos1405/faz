@@ -1447,3 +1447,27 @@ describe('INTERVAL FIXED month-anchor stability', () => {
     expect(result!.doAt).toBe('2026-01-22');
   });
 });
+
+describe('INTERVAL FIXED non-positive interval guard', () => {
+  it('returns null for an all-zero interval instead of looping forever', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 0 },
+      startDate: '2026-01-15',
+    });
+    const today = Temporal.PlainDate.from('2026-01-20');
+    expect(evaluateIntervalFixed(plan, today, [])).toBeNull();
+  });
+
+  it('returns null for a negative interval', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { months: -1 },
+      startDate: '2026-01-15',
+    });
+    const today = Temporal.PlainDate.from('2026-01-20');
+    expect(evaluateIntervalFixed(plan, today, [])).toBeNull();
+  });
+});
