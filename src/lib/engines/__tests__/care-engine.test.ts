@@ -1471,3 +1471,185 @@ describe('INTERVAL FIXED non-positive interval guard', () => {
     expect(evaluateIntervalFixed(plan, today, [])).toBeNull();
   });
 });
+
+describe('runScheduler malformed-plan isolation', () => {
+  type FailedPlan = { planId: string; careId: string; error: string };
+
+  function planWith(id: string, recurrence: TaskPlan['recurrence']): TaskPlan {
+    return {
+      _id: id,
+      title: 'Plan',
+      recurrence,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+  }
+
+  function makeCareWith(id: string, plans: TaskPlan[]): CareDoc {
+    return {
+      _id: id,
+      type: DOC_TYPE.CARE.value,
+      title: 'Care',
+      taskPlans: plans,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+  }
+
+  function failedPlansOf(result: ReturnType<typeof runScheduler>): FailedPlan[] {
+    return (result as { failedPlans?: FailedPlan[] }).failedPlans ?? [];
+  }
+
+  function goodWeeklyPlan(id: string): TaskPlan {
+    return planWith(id, {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 7 },
+      startDate: '2026-01-15',
+    });
+  }
+
+  const today = Temporal.PlainDate.from('2026-01-15');
+
+  it('evaluates valid plans and reports the malformed one instead of throwing', () => {
+    const bad = planWith('tp_bad', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 7 },
+      startDate: 'not-a-date',
+    });
+    const good = goodWeeklyPlan('tp_good');
+    const cares = [makeCareWith('care_bad', [bad]), makeCareWith('care_good', [good])];
+
+    let result: ReturnType<typeof runScheduler> | undefined;
+    expect(() => {
+      result = runScheduler(cares, today, () => []);
+    }).not.toThrow();
+
+    expect(result!.tasks.map((t) => t.taskPlanId)).toEqual(['tp_good']);
+    expect(failedPlansOf(result!)).toEqual([
+      { planId: 'tp_bad', careId: 'care_bad', error: expect.any(String) },
+    ]);
+  });
+
+  it('skips overdue processing for a malformed plan', () => {
+    const bad = planWith('tp_bad', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 7 },
+      startDate: 'not-a-date',
+    });
+    bad.overdueBehavior = OVERDUE_BEHAVIOR.MISSED.value;
+    const care = makeCareWith('care_bad', [bad]);
+    const overdue = makeTask({ _id: 'task_overdue', taskPlanId: 'tp_bad', doAt: '2026-01-10' });
+
+    const result = runScheduler([care], today, () => [overdue]);
+
+    expect(result.missedTasks).toEqual([]);
+    expect(failedPlansOf(result)).toHaveLength(1);
+  });
+
+  it('reports fractional-interval plans as failed instead of throwing', () => {
+    const bad = planWith('tp_frac', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 0.5 },
+      startDate: '2026-01-01',
+    });
+    const good = goodWeeklyPlan('tp_good');
+    const cares = [makeCareWith('care_frac', [bad]), makeCareWith('care_good', [good])];
+
+    let result: ReturnType<typeof runScheduler> | undefined;
+    expect(() => {
+      result = runScheduler(cares, today, () => []);
+    }).not.toThrow();
+
+    expect(result!.tasks.map((t) => t.taskPlanId)).toEqual(['tp_good']);
+    expect(failedPlansOf(result!).map((f) => f.planId)).toEqual(['tp_frac']);
+  });
+
+  it('reports zero-interval plans as failed instead of silently skipping them', () => {
+    const bad = planWith('tp_zero', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 0 },
+      startDate: '2026-01-01',
+    });
+    const care = makeCareWith('care_zero', [bad]);
+
+    const result = runScheduler([care], today, () => []);
+
+    expect(result.tasks).toEqual([]);
+    expect(failedPlansOf(result).map((f) => f.planId)).toEqual(['tp_zero']);
+  });
+
+  it('rejects out-of-range daysOfWeek values instead of generating off-pattern tasks', () => {
+    const bad = planWith('tp_dow', {
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [9],
+      startDate: '2026-01-01',
+    });
+    const care = makeCareWith('care_dow', [bad]);
+
+    const result = runScheduler([care], today, () => []);
+
+    expect(result.tasks).toEqual([]);
+    expect(failedPlansOf(result)).toEqual([
+      { planId: 'tp_dow', careId: 'care_dow', error: expect.any(String) },
+    ]);
+  });
+
+  it('reports corrupt daysOfMonth instead of aborting the run', () => {
+    const bad = planWith('tp_dom', {
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.MONTHDAYS.value,
+      daysOfMonth: [0],
+      startDate: '2026-01-01',
+    });
+    const good = goodWeeklyPlan('tp_good');
+    const cares = [makeCareWith('care_dom', [bad]), makeCareWith('care_good', [good])];
+
+    let result: ReturnType<typeof runScheduler> | undefined;
+    expect(() => {
+      result = runScheduler(cares, today, () => []);
+    }).not.toThrow();
+
+    expect(result!.tasks.map((t) => t.taskPlanId)).toEqual(['tp_good']);
+    expect(failedPlansOf(result!).map((f) => f.planId)).toEqual(['tp_dom']);
+  });
+
+  it('reports AFTER_DONE plans with corrupt lastDoneDate instead of throwing', () => {
+    const bad = planWith('tp_ldd', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+      interval: { days: 3 },
+      startDate: '2026-01-01',
+    });
+    bad.lastDoneDate = 'not-a-date';
+    const care = makeCareWith('care_ldd', [bad]);
+
+    let result: ReturnType<typeof runScheduler> | undefined;
+    expect(() => {
+      result = runScheduler([care], today, () => []);
+    }).not.toThrow();
+
+    expect(failedPlansOf(result!).map((f) => f.planId)).toEqual(['tp_ldd']);
+  });
+
+  it('does not report plans that legitimately evaluate to null', () => {
+    const plan = planWith('tp_ad', {
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+      interval: { days: 3 },
+      startDate: '2026-01-01',
+    });
+    const care = makeCareWith('care_ad', [plan]);
+    const active = [makeTask({ taskPlanId: 'tp_ad', status: TASK_STATUS.TODO.value })];
+
+    const result = runScheduler([care], today, () => active);
+
+    expect(result.tasks).toEqual([]);
+    expect(failedPlansOf(result)).toEqual([]);
+  });
+});
