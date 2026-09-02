@@ -35,11 +35,19 @@ async function doRun(): Promise<number> {
       tasksByPlan.set(planId, await getTasksByTaskPlan(planId));
     }),
   );
-  const { tasks, updatedPlans, missedTasks, discardedTaskIds } = runScheduler(
+  const { tasks, updatedPlans, missedTasks, discardedTaskIds, failedPlans } = runScheduler(
     cares,
     today,
     (planId) => tasksByPlan.get(planId) ?? [],
   );
+
+  for (const failedPlan of failedPlans) {
+    logError({
+      code: 'SCHEDULER_PLAN_FAILED',
+      message: `Plan ${failedPlan.planId} in care ${failedPlan.careId} was skipped: ${failedPlan.error}`,
+      details: failedPlan,
+    }).catch(() => {});
+  }
 
   for (const task of tasks) {
     await createTask({
