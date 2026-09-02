@@ -155,6 +155,8 @@
     return buildRecurrence(wizardInput());
   }
 
+  const lastStep = $derived((planType as string) === PLAN_TYPE.INTERVAL_AFTER_DONE.value ? 4 : 5);
+
   function canCreate(): boolean {
     if (!newPlanTitle.trim()) return false;
     return isValidRecurrence(wizardInput());
@@ -435,7 +437,7 @@
             {#if planStep > 0}
               <button class="btn btn-ghost btn-sm" onclick={() => planStep--}>Back</button>
             {/if}
-            {#if planStep < 5}
+            {#if planStep < lastStep}
               <button
                 class="btn btn-sm"
                 onclick={() => {
@@ -444,7 +446,7 @@
                 }}>Next</button
               >
             {/if}
-            {#if planStep === 5}
+            {#if planStep >= lastStep}
               <button class="btn btn-primary btn-sm" disabled={!canCreate()} onclick={handleCreate}>
                 Add
               </button>
