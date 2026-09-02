@@ -107,6 +107,18 @@ describe('isValidRecurrence', () => {
     expect(isValidRecurrence(baseInput({ interval: {} }))).toBe(false);
   });
 
+  it('rejects a negative interval that nets positive', () => {
+    expect(isValidRecurrence(baseInput({ interval: { years: -1, days: 400 } }))).toBe(false);
+  });
+
+  it('rejects a negative interval field', () => {
+    expect(isValidRecurrence(baseInput({ interval: { days: -7 } }))).toBe(false);
+  });
+
+  it('rejects a fractional interval field', () => {
+    expect(isValidRecurrence(baseInput({ interval: { days: 0.5 } }))).toBe(false);
+  });
+
   it('accepts non-empty weekdays', () => {
     expect(
       isValidRecurrence(
