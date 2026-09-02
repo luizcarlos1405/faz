@@ -1,3 +1,5 @@
-export function completedOnLocalDate(completedAt: string, _timeZone: string): string {
-  return completedAt.slice(0, 10);
+import { Temporal } from '@js-temporal/polyfill';
+
+export function completedOnLocalDate(completedAt: string, timeZone: string): string {
+  return Temporal.Instant.from(completedAt).toZonedDateTimeISO(timeZone).toPlainDate().toString();
 }

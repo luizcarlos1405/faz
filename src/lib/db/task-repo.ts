@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder, computeInsertBeforeDone } from '$lib/engines/ordering';
+import { completedOnLocalDate } from '$lib/utils/completed-date';
 import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 
 export async function createTask(data: {
@@ -122,8 +123,7 @@ export async function getDoneToday(todayDate: string): Promise<TaskDoc[]> {
   });
   return (allDone.docs as TaskDoc[]).filter((t) => {
     if (!t.completedAt) return false;
-    const completedDate = t.completedAt.slice(0, 10);
-    return completedDate === todayDate;
+    return completedOnLocalDate(t.completedAt, Temporal.Now.timeZoneId()) === todayDate;
   });
 }
 
