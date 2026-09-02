@@ -1,6 +1,6 @@
 # BUG-007: Moved/deleted occurrences resurrect; delete semantics diverge across recurrence types
 
-- **Status:** NEEDS FIX
+- **Status:** IGNORE
 - **Severity:** Medium (correctness, narrow windows; needs a product decision)
 - **Area:** core engine + shell (scheduler create path)
 - **Files:** `src/lib/engines/care-engine.ts` — `shouldGenerateForDate` (~234-236), `evaluateIntervalFixed` guard (~69), `makeTask` deterministic `_id` (~218); `src/lib/scheduler.ts` — `doRun` create loop routes through `createTask`; `src/lib/db/task-repo.ts` — `createTask` overwrites `_id` with `nanoid()`

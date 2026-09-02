@@ -1,6 +1,6 @@
 # BUG-005: Plan edits/deletes orphan already-generated tasks
 
-- **Status:** NEEDS FIX
+- **Status:** IGNORE
 - **Severity:** Medium
 - **Area:** shell (`db/care-repo.ts`) + new pure helpers in engine
 - **Files:** `src/lib/db/care-repo.ts` — `updateTaskPlan` (~137-151), `removeTaskPlan` (~100-104), `removeCare` (~48-52); context: `makeTask` in `src/lib/engines/care-engine.ts` (~216-228)

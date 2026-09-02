@@ -1,7 +1,9 @@
 # BUG-006: Zero/negative interval hangs the scheduler (infinite loop)
 
-- **Status:** NEEDS FIX (engine guard landed in commit `1455b03` via BUG-001; wizard
-  validation and per-plan error isolation still open)
+- **Status:** NEEDS FIX (engine guard landed in commit `1455b03` via BUG-001;
+  per-plan error isolation landed via BUG-002 in `3f2c001` — invalid intervals
+  now surface as `failedPlans` entries at scheduling time; wizard-side
+  re-validation is still open)
 - **Severity:** Low (UI prevents the common case; stored data is not re-validated)
 - **Area:** core engine + wizard
 - **Files:** `src/lib/engines/care-engine.ts` — `evaluateIntervalFixed` catch-up loop (~lines 65-67); `src/lib/engines/recurrence-wizard.ts` — `isValidRecurrence` (~80-88)
@@ -58,6 +60,12 @@ creation time, but:
   The `{ years: -1, days: 400 }` net-positive case advances and does not hang; wizard
   rejection of it is still open. Fractional intervals still throw and ride on
   BUG-002's blast radius.
+- Per-plan isolation done (`3f2c001`, via BUG-002): `validateInterval` (shared,
+  pure) rejects negative/fractional fields and all-zero totals, and `runScheduler`
+  reports invalid-interval plans through `failedPlans` (persisted as
+  `SCHEDULER_PLAN_FAILED` by the shell) instead of hanging or skipping silently.
+  The remaining open piece is reusing these validators in the wizard
+  (`isValidRecurrence`).
 
 ## Interactions / notes
 

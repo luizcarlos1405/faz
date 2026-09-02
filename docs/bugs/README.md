@@ -7,14 +7,14 @@
 
 Each bug is documented in its own file with everything needed to pick it up without
 re-deriving the analysis: symptom, root cause, reproduction, suggested fix, suggested
-tests, and interactions with other bugs. Statuses are `NEEDS FIX` or `FIXED`.
+tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `IGNORE`.
 
 ## Index
 
 | ID                                                                    | Title                                                      | Status    | Severity |
 | --------------------------------------------------------------------- | ---------------------------------------------------------- | --------- | -------- |
 | [001](./001-month-anchor-drift.md)                                    | Monthly interval plans drift off their anchor day          | FIXED     | High     |
-| [002](./002-scheduler-bricks-on-malformed-plan.md)                    | One malformed plan stops all scheduling app-wide           | NEEDS FIX | High     |
+| [002](./002-scheduler-bricks-on-malformed-plan.md)                    | One malformed plan stops all scheduling app-wide           | FIXED     | High     |
 | [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | NEEDS FIX | Medium   |
 | [004](./004-after-done-generates-past-dated-tasks.md)                 | AFTER_DONE plans generate tasks dated in the past          | NEEDS FIX | Medium   |
 | [005](./005-plan-mutations-orphan-generated-tasks.md)                 | Plan edits/deletes orphan already-generated tasks          | NEEDS FIX | Medium   |
@@ -26,13 +26,14 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX` or `FIXED`.
 
 ## Picking up a bug
 
-1. Read the bug's file fully — including the _Interactions_ section, several bugs share
+1. Ignore it if marked as IGNORE, explain that and ask if the user want's to do it anyway.
+2. Read the bug's file fully — including the _Interactions_ section, several bugs share
    root causes or fix infrastructure.
-2. Write the failing test(s) listed under _Suggested tests_ first
+3. Write the failing test(s) listed under _Suggested tests_ first
    (`src/lib/engines/__tests__/care-engine.test.ts` for engine bugs).
-3. Implement the fix. Respect the functional-core rules from `AGENTS.md`: decisions in
+4. Implement the fix. Respect the functional-core rules from `AGENTS.md`: decisions in
    `src/lib/engines/` stay pure; the shell (`scheduler.ts`, repos) does the I/O.
-4. Verify: `nix-shell shell.nix` then `bun run test`, `bun run check`, `bun run lint`.
-5. Flip the status in the bug file and in the table above, and record the fixing commit.
+5. Verify: `nix-shell shell.nix` then `bun run test`, `bun run check`, `bun run lint`.
+6. Flip the status in the bug file and in the table above, and record the fixing commit.
 
 All line references in the bug files are approximate, as of commit `517ab40`.

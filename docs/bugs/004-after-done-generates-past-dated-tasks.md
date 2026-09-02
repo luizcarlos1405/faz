@@ -1,6 +1,6 @@
 # BUG-004: AFTER_DONE plans generate tasks dated in the past
 
-- **Status:** NEEDS FIX
+- **Status:** IGNORE
 - **Severity:** Medium
 - **Area:** core engine
 - **Files:** `src/lib/engines/care-engine.ts` — `evaluateIntervalAfterDone` (~lines 74-93)

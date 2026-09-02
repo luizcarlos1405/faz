@@ -1,6 +1,6 @@
 # BUG-009: `byListOrder` createdAt tie-break mis-sorts mixed timestamp precisions
 
-- **Status:** NEEDS FIX
+- **Status:** IGNORE
 - **Severity:** Minor (cosmetic ordering in tie-breaks only)
 - **Area:** core engine
 - **Files:** `src/lib/engines/ordering.ts` — `byListOrder` (~lines 48-56)

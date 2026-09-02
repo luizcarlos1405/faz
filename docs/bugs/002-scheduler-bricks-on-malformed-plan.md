@@ -1,9 +1,9 @@
 # BUG-002: One malformed plan stops all scheduling app-wide
 
-- **Status:** NEEDS FIX
+- **Status:** FIXED (tests `df813e3`; engine `3f2c001`; shell `4645082`)
 - **Severity:** High (blast radius: every plan)
 - **Area:** core engine + shell (`scheduler.ts`)
-- **Files:** `src/lib/engines/care-engine.ts` (all `Temporal.PlainDate.from` / `Duration.from` call sites), `src/lib/scheduler.ts` — `doRun`, `src/lib/db/error-repo.ts` (`logError` already exists)
+- **Files:** `src/lib/engines/care-engine.ts` (`validateRecurrence`, `validateTaskPlan`, `runScheduler`), `src/lib/scheduler.ts` — `doRun`, `src/lib/db/error-repo.ts` (`logError`)
 
 ## Symptom
 
@@ -58,6 +58,31 @@ Keep the core pure — report, don't log, from the engine:
   `runScheduler` returns B's task and `failedPlans` contains A; no throw.
 - `daysOfWeek: [9]` is either rejected by `validateRecurrence` or its behavior
   documented (decide during the fix).
+
+## Fix
+
+Landed in three commits (TDD: red tests first, then the fix):
+
+- `df813e3` — test(engine): failing isolation tests pinning the `failedPlans`
+  contract (skip + report malformed plans, keep evaluating valid ones).
+- `3f2c001` — fix(engine): `runScheduler` validates each plan with the new pure
+  `validateTaskPlan` (which wraps `validateRecurrence` + a plan-level
+  `lastDoneDate` check) and wraps per-plan evaluation in `try/catch`; invalid or
+  throwing plans are collected in `failedPlans: Array<{ planId, careId, error }>`,
+  skipped entirely (overdue processing included), and never abort the run.
+  Legitimately-null evaluations are not reported.
+- `4645082` — fix(scheduler): `doRun` persists one
+  `SCHEDULER_PLAN_FAILED` error per failed plan via `logError`, so skipped plans
+  are visible instead of silent.
+
+**Decision on `daysOfWeek: [9]`:** rejected. `validateRecurrence` treats
+out-of-range (or non-integer) values, and empty day collections, as invalid, so
+they land in `failedPlans` instead of `nextWeekday`'s old silently-wrong
+`start + 7 days` behavior.
+
+`validateInterval` (integer ≥ 0 fields summing > 0) also rejects fractional and
+all-zero intervals at scheduling time — fractional ones used to throw, zero ones
+rode BUG-006's guard as a silent null; both now surface as `failedPlans` entries.
 
 ## Interactions / notes
 
