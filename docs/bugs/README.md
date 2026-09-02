@@ -18,7 +18,7 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 | [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | FIXED     | Medium   |
 | [004](./004-after-done-generates-past-dated-tasks.md)                 | AFTER_DONE plans generate tasks dated in the past          | IGNORE    | Medium   |
 | [005](./005-plan-mutations-orphan-generated-tasks.md)                 | Plan edits/deletes orphan already-generated tasks          | IGNORE    | Medium   |
-| [006](./006-zero-or-negative-interval-hangs-scheduler.md)             | Zero/negative interval hangs the scheduler (infinite loop) | NEEDS FIX | Low      |
+| [006](./006-zero-or-negative-interval-hangs-scheduler.md)             | Zero/negative interval hangs the scheduler (infinite loop) | FIXED     | Low      |
 | [007](./007-inconsistent-resurrection-and-delete-semantics.md)        | Moved/deleted occurrences resurrect; semantics diverge     | IGNORE    | Medium   |
 | [008](./008-fixed-days-generation-order-and-early-materialization.md) | FIXED_DAYS generates out of order, far ahead               | NEEDS FIX | Low      |
 | [009](./009-bylistorder-createdat-tiebreak.md)                        | createdAt string tie-break mis-sorts mixed precisions      | IGNORE    | Minor    |

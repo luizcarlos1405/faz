@@ -1,9 +1,8 @@
 # BUG-006: Zero/negative interval hangs the scheduler (infinite loop)
 
-- **Status:** NEEDS FIX (engine guard landed in commit `1455b03` via BUG-001;
-  per-plan error isolation landed via BUG-002 in `3f2c001` — invalid intervals
-  now surface as `failedPlans` entries at scheduling time; wizard-side
-  re-validation is still open)
+- **Status:** FIXED (engine guard in `1455b03` via BUG-001; per-plan error isolation via
+  BUG-002 in `3f2c001`; wizard-side re-validation via shared `validateInterval` in
+  `b9e68d5`)
 - **Severity:** Low (UI prevents the common case; stored data is not re-validated)
 - **Area:** core engine + wizard
 - **Files:** `src/lib/engines/care-engine.ts` — `evaluateIntervalFixed` catch-up loop (~lines 65-67); `src/lib/engines/recurrence-wizard.ts` — `isValidRecurrence` (~80-88)
@@ -52,20 +51,18 @@ creation time, but:
 - `{ years: -1, days: 400 }` returns `null`.
 - `isValidRecurrence` rejects negative and fractional fields.
 
-## Progress
+## Resolution
 
-- Engine guard done (`1455b03`): the BUG-001 candidate-search rework detects a
-  non-advancing candidate and returns `null`; covered by the
-  `INTERVAL FIXED non-positive interval guard` tests (zero and negative intervals).
-  The `{ years: -1, days: 400 }` net-positive case advances and does not hang; wizard
-  rejection of it is still open. Fractional intervals still throw and ride on
-  BUG-002's blast radius.
-- Per-plan isolation done (`3f2c001`, via BUG-002): `validateInterval` (shared,
-  pure) rejects negative/fractional fields and all-zero totals, and `runScheduler`
-  reports invalid-interval plans through `failedPlans` (persisted as
-  `SCHEDULER_PLAN_FAILED` by the shell) instead of hanging or skipping silently.
-  The remaining open piece is reusing these validators in the wizard
-  (`isValidRecurrence`).
+Closed in three pieces:
+
+- Engine guard: `1455b03` (BUG-001 candidate-search rework detects a non-advancing
+  candidate and returns `null`).
+- Per-plan isolation: `3f2c001` (BUG-002) — shared pure `validateInterval` rejects
+  negative/fractional fields and all-zero totals; `runScheduler` reports invalid-interval
+  plans through `failedPlans` instead of hanging.
+- Wizard re-validation: `625cea6` + `b9e68d5` — `isValidRecurrence` now delegates to the
+  shared `validateInterval`; tests pin rejection of net-positive negative intervals
+  (`{ years: -1, days: 400 }`) and fractional fields (`{ days: 0.5 }`).
 
 ## Interactions / notes
 
