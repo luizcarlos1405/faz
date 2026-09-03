@@ -5,6 +5,7 @@
   import X from 'lucide-svelte/icons/x';
   import Sunrise from 'lucide-svelte/icons/sunrise';
   import Target from 'lucide-svelte/icons/target';
+  import Heart from 'lucide-svelte/icons/heart';
   import type { TaskDoc } from '$lib/types';
 
   interface OriginInfo {
@@ -150,7 +151,11 @@
               </p>
               {#if origin}
                 <div class="flex items-center justify-center gap-1.5 mt-4">
-                  <Target class="size-3 text-base-content/40" />
+                  {#if origin.type === 'goal'}
+                    <Target class="size-3 text-base-content/40" />
+                  {:else}
+                    <Heart class="size-3 text-base-content/40" />
+                  {/if}
                   <span class="text-xs text-base-content/40">{origin.title}</span>
                 </div>
               {/if}
