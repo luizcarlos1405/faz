@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
   import type { Snippet } from 'svelte';
   import { runSchedulerNow } from '$lib/scheduler';
-  import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
+  import { bumpClock, bumpTaskRefresh, startMinuteTicker } from '$lib/scheduler-refresh.svelte';
   import ToastContainer from '$lib/components/toast-container.svelte';
   import ConfirmModal from '$lib/components/confirm-modal.svelte';
   import { initTheme } from '$lib/components/theme-state.svelte';
@@ -16,6 +16,7 @@
 
   async function syncAndRefresh() {
     await runSchedulerNow();
+    bumpClock();
     bumpTaskRefresh();
   }
 
@@ -29,6 +30,7 @@
     initTheme();
     syncAndRefresh();
     const interval = setInterval(syncAndRefresh, 5 * 60 * 1000);
+    const stopTicker = startMinuteTicker();
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     if (pwaInfo) {
@@ -46,6 +48,7 @@
 
     return () => {
       clearInterval(interval);
+      stopTicker();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   });
