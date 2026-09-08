@@ -188,7 +188,10 @@
             in:fly={{ y: 30, duration: 300 }}
             out:fly={{ y: -30, duration: 200 }}
           >
-            <p class="text-[28px] font-semibold leading-[1.3] text-base-content">
+            <p
+              class="text-[28px] font-semibold leading-[1.3] text-base-content"
+              data-testid="focus-title"
+            >
               {task.title}
             </p>
             {#if origin}
