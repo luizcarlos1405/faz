@@ -33,7 +33,7 @@ export async function getErrors(): Promise<ErrorDoc[]> {
   const db = await getErrorDb();
   const result = await db.find({
     selector: { type: DOC_TYPE.ERROR.value, createdAt: { $gt: null } },
-    sort: [{ type: 'asc' }, { createdAt: 'desc' }],
+    sort: [{ type: 'desc' }, { createdAt: 'desc' }],
     limit: FIND_LIMIT_ALL,
   });
   return result.docs;

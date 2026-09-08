@@ -11,18 +11,19 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 
 ## Index
 
-| ID                                                                    | Title                                                      | Status | Severity |
-| --------------------------------------------------------------------- | ---------------------------------------------------------- | ------ | -------- |
-| [001](./001-month-anchor-drift.md)                                    | Monthly interval plans drift off their anchor day          | FIXED  | High     |
-| [002](./002-scheduler-bricks-on-malformed-plan.md)                    | One malformed plan stops all scheduling app-wide           | FIXED  | High     |
-| [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | FIXED  | Medium   |
-| [004](./004-after-done-generates-past-dated-tasks.md)                 | AFTER_DONE plans generate tasks dated in the past          | IGNORE | Medium   |
-| [005](./005-plan-mutations-orphan-generated-tasks.md)                 | Plan edits/deletes orphan already-generated tasks          | IGNORE | Medium   |
-| [006](./006-zero-or-negative-interval-hangs-scheduler.md)             | Zero/negative interval hangs the scheduler (infinite loop) | FIXED  | Low      |
-| [007](./007-inconsistent-resurrection-and-delete-semantics.md)        | Moved/deleted occurrences resurrect; semantics diverge     | IGNORE | Medium   |
-| [008](./008-fixed-days-generation-order-and-early-materialization.md) | FIXED_DAYS generates out of order, far ahead               | FIXED  | Low      |
-| [009](./009-bylistorder-createdat-tiebreak.md)                        | createdAt string tie-break mis-sorts mixed precisions      | IGNORE | Minor    |
-| [010](./010-duplicate-generation-on-moved-occurrence.md)              | Moved FIXED_DAYS occurrence duplicated on next run         | FIXED  | High     |
+| ID                                                                    | Title                                                      | Status    | Severity |
+| --------------------------------------------------------------------- | ---------------------------------------------------------- | --------- | -------- |
+| [001](./001-month-anchor-drift.md)                                    | Monthly interval plans drift off their anchor day          | FIXED     | High     |
+| [002](./002-scheduler-bricks-on-malformed-plan.md)                    | One malformed plan stops all scheduling app-wide           | FIXED     | High     |
+| [003](./003-completed-date-utc-mismatch.md)                           | Evening completions missing from "Done today" (UTC date)   | FIXED     | Medium   |
+| [004](./004-after-done-generates-past-dated-tasks.md)                 | AFTER_DONE plans generate tasks dated in the past          | IGNORE    | Medium   |
+| [005](./005-plan-mutations-orphan-generated-tasks.md)                 | Plan edits/deletes orphan already-generated tasks          | IGNORE    | Medium   |
+| [006](./006-zero-or-negative-interval-hangs-scheduler.md)             | Zero/negative interval hangs the scheduler (infinite loop) | FIXED     | Low      |
+| [007](./007-inconsistent-resurrection-and-delete-semantics.md)        | Moved/deleted occurrences resurrect; semantics diverge     | IGNORE    | Medium   |
+| [008](./008-fixed-days-generation-order-and-early-materialization.md) | FIXED_DAYS generates out of order, far ahead               | FIXED     | Low      |
+| [009](./009-bylistorder-createdat-tiebreak.md)                        | createdAt string tie-break mis-sorts mixed precisions      | IGNORE    | Minor    |
+| [010](./010-duplicate-generation-on-moved-occurrence.md)              | Moved FIXED_DAYS occurrence duplicated on next run         | FIXED     | High     |
+| [011](./011-mixed-direction-mango-sorts-oldest-first.md)              | Mixed-direction mango sorts silently return oldest-first   | NEEDS FIX | Minor    |
 
 ## Picking up a bug
 
