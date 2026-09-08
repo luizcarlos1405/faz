@@ -7,6 +7,7 @@
   import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
   import ToastContainer from '$lib/components/toast-container.svelte';
   import ConfirmModal from '$lib/components/confirm-modal.svelte';
+  import { initTheme } from '$lib/components/theme-state.svelte';
   import { pwaInfo } from 'virtual:pwa-info';
 
   let { children }: { children: Snippet } = $props();
@@ -25,6 +26,7 @@
   }
 
   onMount(() => {
+    initTheme();
     syncAndRefresh();
     const interval = setInterval(syncAndRefresh, 5 * 60 * 1000);
     document.addEventListener('visibilitychange', handleVisibilityChange);

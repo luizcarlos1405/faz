@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import MoreVertical from 'lucide-svelte/icons/more-vertical';
@@ -9,12 +8,13 @@
   import DataModal from './data-modal.svelte';
   import ErrorLogModal from './error-log-modal.svelte';
   import { getPageMenuState } from './page-menu-state.svelte';
+  import { applyTheme, getThemeState } from './theme-state.svelte';
 
   const pageMenu = getPageMenuState();
+  const themeState = getThemeState();
   let showThemeModal = $state(false);
   let showDataModal = $state(false);
   let showErrorLog = $state(false);
-  let currentTheme = $state('light');
   let themeTab = $state<'all' | 'dark' | 'light'>('all');
   let logoClicks: number[] = [];
 
@@ -82,34 +82,8 @@
     'silk',
   ].sort();
 
-  onMount(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) {
-      document.documentElement.setAttribute('data-theme', saved);
-      currentTheme = saved;
-    }
-    requestAnimationFrame(updateThemeColor);
-  });
-
   function selectTheme(name: string) {
-    document.documentElement.setAttribute('data-theme', name);
-    localStorage.setItem('theme', name);
-    currentTheme = name;
-    requestAnimationFrame(updateThemeColor);
-  }
-
-  function updateThemeColor() {
-    const layoutEl = document.getElementById('layout');
-    const computed = layoutEl ? getComputedStyle(layoutEl).backgroundColor : '';
-
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'theme-color');
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute('content', computed);
+    applyTheme(name);
   }
 </script>
 
@@ -196,8 +170,8 @@
       {#each themes.filter((t) => themeTab === 'all' || (themeTab === 'dark' ? darkThemes.has(t) : !darkThemes.has(t))) as theme (theme)}
         <button
           class="btn btn-sm flex capitalize justify-start"
-          class:btn-primary={currentTheme === theme}
-          class:btn-outline={currentTheme !== theme}
+          class:btn-primary={themeState.current === theme}
+          class:btn-outline={themeState.current !== theme}
           onclick={() => selectTheme(theme)}
         >
           {theme}
