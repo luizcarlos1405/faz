@@ -22,8 +22,11 @@
     onskip={async () => {
       await ctrl.moveToEnd();
     }}
-    ontomorrow={async () => {
-      if (ctrl.tasks[0]) await ctrl.postponeTask(ctrl.tasks[0]._id);
+    onpostpone={async (date) => {
+      if (ctrl.tasks[0]) await ctrl.postponeTask(ctrl.tasks[0]._id, date);
+    }}
+    ondefer={async (hour, minute) => {
+      if (ctrl.tasks[0]) await ctrl.deferUntil(ctrl.tasks[0]._id, hour, minute);
     }}
     onclose={exit}
   />

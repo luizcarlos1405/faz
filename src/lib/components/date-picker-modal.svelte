@@ -33,8 +33,12 @@
   });
   const valid = $derived(!!selected && selected >= tomorrow);
 
-  function handleChange(e: Event) {
-    selected = (e.currentTarget as HTMLElement & { value: string }).value;
+  function listenChange(node: HTMLElement & { value: string }) {
+    const handler = () => {
+      selected = node.value;
+    };
+    node.addEventListener('change', handler);
+    return () => node.removeEventListener('change', handler);
   }
 
   function confirm() {
@@ -54,7 +58,7 @@
         value={selected}
         min={tomorrow}
         today={today.toString()}
-        onchange={handleChange}
+        {@attach listenChange}
       >
         <span slot="previous" aria-label="Previous month"><ChevronLeft class="size-5" /></span>
         <span slot="next" aria-label="Next month"><ChevronRight class="size-5" /></span>
