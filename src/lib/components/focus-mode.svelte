@@ -15,7 +15,6 @@
   }
 
   let {
-    open = false,
     task = null as TaskDoc | null,
     remaining = 0,
     origin = null as OriginInfo | null,
@@ -24,7 +23,6 @@
     ontomorrow,
     onclose,
   }: {
-    open?: boolean;
     task?: TaskDoc | null;
     remaining?: number;
     origin?: OriginInfo | null;
@@ -42,7 +40,7 @@
     setTimeout(() => (errorMsg = null), 3000);
   }
 
-  const allDone = $derived(open && !task);
+  const allDone = $derived(!task);
 
   $effect(() => {
     if (allDone) {
@@ -94,106 +92,104 @@
   }
 </script>
 
-{#if open}
-  <div
-    class="fixed inset-0 z-[100] bg-base-100 flex justify-center"
-    transition:fade={{ duration: 200 }}
-  >
-    <div class="w-full max-w-md flex flex-col h-full">
-      <div class="flex justify-between items-center px-5 pt-4 pb-4">
-        {#if task && !allDone}
-          <button
-            class="flex items-center gap-1.5 bg-base-200 rounded-full py-2 px-3"
-            onclick={handleTomorrow}
-            disabled={busy}
-          >
-            <Sunrise class="size-4 text-base-content/40" />
-            <span class="text-[13px] font-medium text-base-content/40">Tomorrow</span>
-          </button>
-        {:else}
-          <div></div>
-        {/if}
+<div
+  class="fixed inset-0 z-[100] bg-base-100 flex justify-center"
+  transition:fade={{ duration: 200 }}
+>
+  <div class="w-full max-w-md flex flex-col h-full">
+    <div class="flex justify-between items-center px-5 pt-4 pb-4">
+      {#if task && !allDone}
         <button
           class="flex items-center gap-1.5 bg-base-200 rounded-full py-2 px-3"
-          onclick={onclose}
+          onclick={handleTomorrow}
           disabled={busy}
         >
-          <X class="size-4 text-base-content/40" />
-          <span class="text-[13px] font-medium text-base-content/40">Exit</span>
+          <Sunrise class="size-4 text-base-content/40" />
+          <span class="text-[13px] font-medium text-base-content/40">Tomorrow</span>
         </button>
-      </div>
-
-      <div class="h-[120px]"></div>
-
-      {#if task && remaining > 0}
-        <div class="flex justify-center px-5">
-          <div class="bg-base-200 rounded-xl py-1 px-3">
-            <span class="text-xs font-medium text-base-content/40">1 of {remaining}</span>
-          </div>
-        </div>
+      {:else}
+        <div></div>
       {/if}
+      <button
+        class="flex items-center gap-1.5 bg-base-200 rounded-full py-2 px-3"
+        onclick={onclose}
+        disabled={busy}
+      >
+        <X class="size-4 text-base-content/40" />
+        <span class="text-[13px] font-medium text-base-content/40">Exit</span>
+      </button>
+    </div>
 
-      <div class="flex-1 flex flex-col items-center justify-center px-8">
-        {#if allDone}
-          <div class="text-center" in:fly={{ y: 20, duration: 300 }}>
-            <p class="text-3xl font-semibold text-base-content">All done!</p>
-            <p class="text-sm text-base-content/40 mt-2">Nothing left to focus on.</p>
-          </div>
-        {:else if task}
-          {#key task._id}
-            <div
-              class="text-center w-full"
-              in:fly={{ y: 30, duration: 300 }}
-              out:fly={{ y: -30, duration: 200 }}
-            >
-              <p class="text-[28px] font-semibold leading-[1.3] text-base-content">
-                {task.title}
-              </p>
-              {#if origin}
-                <div class="flex items-center justify-center gap-1.5 mt-4">
-                  {#if origin.type === 'goal'}
-                    <Target class="size-3 text-base-content/40" />
-                  {:else}
-                    <Heart class="size-3 text-base-content/40" />
-                  {/if}
-                  <span class="text-xs text-base-content/40">{origin.title}</span>
-                </div>
-              {/if}
-            </div>
-          {/key}
-        {/if}
-      </div>
+    <div class="h-[120px]"></div>
 
-      <div class="h-[60px]"></div>
-
-      {#if errorMsg}
-        <p class="text-center text-sm text-error px-8 pb-2" transition:fade={{ duration: 150 }}>
-          {errorMsg}
-        </p>
-      {/if}
-
-      {#if task && !allDone}
-        <div class="px-10 pb-12">
-          <div class="flex justify-center gap-3">
-            <button
-              class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-base-200 text-base-content font-medium disabled:opacity-50"
-              onclick={handleSkip}
-              disabled={busy}
-            >
-              <SkipForward class="size-5" />
-              Later
-            </button>
-            <button
-              class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-success text-success-content font-semibold disabled:opacity-50"
-              onclick={handleDone}
-              disabled={busy}
-            >
-              <Check class="size-5" />
-              Done
-            </button>
-          </div>
+    {#if task && remaining > 0}
+      <div class="flex justify-center px-5">
+        <div class="bg-base-200 rounded-xl py-1 px-3">
+          <span class="text-xs font-medium text-base-content/40">1 of {remaining}</span>
         </div>
+      </div>
+    {/if}
+
+    <div class="flex-1 flex flex-col items-center justify-center px-8">
+      {#if allDone}
+        <div class="text-center" in:fly={{ y: 20, duration: 300 }}>
+          <p class="text-3xl font-semibold text-base-content">All done!</p>
+          <p class="text-sm text-base-content/40 mt-2">Nothing left to focus on.</p>
+        </div>
+      {:else if task}
+        {#key task._id}
+          <div
+            class="text-center w-full"
+            in:fly={{ y: 30, duration: 300 }}
+            out:fly={{ y: -30, duration: 200 }}
+          >
+            <p class="text-[28px] font-semibold leading-[1.3] text-base-content">
+              {task.title}
+            </p>
+            {#if origin}
+              <div class="flex items-center justify-center gap-1.5 mt-4">
+                {#if origin.type === 'goal'}
+                  <Target class="size-3 text-base-content/40" />
+                {:else}
+                  <Heart class="size-3 text-base-content/40" />
+                {/if}
+                <span class="text-xs text-base-content/40">{origin.title}</span>
+              </div>
+            {/if}
+          </div>
+        {/key}
       {/if}
     </div>
+
+    <div class="h-[60px]"></div>
+
+    {#if errorMsg}
+      <p class="text-center text-sm text-error px-8 pb-2" transition:fade={{ duration: 150 }}>
+        {errorMsg}
+      </p>
+    {/if}
+
+    {#if task && !allDone}
+      <div class="px-10 pb-12">
+        <div class="flex justify-center gap-3">
+          <button
+            class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-base-200 text-base-content font-medium disabled:opacity-50"
+            onclick={handleSkip}
+            disabled={busy}
+          >
+            <SkipForward class="size-5" />
+            Later
+          </button>
+          <button
+            class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-success text-success-content font-semibold disabled:opacity-50"
+            onclick={handleDone}
+            disabled={busy}
+          >
+            <Check class="size-5" />
+            Done
+          </button>
+        </div>
+      </div>
+    {/if}
   </div>
-{/if}
+</div>

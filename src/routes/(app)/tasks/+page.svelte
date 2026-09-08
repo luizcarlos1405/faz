@@ -1,5 +1,7 @@
 <script lang="ts">
   import { getTasksPageState } from './tasks-page-state.svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import SquareCheckBig from 'lucide-svelte/icons/square-check-big';
   import Square from 'lucide-svelte/icons/square';
   import Plus from 'lucide-svelte/icons/plus';
@@ -10,7 +12,6 @@
   import Brain from 'lucide-svelte/icons/brain';
   import SwipeableItem from '$lib/components/swipeable-item.svelte';
   import TaskEditModal from '$lib/components/task-edit-modal.svelte';
-  import FocusMode from '$lib/components/focus-mode.svelte';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
   import { formatFriendlyDate } from '$lib/utils/format-date';
   import { flip } from 'svelte/animate';
@@ -19,7 +20,10 @@
   const ctrl = getTasksPageState();
   let isDragging = $state(false);
   let taskList: HTMLUListElement | undefined = $state();
-  let focusActive = $state(false);
+
+  function openFocus() {
+    goto(resolve('/focus'));
+  }
 
   async function addAndScroll() {
     const newId = await ctrl.add();
@@ -176,7 +180,7 @@
       <div class="max-w-md mx-auto px-4 flex justify-end">
         <button
           class="pointer-events-auto btn btn-primary btn-lg btn-circle shadow-lg"
-          onclick={() => (focusActive = true)}
+          onclick={openFocus}
         >
           <Brain class="size-6" />
         </button>
@@ -184,23 +188,6 @@
     </div>
   {/if}
 </div>
-
-<FocusMode
-  open={focusActive}
-  task={ctrl.tasks[0] ?? null}
-  remaining={ctrl.tasks.length}
-  origin={ctrl.tasks[0] ? ctrl.getOriginInfo(ctrl.tasks[0]) : null}
-  oncomplete={async () => {
-    if (ctrl.tasks[0]) await ctrl.toggleComplete(ctrl.tasks[0]._id);
-  }}
-  onskip={async () => {
-    await ctrl.moveToEnd();
-  }}
-  ontomorrow={async () => {
-    if (ctrl.tasks[0]) await ctrl.postponeTask(ctrl.tasks[0]._id);
-  }}
-  onclose={() => (focusActive = false)}
-/>
 
 <TaskEditModal
   open={!!ctrl.editingTask}

@@ -77,12 +77,23 @@ Domain types (`TaskDoc`, `GoalDoc`, `CareDoc`, `InboxItemDoc`, `Recurrence`, etc
 
 ### Routes (`src/routes/`)
 
-`/tasks`, `/inbox`, `/goals`, `/cares`, `/chat` (AI assistant) — bottom nav
-tabs, in dock order (Tasks first). Root `/` resumes the last-visited tab from
-`localStorage` (`faz:lastRoute`, recorded by a `$effect` in `+layout.svelte`;
-defaults to `/tasks`). `/settings/keys` (API key management) is not in the
-nav — reached from the top-bar menu and from `/chat` when no provider is
-configured.
+Split into two route groups (URLs are unaffected by the grouping):
+
+- **`(app)/`** — everything with app chrome (TopBar + dock nav, provided by
+  `(app)/+layout.svelte`): `/tasks`, `/inbox`, `/goals`, `/cares`, `/chat`
+  (AI assistant) — bottom nav tabs, in dock order (Tasks first). Root `/`
+  resumes the last-visited tab from `localStorage` (`faz:lastRoute`, recorded
+  by a `$effect` in `(app)/+layout.svelte`; defaults to `/tasks`).
+  `/settings/keys` (API key management) is not in the nav — reached from the
+  top-bar menu and from `/chat` when no provider is configured.
+- **`(fullscreen)/`** — bare full-height layout, no chrome. Currently only
+  `/focus`: focus mode as a real route (entered from the Tasks FAB), so the
+  browser back button returns to the tasks list. It reuses
+  `getTasksPageState()` from `(app)/tasks/` and renders the shared
+  `focus-mode.svelte` component.
+
+The root `+layout.svelte` holds only global concerns (app.css, scheduler
+sync, PWA registration, toasts, confirm modal).
 
 ## Related Docs
 
