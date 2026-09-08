@@ -1,13 +1,6 @@
 <script lang="ts">
-  import type { TaskDoc } from '$lib/types';
+  import type { OriginInfo, TaskDoc } from '$lib/types';
   import TaskEditForm from './task-edit-form.svelte';
-
-  export interface OriginInfo {
-    type: 'goal' | 'care';
-    id: string;
-    title: string;
-    recurrence?: string;
-  }
 
   let {
     open,
@@ -23,7 +16,7 @@
     task?: TaskDoc | null;
     origin?: OriginInfo | null;
     onclose: () => void;
-    onsave: (title: string, doAt: string) => void;
+    onsave: (title: string, doAt: string, doAfter: string | null) => void;
     ontransformgoal: () => void;
     ontransformcare: () => void;
     ondelete: () => void;

@@ -13,6 +13,7 @@
     task = null as TaskDoc | null,
     origin = null as OriginInfo | null,
     initial = null as { hour: number; minute: number } | null,
+    date = null as string | null,
     onconfirm,
     onclose,
   }: {
@@ -20,6 +21,7 @@
     task?: TaskDoc | null;
     origin?: OriginInfo | null;
     initial?: { hour: number; minute: number } | null;
+    date?: string | null;
     onconfirm: (hour: number, minute: number) => void;
     onclose: () => void;
   } = $props();
@@ -35,14 +37,9 @@
   let hour = $derived<string | number>(seed.hour);
   let minute = $derived<string | number>(seed.minute);
 
-  const candidate = $derived(
-    doAfterFromTime(
-      getNow().toZonedDateTimeISO(timeZone).toPlainDate(),
-      Number(hour),
-      Number(minute),
-      timeZone,
-    ),
-  );
+  const today = $derived(getNow().toZonedDateTimeISO(timeZone).toPlainDate());
+  const anchor = $derived(date && date > today.toString() ? Temporal.PlainDate.from(date) : today);
+  const candidate = $derived(doAfterFromTime(anchor, Number(hour), Number(minute), timeZone));
   const valid = $derived(isFutureTime(candidate, getNow()));
 
   function twoDigits(v: string | number): string {
