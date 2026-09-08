@@ -152,6 +152,7 @@ export interface TaskDoc {
   type: typeof DOC_TYPE.TASK.value;
   title: string;
   doAt: string;
+  doAfter?: string;
   status: TaskStatus;
   goalId?: string;
   stepOrder?: number;
@@ -214,6 +215,13 @@ export interface ErrorDoc {
   message: string;
   details?: string;
   createdAt: string;
+}
+
+export interface OriginInfo {
+  type: 'goal' | 'care';
+  id: string;
+  title: string;
+  recurrence?: string;
 }
 
 export type FazDoc = InboxItemDoc | TaskDoc | GoalDoc | CareDoc | ErrorDoc;

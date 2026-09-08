@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Temporal } from '@js-temporal/polyfill';
-import { formatFriendlyDate, formatShortWeekday } from '../format-date';
+import {
+  formatFriendlyDate,
+  formatShortWeekday,
+  formatWeekdayDate,
+  formatTime,
+  formatClock,
+} from '../format-date';
 
 function pd(iso: string): Temporal.PlainDate {
   return Temporal.PlainDate.from(iso);
@@ -70,5 +76,36 @@ describe('formatShortWeekday', () => {
 
   it('returns MON for a Monday', () => {
     expect(formatShortWeekday('2026-08-17')).toBe('MON');
+  });
+});
+
+describe('formatWeekdayDate', () => {
+  it('includes weekday, month and day', () => {
+    const result = formatWeekdayDate('2026-09-10', pd('2026-09-08'));
+    const expected = Temporal.PlainDate.from('2026-09-10').toLocaleString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+    expect(result).toBe(expected);
+    expect(result).toContain('10');
+    expect(result).not.toContain('2026');
+  });
+
+  it('includes the year when it differs from today', () => {
+    expect(formatWeekdayDate('2027-01-04', pd('2026-09-08'))).toContain('2027');
+  });
+});
+
+describe('formatTime', () => {
+  it('renders the wall-clock time in the given zone', () => {
+    const result = formatTime('2026-09-08T12:30:00Z', 'America/Sao_Paulo');
+    expect(result).toMatch(/09:30|9:30/);
+  });
+});
+
+describe('formatClock', () => {
+  it('renders hour and minute with two digits', () => {
+    expect(formatClock(9, 5)).toMatch(/09:05|9:05/);
   });
 });
