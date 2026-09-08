@@ -14,6 +14,7 @@ import {
 import { createGoal, getGoal, getAllGoals, recalcGoalStatus } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
 import { isGoalPaused } from '$lib/engines/goal-engine';
+import { describeRecurrence } from '$lib/engines/recurrence-wizard';
 import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
@@ -22,6 +23,7 @@ interface OriginInfo {
   type: 'goal' | 'care';
   id: string;
   title: string;
+  recurrence?: string;
 }
 import { Temporal } from '@js-temporal/polyfill';
 import { getToastState } from '$lib/components/toast-state.svelte';
@@ -37,6 +39,7 @@ export function getTasksPageState() {
   let displayedTasks = $state<TaskDoc[]>([]);
   let doneTodayList = $state<TaskDoc[]>([]);
   let originTitles = new SvelteMap<string, string>();
+  let planPhrases = new SvelteMap<string, string>();
   let newTitle = $state('');
   let loading = $state(true);
   let editingTask = $state<TaskDoc | null>(null);
@@ -83,16 +86,14 @@ export function getTasksPageState() {
       if (t.goalId) ids.add(t.goalId);
       if (t.careId) ids.add(t.careId);
     }
-    const entries = await Promise.all(
+    const docs = await Promise.all(
       [...ids].map(async (id) => {
         try {
           if (id.startsWith(DOC_TYPE.GOAL.idPrefix)) {
-            const doc = await getGoal(id);
-            return [id, doc.title] as const;
+            return await getGoal(id);
           }
           if (id.startsWith(DOC_TYPE.CARE.idPrefix)) {
-            const doc = await getCare(id);
-            return [id, doc.title] as const;
+            return await getCare(id);
           }
         } catch {
           return undefined;
@@ -100,11 +101,19 @@ export function getTasksPageState() {
         return undefined;
       }),
     );
-    const map = new SvelteMap<string, string>();
-    for (const entry of entries) {
-      if (entry) map.set(entry[0], entry[1]);
+    const titles = new SvelteMap<string, string>();
+    const phrases = new SvelteMap<string, string>();
+    for (const doc of docs) {
+      if (!doc) continue;
+      titles.set(doc._id, doc.title);
+      if (doc.type === DOC_TYPE.CARE.value) {
+        for (const tp of doc.taskPlans) {
+          phrases.set(tp._id, describeRecurrence(tp.recurrence));
+        }
+      }
     }
-    originTitles = map;
+    originTitles = titles;
+    planPhrases = phrases;
   }
 
   function getOriginInfo(task: TaskDoc): OriginInfo | null {
@@ -114,7 +123,12 @@ export function getTasksPageState() {
     }
     if (task.careId) {
       const title = originTitles.get(task.careId);
-      if (title) return { type: 'care', id: task.careId, title };
+      if (title) {
+        const recurrence = task.taskPlanId ? planPhrases.get(task.taskPlanId) : undefined;
+        return recurrence
+          ? { type: 'care', id: task.careId, title, recurrence }
+          : { type: 'care', id: task.careId, title };
+      }
     }
     return null;
   }

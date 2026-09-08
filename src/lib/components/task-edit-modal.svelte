@@ -6,6 +6,7 @@
     type: 'goal' | 'care';
     id: string;
     title: string;
+    recurrence?: string;
   }
 
   let {

@@ -3,6 +3,7 @@
   import { Temporal } from '@js-temporal/polyfill';
   import Target from 'lucide-svelte/icons/target';
   import Heart from 'lucide-svelte/icons/heart';
+  import Repeat from 'lucide-svelte/icons/repeat';
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import { slide } from 'svelte/transition';
@@ -59,17 +60,25 @@
 
   <div class="flex flex-col gap-3">
     {#if origin}
-      <a
-        href={resolve(origin.type === 'goal' ? `/goals/${origin.id}` : `/cares/${origin.id}`)}
-        class="flex items-center gap-1.5 text-sm text-base-content/60 hover:underline w-fit"
-      >
-        {#if origin.type === 'goal'}
-          <Target class="size-4" />
-        {:else}
-          <Heart class="size-4" />
+      <div class="flex flex-col gap-0.5 w-fit">
+        <a
+          href={resolve(origin.type === 'goal' ? `/goals/${origin.id}` : `/cares/${origin.id}`)}
+          class="flex items-center gap-1.5 text-sm text-base-content/60 hover:underline w-fit"
+        >
+          {#if origin.type === 'goal'}
+            <Target class="size-4" />
+          {:else}
+            <Heart class="size-4" />
+          {/if}
+          {origin.title}
+        </a>
+        {#if origin.type === 'care' && origin.recurrence}
+          <div class="flex items-center gap-1.5 text-xs text-base-content/50 ml-5.5">
+            <Repeat class="size-3" />
+            {origin.recurrence}
+          </div>
         {/if}
-        {origin.title}
-      </a>
+      </div>
     {/if}
     <input
       type="text"

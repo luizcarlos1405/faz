@@ -12,6 +12,7 @@
     type: 'goal' | 'care';
     id: string;
     title: string;
+    recurrence?: string;
   }
 
   let {
@@ -147,13 +148,18 @@
               {task.title}
             </p>
             {#if origin}
-              <div class="flex items-center justify-center gap-1.5 mt-4">
-                {#if origin.type === 'goal'}
-                  <Target class="size-3 text-base-content/40" />
-                {:else}
-                  <Heart class="size-3 text-base-content/40" />
+              <div class="flex flex-col items-center gap-1 mt-4">
+                <div class="flex items-center gap-1.5">
+                  {#if origin.type === 'goal'}
+                    <Target class="size-3 text-base-content/40" />
+                  {:else}
+                    <Heart class="size-3 text-base-content/40" />
+                  {/if}
+                  <span class="text-xs text-base-content/40">{origin.title}</span>
+                </div>
+                {#if origin.type === 'care' && origin.recurrence}
+                  <span class="text-xs text-base-content/40">{origin.recurrence}</span>
                 {/if}
-                <span class="text-xs text-base-content/40">{origin.title}</span>
               </div>
             {/if}
           </div>
