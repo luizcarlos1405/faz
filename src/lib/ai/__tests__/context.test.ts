@@ -70,6 +70,29 @@ describe('buildSystemContext', () => {
     expect(out).toContain('Inbox: 3 unprocessed item(s).');
   });
 
+  it('marks tasks hidden until a time', () => {
+    const ctx: AgentContext = {
+      ...emptyCtx,
+      tasks: [
+        {
+          id: 't1',
+          title: 'Call mom',
+          doAt: '2026-06-29',
+          status: 'TODO',
+          doAfter: '2026-06-29T18:00:00Z',
+        },
+      ],
+    };
+    const out = buildSystemContext(ctx);
+    expect(out).toContain(
+      'Call mom (id t1, due 2026-06-29, TODO, hidden until 2026-06-29T18:00:00Z)',
+    );
+  });
+
+  it('explains the hide-until time in the base prompt', () => {
+    expect(buildBasePrompt('2026-06-29')).toContain('doAfterTime');
+  });
+
   it('shows (none) placeholders for empty sections', () => {
     const out = buildSystemContext(emptyCtx);
     expect(out).toContain('Active tasks (due today or earlier, 0):');

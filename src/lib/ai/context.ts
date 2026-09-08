@@ -1,6 +1,6 @@
 export interface AgentContext {
   today: string;
-  tasks: { id: string; title: string; doAt: string; status: string }[];
+  tasks: { id: string; title: string; doAt: string; status: string; doAfter?: string }[];
   goals: { id: string; title: string; status: string }[];
   cares: { id: string; title: string; planCount: number }[];
   inboxCount: number;
@@ -24,6 +24,7 @@ export function buildBasePrompt(today: string): string {
     '- Use tools to read current data before changing it; never invent ids or statuses.',
     '- Task status: TODO, DONE, MISSED. Goal status: NOT_STARTED, IN_PROGRESS, REVIEW, COMPLETED.',
     '- Dates are ISO YYYY-MM-DD.',
+    "- A task can have a hide-until time (doAfter): it stays out of today's list until that time. Set it with doAfterTime (HH:MM), remove it with clearDoAfter.",
     '- To process an inbox item: create the target entity with originInboxItemId, then call mark_inbox_processed.',
     '',
     'How to write:',
@@ -41,7 +42,14 @@ export function buildBasePrompt(today: string): string {
 export function buildSystemContext(ctx: AgentContext): string {
   const taskLines =
     ctx.tasks.length > 0
-      ? ctx.tasks.map((t) => `- ${t.title} (id ${t.id}, due ${t.doAt}, ${t.status})`).join('\n')
+      ? ctx.tasks
+          .map(
+            (t) =>
+              `- ${t.title} (id ${t.id}, due ${t.doAt}, ${t.status}${
+                t.doAfter ? `, hidden until ${t.doAfter}` : ''
+              })`,
+          )
+          .join('\n')
       : '- (none)';
   const goalLines =
     ctx.goals.length > 0

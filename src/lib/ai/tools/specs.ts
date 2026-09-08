@@ -31,6 +31,11 @@ const DAYS_SUBTYPE_ENUM = Object.values(FIXED_DAYS_SUBTYPE).map((s) => s.value);
 
 const dateSchema = { type: 'string', description: 'ISO date YYYY-MM-DD' };
 const idSchema = { type: 'string', description: 'Entity id' };
+const timeSchema = {
+  type: 'string',
+  description:
+    "Local time HH:MM (24h). Hides the task from today's list until that time on its doAt day (or today if doAt is in the past).",
+};
 
 const intervalSchema = {
   type: 'object',
@@ -258,12 +263,13 @@ export const TOOL_SPECS: ToolSpec[] = [
     name: 'create_task',
     kind: 'create',
     description:
-      'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally attach to a goal or link to the inbox item it was processed from.',
+      'Create a task. doAt is the due date (ISO YYYY-MM-DD). Optionally hide it until a time of day with doAfterTime, attach to a goal, or link to the inbox item it was processed from.',
     inputSchema: {
       type: 'object',
       properties: {
         title: { type: 'string' },
         doAt: dateSchema,
+        doAfterTime: timeSchema,
         goalId: idSchema,
         originInboxItemId: {
           type: 'string',
@@ -278,13 +284,18 @@ export const TOOL_SPECS: ToolSpec[] = [
     name: 'update_task',
     kind: 'update',
     description:
-      'Update a task title or due date. Use complete_task to mark done and uncomplete_task to reopen.',
+      'Update a task title, due date or hide-until time. Changing doAt clears any hide-until time unless doAfterTime is given too. Use complete_task to mark done and uncomplete_task to reopen.',
     inputSchema: {
       type: 'object',
       properties: {
         id: idSchema,
         title: { type: 'string' },
         doAt: dateSchema,
+        doAfterTime: timeSchema,
+        clearDoAfter: {
+          type: 'boolean',
+          description: 'Remove the hide-until time so the task shows all day.',
+        },
       },
       required: ['id'],
       additionalProperties: false,

@@ -23,6 +23,7 @@ export async function gatherContext(): Promise<AgentContext> {
       title: t.title,
       doAt: t.doAt,
       status: t.status,
+      doAfter: t.doAfter,
     })),
     goals: goals.map((g) => ({ id: g._id, title: g.title, status: g.status })),
     cares: cares.slice(0, MAX_CARES_IN_PROMPT).map((c) => ({

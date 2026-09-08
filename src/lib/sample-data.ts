@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { createInboxItem, markProcessed } from './db/inbox-repo';
 import { createGoal, updateGoal } from './db/goal-repo';
-import { createTask, completeTask, updateTask } from './db/task-repo';
+import { createTask, completeTask, updateTask, deferTask } from './db/task-repo';
 import { createCare, updateCare } from './db/care-repo';
 import { runSchedulerNow } from './scheduler';
 import { GOAL_STATUS, RECURRENCE_TYPE, INTERVAL_SUBTYPE, FIXED_DAYS_SUBTYPE } from './types';
@@ -136,6 +136,9 @@ export async function addSampleData() {
   await createTask({ title: 'Renew gym membership', doAt: todayStr() });
   summary.tasks++;
   await createTask({ title: 'Book haircut appointment', doAt: daysFromNow(3) });
+  summary.tasks++;
+  const deferred = await createTask({ title: 'Call the dentist', doAt: todayStr() });
+  await deferTask(deferred._id, Temporal.Now.instant().add({ hours: 2 }).toString());
   summary.tasks++;
 
   const standaloneDone1 = await createTask({ title: 'Grocery shopping', doAt: todayStr() });

@@ -1,6 +1,6 @@
 # Faz
 
-Personal GTD/task organization PWA. SvelteKit 5, client-only SPA, PouchDB (browser), Tailwind CSS v4 + DaisyUI v5.
+Personal GTD/task organization PWA. SvelteKit 5, client-only SPA, PouchDB (browser), Tailwind CSS v4 + DaisyUI v5 (+ `cally` web component for the calendar).
 
 ATTENTION: update this file anytime you notice a discrepancy between its contents and the reality of
 the codebase.
@@ -45,9 +45,9 @@ Pure functions only — values in, values out:
 - No mutation of inputs — return new values
 - No DOM access, no `$state`, no side effects
 
-Core modules: `care-engine.ts` (recurrence scheduling), `goal-engine.ts` (goal status), `ordering.ts` (list ordering decisions, sort comparators), `format-date.ts` (date formatting), `reorderItems.ts`, `snapshotTask` in `task-undo.ts`.
+Core modules: `care-engine.ts` (recurrence scheduling), `goal-engine.ts` (goal status), `ordering.ts` (list ordering decisions, sort comparators), `defer-engine.ts` (`doAfter` hide-until-time: `isDeferred`, `partitionDeferred`, `doAfterFromTime`, and `withDoAt`, which clears `doAfter` whenever `doAt` changes), `format-date.ts` (date formatting), `reorderItems.ts`, `snapshotTask` in `task-undo.ts`.
 
-#### Shell (`db/`, `scheduler.ts`, `importers/*-import.ts`, `components/`, `attachments/`, route pages)
+#### Shell (`db/`, `scheduler.ts`, `scheduler-refresh.svelte.ts`, `importers/*-import.ts`, `components/`, `attachments/`, route pages)
 
 The shell's job is to gather inputs from the outside world (DB, user interaction, file system), hand them to the core for a decision, then carry out the decision's consequences. Shell modules may import from core and from `types.ts`.
 
@@ -63,17 +63,18 @@ Domain types (`TaskDoc`, `GoalDoc`, `CareDoc`, `InboxItemDoc`, `Recurrence`, etc
 
 ### Key domains (`src/lib/`)
 
-| Path           | Layer  | Purpose                                                                                                                                                                                                                                                                                                                                                                                                |
-| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `engines/`     | Core   | Pure business logic: recurrence scheduling, goal status, ordering, import parsing                                                                                                                                                                                                                                                                                                                      |
-| `utils/`       | Core   | Pure utilities: date formatting, reordering, snapshot                                                                                                                                                                                                                                                                                                                                                  |
-| `types.ts`     | Bound. | All doc types and recurrence type unions                                                                                                                                                                                                                                                                                                                                                               |
-| `db/`          | Shell  | PouchDB repos (task, goal, care, inbox, data-manager). Calls core for ordering decisions.                                                                                                                                                                                                                                                                                                              |
-| `scheduler.ts` | Shell  | Orchestrator — gathers DB data, calls `runScheduler()`, writes results back                                                                                                                                                                                                                                                                                                                            |
-| `importers/`   | Split  | `google-tasks.ts` = core (parsing), `google-tasks-import.ts` = shell (file I/O + DB writes)                                                                                                                                                                                                                                                                                                            |
-| `components/`  | Shell  | UI components (`.svelte`) and `.svelte.ts` reactive state helpers                                                                                                                                                                                                                                                                                                                                      |
-| `attachments/` | Shell  | DOM-level drag-and-drop attachment                                                                                                                                                                                                                                                                                                                                                                     |
-| `ai/`          | Split  | Bring-your-own-key LLM chat, browser-direct (no server). Core: `protocol.ts` (request shaping, SSE + tool-call parsing), `tools/specs.ts` (tool catalog), `context.ts` (system-prompt snapshot). Shell: `client.ts` (streaming `fetch`), `tools/registry.ts` (executors over the db repos — same code paths as the UI), `agent.ts` (tool-calling loop), `context-gather.ts`, `keys.ts`/`providers.ts`. |
+| Path                          | Layer  | Purpose                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `engines/`                    | Core   | Pure business logic: recurrence scheduling, goal status, ordering, import parsing                                                                                                                                                                                                                                                                                                                      |
+| `utils/`                      | Core   | Pure utilities: date formatting, reordering, snapshot                                                                                                                                                                                                                                                                                                                                                  |
+| `types.ts`                    | Bound. | All doc types and recurrence type unions                                                                                                                                                                                                                                                                                                                                                               |
+| `db/`                         | Shell  | PouchDB repos (task, goal, care, inbox, data-manager). Calls core for ordering decisions.                                                                                                                                                                                                                                                                                                              |
+| `scheduler.ts`                | Shell  | Orchestrator — gathers DB data, calls `runScheduler()`, writes results back                                                                                                                                                                                                                                                                                                                            |
+| `scheduler-refresh.svelte.ts` | Shell  | Reactive refresh signals: `bumpTaskRefresh()` (reload lists after a scheduler run) and a reactive clock (`getNow()`, `bumpClock()`, `startMinuteTicker()`). The root layout bumps the clock after every scheduler run and once a minute; the tasks page derives ready vs. deferred (`doAfter`) tasks from it with no DB I/O.                                                                           |
+| `importers/`                  | Split  | `google-tasks.ts` = core (parsing), `google-tasks-import.ts` = shell (file I/O + DB writes)                                                                                                                                                                                                                                                                                                            |
+| `components/`                 | Shell  | UI components (`.svelte`) and `.svelte.ts` reactive state helpers                                                                                                                                                                                                                                                                                                                                      |
+| `attachments/`                | Shell  | DOM-level drag-and-drop attachment                                                                                                                                                                                                                                                                                                                                                                     |
+| `ai/`                         | Split  | Bring-your-own-key LLM chat, browser-direct (no server). Core: `protocol.ts` (request shaping, SSE + tool-call parsing), `tools/specs.ts` (tool catalog), `context.ts` (system-prompt snapshot). Shell: `client.ts` (streaming `fetch`), `tools/registry.ts` (executors over the db repos — same code paths as the UI), `agent.ts` (tool-calling loop), `context-gather.ts`, `keys.ts`/`providers.ts`. |
 
 ### Routes (`src/routes/`)
 
@@ -81,7 +82,9 @@ Split into two route groups (URLs are unaffected by the grouping):
 
 - **`(app)/`** — everything with app chrome (TopBar + dock nav, provided by
   `(app)/+layout.svelte`): `/tasks`, `/inbox`, `/goals`, `/cares`, `/chat`
-  (AI assistant) — bottom nav tabs, in dock order (Tasks first). Root `/`
+  (AI assistant) — bottom nav tabs, in dock order (Tasks first). `/tasks`
+  shows three sections: **To do**, **To do later** (tasks whose `doAfter`
+  is still in the future — same rows, no drag handle) and **Done today**. Root `/`
   resumes the last-visited tab from `localStorage` (`faz:lastRoute`, recorded
   by a `$effect` in `(app)/+layout.svelte`; defaults to `/tasks`).
   `/settings/keys` (API key management) is not in the nav — reached from the
@@ -90,7 +93,11 @@ Split into two route groups (URLs are unaffected by the grouping):
   `/focus`: focus mode as a real route (entered from the Tasks FAB), so the
   browser back button returns to the tasks list. It reuses
   `getTasksPageState()` from `(app)/tasks/` and renders the shared
-  `focus-mode.svelte` component.
+  `focus-mode.svelte` component. Focus mode's header pill offers a calendar
+  (`date-picker-modal.svelte`, cally), Tomorrow / stacking `+1` target date
+  and a reset; the Later button is joined with a clock that opens
+  `time-picker-modal.svelte` and sets `doAfter` (today at HH:MM). Both
+  modals embed `task-summary.svelte` so task context stays visible.
 
 The root `+layout.svelte` holds only global concerns (app.css, scheduler
 sync, PWA registration, toasts, confirm modal).
