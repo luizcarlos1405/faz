@@ -73,7 +73,7 @@
       await onskip();
     } catch (e) {
       console.error('Focus mode skip failed', e);
-      flashError('Could not skip task');
+      flashError('Could not postpone task');
     } finally {
       busy = false;
     }
@@ -181,7 +181,7 @@
               disabled={busy}
             >
               <SkipForward class="size-5" />
-              Skip
+              Later
             </button>
             <button
               class="flex items-center gap-2 rounded-full py-3.5 px-6 bg-success text-success-content font-semibold disabled:opacity-50"
