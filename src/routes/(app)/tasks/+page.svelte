@@ -9,7 +9,7 @@
   import CalendarClock from 'lucide-svelte/icons/calendar-clock';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
-  import Brain from 'lucide-svelte/icons/brain';
+  import Microscope from 'lucide-svelte/icons/microscope';
   import SwipeableItem from '$lib/components/swipeable-item.svelte';
   import TaskEditModal from '$lib/components/task-edit-modal.svelte';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
@@ -182,7 +182,7 @@
           class="pointer-events-auto btn btn-primary btn-lg btn-circle shadow-lg"
           onclick={openFocus}
         >
-          <Brain class="size-6" />
+          <Microscope class="size-6" />
         </button>
       </div>
     </div>
