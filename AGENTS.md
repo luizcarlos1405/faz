@@ -83,8 +83,10 @@ Split into two route groups (URLs are unaffected by the grouping):
 - **`(app)/`** — everything with app chrome (TopBar + dock nav, provided by
   `(app)/+layout.svelte`): `/tasks`, `/inbox`, `/goals`, `/cares`, `/chat`
   (AI assistant) — bottom nav tabs, in dock order (Tasks first). `/tasks`
-  shows three sections: **To do**, **To do later** (tasks whose `doAfter`
-  is still in the future — same rows, no drag handle) and **Done today**. Root `/`
+  shows four sections: **To do**, **Later today** (tasks whose `doAfter`
+  falls later today — same rows, no drag handle), **In the future** (tasks
+  postponed to a future date; excludes care-plan-generated occurrences and
+  shows only the next task per goal — no drag handle) and **Done today**. Root `/`
   resumes the last-visited tab from `localStorage` (`faz:lastRoute`, recorded
   by a `$effect` in `(app)/+layout.svelte`; defaults to `/tasks`).
   `/settings/keys` (API key management) is not in the nav — reached from the

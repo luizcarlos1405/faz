@@ -51,23 +51,25 @@ describe('isDeferred', () => {
 });
 
 describe('partitionDeferred', () => {
-  it('splits ready and deferred and sorts ready by list order', () => {
+  it('splits ready and later today and sorts ready by list order', () => {
     const tasks = [
       task({ title: 'a', tasksListOrder: 2 }),
       task({ title: 'b', tasksListOrder: 0, doAfter: '2026-09-08T15:00:00Z' }),
       task({ title: 'c', tasksListOrder: 1 }),
       task({ title: 'd', tasksListOrder: 3, doAfter: '2026-09-08T13:00:00Z' }),
     ];
-    const { ready, deferred } = partitionDeferred(tasks, NOW);
+    const { ready, laterToday, future } = partitionDeferred(tasks, NOW, 'UTC');
     expect(ready.map((t) => t.title)).toEqual(['c', 'a']);
-    expect(deferred.map((t) => t.title)).toEqual(['d', 'b']);
+    expect(laterToday.map((t) => t.title)).toEqual(['d', 'b']);
+    expect(future).toHaveLength(0);
   });
 
   it('treats passed doAfter as ready', () => {
     const tasks = [task({ title: 'a', doAfter: '2026-09-08T11:00:00Z', tasksListOrder: 0 })];
-    const { ready, deferred } = partitionDeferred(tasks, NOW);
+    const { ready, laterToday, future } = partitionDeferred(tasks, NOW, 'UTC');
     expect(ready).toHaveLength(1);
-    expect(deferred).toHaveLength(0);
+    expect(laterToday).toHaveLength(0);
+    expect(future).toHaveLength(0);
   });
 
   it('breaks doAfter ties by list order', () => {
@@ -75,8 +77,52 @@ describe('partitionDeferred', () => {
       task({ title: 'a', tasksListOrder: 5, doAfter: '2026-09-08T13:00:00Z' }),
       task({ title: 'b', tasksListOrder: 1, doAfter: '2026-09-08T13:00:00Z' }),
     ];
-    const { deferred } = partitionDeferred(tasks, NOW);
-    expect(deferred.map((t) => t.title)).toEqual(['b', 'a']);
+    const { laterToday } = partitionDeferred(tasks, NOW, 'UTC');
+    expect(laterToday.map((t) => t.title)).toEqual(['b', 'a']);
+  });
+
+  it('puts tasks dated beyond today in future even without doAfter', () => {
+    const tasks = [
+      task({ title: 'a', doAt: '2026-09-09', tasksListOrder: 1 }),
+      task({ title: 'b', doAt: '2026-09-10', tasksListOrder: 0 }),
+    ];
+    const { ready, laterToday, future } = partitionDeferred(tasks, NOW, 'UTC');
+    expect(future.map((t) => t.title)).toEqual(['a', 'b']);
+    expect(ready).toHaveLength(0);
+    expect(laterToday).toHaveLength(0);
+  });
+
+  it('puts future-dated tasks in future even when doAfter has passed', () => {
+    const tasks = [task({ title: 'a', doAt: '2026-09-09', doAfter: '2026-09-08T11:00:00Z' })];
+    const { future } = partitionDeferred(tasks, NOW, 'UTC');
+    expect(future.map((t) => t.title)).toEqual(['a']);
+  });
+
+  it('splits later today from future by the local day of doAfter', () => {
+    const tasks = [
+      task({ title: 'a', doAfter: '2026-09-08T23:59:00Z' }),
+      task({ title: 'b', doAfter: '2026-09-09T09:00:00Z' }),
+    ];
+    const { ready, laterToday, future } = partitionDeferred(tasks, NOW, 'UTC');
+    expect(laterToday.map((t) => t.title)).toEqual(['a']);
+    expect(future.map((t) => t.title)).toEqual(['b']);
+    expect(ready).toHaveLength(0);
+  });
+
+  it('respects the time zone when deciding today', () => {
+    const tasks = [task({ title: 'a', doAfter: '2026-09-09T01:00:00Z' })];
+    const { laterToday } = partitionDeferred(tasks, NOW, 'America/Sao_Paulo');
+    expect(laterToday.map((t) => t.title)).toEqual(['a']);
+  });
+
+  it('sorts future by doAt then list order', () => {
+    const tasks = [
+      task({ title: 'a', doAt: '2026-09-10', tasksListOrder: 0 }),
+      task({ title: 'b', doAt: '2026-09-09', tasksListOrder: 5 }),
+      task({ title: 'c', doAt: '2026-09-10', tasksListOrder: 3 }),
+    ];
+    const { future } = partitionDeferred(tasks, NOW, 'UTC');
+    expect(future.map((t) => t.title)).toEqual(['b', 'a', 'c']);
   });
 
   it('does not mutate the input', () => {
@@ -84,7 +130,7 @@ describe('partitionDeferred', () => {
       task({ title: 'a', tasksListOrder: 1 }),
       task({ title: 'b', tasksListOrder: 0 }),
     ];
-    partitionDeferred(tasks, NOW);
+    partitionDeferred(tasks, NOW, 'UTC');
     expect(tasks.map((t) => t.title)).toEqual(['a', 'b']);
   });
 });

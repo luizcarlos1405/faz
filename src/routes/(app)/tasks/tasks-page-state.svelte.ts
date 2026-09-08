@@ -1,5 +1,6 @@
 import {
   getVisibleTasks,
+  getFutureTasks,
   getDoneToday,
   createTask,
   completeTask,
@@ -36,6 +37,8 @@ function getToday(): string {
   return Temporal.Now.plainDateISO().toString();
 }
 
+const timeZone = Temporal.Now.timeZoneId();
+
 export function getTasksPageState() {
   let allTasks = $state<TaskDoc[]>([]);
   let displayedTasks = $state<TaskDoc[]>([]);
@@ -47,7 +50,7 @@ export function getTasksPageState() {
   let editingTask = $state<TaskDoc | null>(null);
   const toast = getToastState();
 
-  const partition = $derived(partitionDeferred(displayedTasks, getNow()));
+  const partition = $derived(partitionDeferred(displayedTasks, getNow(), timeZone));
 
   $effect(() => {
     getTaskRefreshVersion();
@@ -57,7 +60,13 @@ export function getTasksPageState() {
   async function load() {
     bumpClock();
     const today = getToday();
-    [allTasks, doneTodayList] = await Promise.all([getVisibleTasks(today), getDoneToday(today)]);
+    const [todayTasks, futureTasks, done] = await Promise.all([
+      getVisibleTasks(today),
+      getFutureTasks(today),
+      getDoneToday(today),
+    ]);
+    allTasks = [...todayTasks, ...futureTasks];
+    doneTodayList = done;
 
     const pausedGoalIds = new SvelteSet(
       (await getAllGoals()).filter(isGoalPaused).map((g) => g._id),
@@ -71,12 +80,7 @@ export function getTasksPageState() {
     const topTaskPerGoal =
       goalIds.length > 0 ? await getNextTaskForGoals(goalIds) : new SvelteMap<string, TaskDoc>();
 
-    const visibleGoalTaskIds = new SvelteSet<string>();
-    for (const topTask of topTaskPerGoal.values()) {
-      if (topTask.doAt <= today) {
-        visibleGoalTaskIds.add(topTask._id);
-      }
-    }
+    const visibleGoalTaskIds = new SvelteSet([...topTaskPerGoal.values()].map((t) => t._id));
 
     displayedTasks = allTasks.filter((t) => !t.goalId || visibleGoalTaskIds.has(t._id));
 
@@ -312,7 +316,7 @@ export function getTasksPageState() {
     const ready = reorderItems(partition.ready, fromIndex, toIndex, (item, i) => {
       item.tasksListOrder = i;
     });
-    displayedTasks = [...ready, ...partition.deferred];
+    displayedTasks = [...ready, ...partition.laterToday, ...partition.future];
   }
 
   async function persistOrder() {
@@ -331,8 +335,11 @@ export function getTasksPageState() {
     get tasks() {
       return partition.ready;
     },
-    get laterTasks() {
-      return partition.deferred;
+    get laterToday() {
+      return partition.laterToday;
+    },
+    get future() {
+      return partition.future;
     },
     get doneToday() {
       return doneTodayList;

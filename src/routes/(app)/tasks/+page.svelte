@@ -116,7 +116,7 @@
     <div class="flex justify-center py-8">
       <LoaderCircle class="size-6 animate-spin text-base-content/40" />
     </div>
-  {:else if ctrl.tasks.length === 0 && ctrl.laterTasks.length === 0 && ctrl.doneToday.length === 0}
+  {:else if ctrl.tasks.length === 0 && ctrl.laterToday.length === 0 && ctrl.future.length === 0 && ctrl.doneToday.length === 0}
     <div class="text-center py-12 text-base-content/50">
       <SquareCheckBig class="size-12 mx-auto mb-3 opacity-40" />
       <p>No tasks for today. Enjoy the quiet — or add something new.</p>
@@ -161,16 +161,31 @@
       </ul>
     {/if}
 
-    {#if ctrl.laterTasks.length > 0}
-      <h2 class="text-sm font-semibold text-base-content/60 uppercase mb-2">To do later</h2>
+    {#if ctrl.laterToday.length > 0}
+      <h2 class="text-sm font-semibold text-base-content/60 uppercase mb-2">Later today</h2>
       <ul class="list mb-6" data-testid="later-list">
-        {#each ctrl.laterTasks as task (task._id)}
+        {#each ctrl.laterToday as task (task._id)}
           <li
             class="list-row bg-base-100 w-full"
             data-task-id={task._id}
             animate:flip={{ duration: 200 }}
           >
             {@render taskRow(task, true)}
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    {#if ctrl.future.length > 0}
+      <h2 class="text-sm font-semibold text-base-content/60 uppercase mb-2">In the future</h2>
+      <ul class="list mb-6" data-testid="future-list">
+        {#each ctrl.future as task (task._id)}
+          <li
+            class="list-row bg-base-100 w-full"
+            data-task-id={task._id}
+            animate:flip={{ duration: 200 }}
+          >
+            {@render taskRow(task, false)}
           </li>
         {/each}
       </ul>

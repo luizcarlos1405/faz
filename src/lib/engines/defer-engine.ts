@@ -20,19 +20,42 @@ export function isDeferred(task: Pick<TaskDoc, 'doAfter'>, now: Temporal.Instant
 export function partitionDeferred<T extends TaskDoc>(
   tasks: T[],
   now: Temporal.Instant,
-): { ready: T[]; deferred: T[] } {
+  timeZone: string,
+): { ready: T[]; laterToday: T[]; future: T[] } {
+  const today = now.toZonedDateTimeISO(timeZone).toPlainDate();
   const ready: T[] = [];
-  const deferred: T[] = [];
+  const laterToday: T[] = [];
+  const future: T[] = [];
   for (const task of tasks) {
-    if (isDeferred(task, now)) deferred.push(task);
-    else ready.push(task);
+    const doAfter = parseInstant(task.doAfter);
+    if (Temporal.PlainDate.compare(Temporal.PlainDate.from(task.doAt), today) > 0) {
+      future.push(task);
+    } else if (doAfter && Temporal.Instant.compare(now, doAfter) < 0) {
+      if (
+        Temporal.PlainDate.compare(doAfter.toZonedDateTimeISO(timeZone).toPlainDate(), today) > 0
+      ) {
+        future.push(task);
+      } else {
+        laterToday.push(task);
+      }
+    } else {
+      ready.push(task);
+    }
   }
   return {
     ready: ready.toSorted(byListOrder((t) => t.tasksListOrder)),
-    deferred: deferred.toSorted((a, b) => {
+    laterToday: laterToday.toSorted((a, b) => {
       const cmp = Temporal.Instant.compare(
         Temporal.Instant.from(a.doAfter!),
         Temporal.Instant.from(b.doAfter!),
+      );
+      if (cmp !== 0) return cmp;
+      return byListOrder<T>((t) => t.tasksListOrder)(a, b);
+    }),
+    future: future.toSorted((a, b) => {
+      const cmp = Temporal.PlainDate.compare(
+        Temporal.PlainDate.from(a.doAt),
+        Temporal.PlainDate.from(b.doAt),
       );
       if (cmp !== 0) return cmp;
       return byListOrder<T>((t) => t.tasksListOrder)(a, b);

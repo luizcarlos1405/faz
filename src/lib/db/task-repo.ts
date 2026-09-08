@@ -102,6 +102,21 @@ export async function getVisibleTasks(today: string): Promise<TaskDoc[]> {
   return (result.docs as TaskDoc[]).toSorted(byListOrder((t) => t.tasksListOrder));
 }
 
+export async function getFutureTasks(today: string): Promise<TaskDoc[]> {
+  const db = await getDb();
+  const result = await db.find({
+    selector: {
+      type: DOC_TYPE.TASK.value,
+      status: TASK_STATUS.TODO.value,
+      doAt: { $gt: today },
+      taskPlanId: { $exists: false },
+      careId: { $exists: false },
+    },
+    limit: FIND_LIMIT_ALL,
+  });
+  return (result.docs as TaskDoc[]).toSorted(byListOrder((t) => t.tasksListOrder));
+}
+
 export async function findTasks(opts: {
   status?: string;
   goalId?: string;
