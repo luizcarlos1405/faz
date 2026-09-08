@@ -10,14 +10,18 @@
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
   import Microscope from 'lucide-svelte/icons/microscope';
+  import Clock from 'lucide-svelte/icons/clock';
   import SwipeableItem from '$lib/components/swipeable-item.svelte';
   import TaskEditModal from '$lib/components/task-edit-modal.svelte';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
-  import { formatFriendlyDate } from '$lib/utils/format-date';
+  import { formatFriendlyDate, formatTime } from '$lib/utils/format-date';
   import { flip } from 'svelte/animate';
   import { tick } from 'svelte';
+  import { Temporal } from '@js-temporal/polyfill';
+  import type { TaskDoc } from '$lib/types';
 
   const ctrl = getTasksPageState();
+  const timeZone = Temporal.Now.timeZoneId();
   let isDragging = $state(false);
   let taskList: HTMLUListElement | undefined = $state();
 
@@ -41,6 +45,56 @@
   }
 </script>
 
+{#snippet taskRow(task: TaskDoc, showTime: boolean)}
+  {@const origin = ctrl.getOriginInfo(task)}
+  <SwipeableItem
+    class="list-col-grow"
+    onswipe={(direction) => {
+      if (direction === 'right') ctrl.postponeTask(task._id);
+      else ctrl.removeTask(task._id);
+    }}
+  >
+    {#snippet leftBackground()}
+      <div class="bg-info text-base-100 w-full h-full flex items-center justify-center">
+        <CalendarClock class="size-5" />
+      </div>
+    {/snippet}
+    {#snippet rightBackground()}
+      <div class="bg-error text-base-100 w-full h-full flex items-center justify-center">
+        <Trash2 class="size-5" />
+      </div>
+    {/snippet}
+    <div class="flex items-center gap-2">
+      <button class="btn btn-ghost btn-sm" onclick={() => ctrl.toggleComplete(task._id)}>
+        <Square class="size-5" />
+      </button>
+      <div
+        class="flex-1 min-w-0 cursor-pointer"
+        onclick={() => ctrl.openEdit(task._id)}
+        role="button"
+        tabindex="0"
+        onkeydown={(e) => {
+          if (e.key === 'Enter') ctrl.openEdit(task._id);
+        }}
+      >
+        <div>{task.title}</div>
+        <div class="text-xs text-base-content/50 truncate flex items-center gap-1">
+          <span>{formatFriendlyDate(task.doAt)}</span>
+          {#if showTime && task.doAfter}
+            <span>&middot;</span>
+            <Clock class="size-3 shrink-0" />
+            <span>after {formatTime(task.doAfter, timeZone)}</span>
+          {/if}
+          {#if origin}
+            <span>&middot;</span>
+            <span class="truncate">{origin.title}</span>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </SwipeableItem>
+{/snippet}
+
 <div class="p-4 relative">
   <h1 class="text-2xl font-bold mb-4">Tasks</h1>
 
@@ -62,7 +116,7 @@
     <div class="flex justify-center py-8">
       <LoaderCircle class="size-6 animate-spin text-base-content/40" />
     </div>
-  {:else if ctrl.tasks.length === 0 && ctrl.doneToday.length === 0}
+  {:else if ctrl.tasks.length === 0 && ctrl.laterTasks.length === 0 && ctrl.doneToday.length === 0}
     <div class="text-center py-12 text-base-content/50">
       <SquareCheckBig class="size-12 mx-auto mb-3 opacity-40" />
       <p>No tasks for today. Enjoy the quiet — or add something new.</p>
@@ -89,50 +143,12 @@
         })}
       >
         {#each ctrl.tasks as task (task._id)}
-          {@const origin = ctrl.getOriginInfo(task)}
           <li
             class="list-row bg-base-100 w-full"
             data-task-id={task._id}
             animate:flip={{ duration: 200 }}
           >
-            <SwipeableItem
-              class="list-col-grow"
-              onswipe={(direction) => {
-                if (direction === 'right') ctrl.postponeTask(task._id);
-                else ctrl.removeTask(task._id);
-              }}
-            >
-              {#snippet leftBackground()}
-                <div class="bg-info text-base-100 w-full h-full flex items-center justify-center">
-                  <CalendarClock class="size-5" />
-                </div>
-              {/snippet}
-              {#snippet rightBackground()}
-                <div class="bg-error text-base-100 w-full h-full flex items-center justify-center">
-                  <Trash2 class="size-5" />
-                </div>
-              {/snippet}
-              <div class="flex items-center gap-2">
-                <button class="btn btn-ghost btn-sm" onclick={() => ctrl.toggleComplete(task._id)}>
-                  <Square class="size-5" />
-                </button>
-                <div
-                  class="flex-1 min-w-0 cursor-pointer"
-                  onclick={() => ctrl.openEdit(task._id)}
-                  role="button"
-                  tabindex="0"
-                  onkeydown={(e) => {
-                    if (e.key === 'Enter') ctrl.openEdit(task._id);
-                  }}
-                >
-                  <div>{task.title}</div>
-                  <div class="text-xs text-base-content/50 truncate">
-                    {formatFriendlyDate(task.doAt)}
-                    {#if origin}&ensp;&middot;&ensp;{origin.title}{/if}
-                  </div>
-                </div>
-              </div>
-            </SwipeableItem>
+            {@render taskRow(task, false)}
             <div
               class:cursor-grab={!isDragging}
               class:cursor-grabbing={isDragging}
@@ -140,6 +156,21 @@
             >
               <GripVertical class="size-6 text-base-content/30" />
             </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    {#if ctrl.laterTasks.length > 0}
+      <h2 class="text-sm font-semibold text-base-content/60 uppercase mb-2">To do later</h2>
+      <ul class="list mb-6" data-testid="later-list">
+        {#each ctrl.laterTasks as task (task._id)}
+          <li
+            class="list-row bg-base-100 w-full"
+            data-task-id={task._id}
+            animate:flip={{ duration: 200 }}
+          >
+            {@render taskRow(task, true)}
           </li>
         {/each}
       </ul>

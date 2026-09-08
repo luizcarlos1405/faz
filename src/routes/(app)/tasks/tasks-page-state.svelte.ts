@@ -10,21 +10,23 @@ import {
   reorderTasks,
   restoreTask,
   getNextTaskForGoals,
+  rescheduleTask,
+  deferTask,
 } from '$lib/db/task-repo';
 import { createGoal, getGoal, getAllGoals, recalcGoalStatus } from '$lib/db/goal-repo';
 import { createCare, getCare, markPlanDone } from '$lib/db/care-repo';
 import { isGoalPaused } from '$lib/engines/goal-engine';
 import { describeRecurrence } from '$lib/engines/recurrence-wizard';
-import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
+import { DOC_TYPE, TASK_STATUS, type OriginInfo, type TaskDoc } from '$lib/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
-
-interface OriginInfo {
-  type: 'goal' | 'care';
-  id: string;
-  title: string;
-  recurrence?: string;
-}
+import { bumpClock, getNow, getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
+import {
+  doAfterFromTime,
+  partitionDeferred,
+  withDoAfter,
+  withDoAt,
+} from '$lib/engines/defer-engine';
+import { formatClock, formatWeekdayDate } from '$lib/utils/format-date';
 import { Temporal } from '@js-temporal/polyfill';
 import { getToastState } from '$lib/components/toast-state.svelte';
 import { reorderItems } from '$lib/utils/reorderItems';
@@ -45,12 +47,15 @@ export function getTasksPageState() {
   let editingTask = $state<TaskDoc | null>(null);
   const toast = getToastState();
 
+  const partition = $derived(partitionDeferred(displayedTasks, getNow()));
+
   $effect(() => {
     getTaskRefreshVersion();
     load();
   });
 
   async function load() {
+    bumpClock();
     const today = getToday();
     [allTasks, doneTodayList] = await Promise.all([getVisibleTasks(today), getDoneToday(today)]);
 
@@ -162,7 +167,7 @@ export function getTasksPageState() {
     await load();
   }
 
-  async function postponeTask(id: string) {
+  async function postponeTask(id: string, targetDate?: string) {
     let fresh: TaskDoc;
     try {
       fresh = await getTask(id);
@@ -172,23 +177,61 @@ export function getTasksPageState() {
     }
 
     const originalDoAt = fresh.doAt;
-    const tomorrow = Temporal.PlainDate.from(getToday()).add({ days: 1 }).toString();
+    const originalDoAfter = fresh.doAfter;
+    const today = Temporal.PlainDate.from(getToday());
+    const tomorrow = today.add({ days: 1 }).toString();
+    const doAt = targetDate ?? tomorrow;
 
-    fresh.doAt = tomorrow;
-    await updateTask(fresh);
+    await rescheduleTask(id, doAt);
     await load();
 
-    toast.notify('Postponed to tomorrow', {
+    const message =
+      doAt === tomorrow ? 'Postponed to tomorrow' : `Moved to ${formatWeekdayDate(doAt, today)}`;
+    toast.notify(message, {
       label: 'Undo',
       fn: async () => {
         const current = await getTask(id);
         if (current) {
           current.doAt = originalDoAt;
-          await updateTask(current);
+          await updateTask(withDoAfter(current, originalDoAfter));
           await load();
         }
       },
     });
+  }
+
+  async function deferUntil(id: string, hour: number, minute: number) {
+    let fresh: TaskDoc;
+    try {
+      fresh = await getTask(id);
+    } catch {
+      await load();
+      return;
+    }
+
+    const originalDoAfter = fresh.doAfter;
+    const doAfter = doAfterFromTime(
+      Temporal.PlainDate.from(getToday()),
+      hour,
+      minute,
+      Temporal.Now.timeZoneId(),
+    );
+
+    await deferTask(id, doAfter);
+    await load();
+
+    toast.notify(`Hidden until ${formatClock(hour, minute)}`, {
+      label: 'Undo',
+      fn: async () => {
+        await deferTask(id, originalDoAfter ?? null);
+        await load();
+      },
+    });
+  }
+
+  async function clearDoAfter(id: string) {
+    await deferTask(id, null);
+    await load();
   }
 
   async function removeTask(id: string) {
@@ -220,12 +263,13 @@ export function getTasksPageState() {
     editingTask = null;
   }
 
-  async function saveEdit(title: string, doAt: string) {
+  async function saveEdit(title: string, doAt: string, doAfter?: string | null) {
     if (!editingTask) return;
     const task = await getTask(editingTask._id);
     task.title = title.trim();
-    task.doAt = doAt;
-    await updateTask(task);
+    let next = withDoAt(task, doAt);
+    if (doAfter !== undefined) next = withDoAfter(next, doAfter);
+    await updateTask(next);
     editingTask = null;
     await load();
   }
@@ -265,28 +309,30 @@ export function getTasksPageState() {
   }
 
   function reorder(fromIndex: number, toIndex: number) {
-    displayedTasks = reorderItems(displayedTasks, fromIndex, toIndex, (item, i) => {
+    const ready = reorderItems(partition.ready, fromIndex, toIndex, (item, i) => {
       item.tasksListOrder = i;
     });
+    displayedTasks = [...ready, ...partition.deferred];
   }
 
   async function persistOrder() {
-    const itemIds = displayedTasks.map((t) => t._id);
+    const itemIds = partition.ready.map((t) => t._id);
     await reorderTasks(itemIds);
   }
 
   async function moveToEnd(): Promise<TaskDoc | null> {
-    if (displayedTasks.length === 0) return null;
-    displayedTasks = reorderItems(displayedTasks, 0, displayedTasks.length - 1, (item, i) => {
-      item.tasksListOrder = i;
-    });
+    if (partition.ready.length === 0) return null;
+    reorder(0, partition.ready.length - 1);
     await persistOrder();
-    return displayedTasks[0] ?? null;
+    return partition.ready[0] ?? null;
   }
 
   return {
     get tasks() {
-      return displayedTasks;
+      return partition.ready;
+    },
+    get laterTasks() {
+      return partition.deferred;
     },
     get doneToday() {
       return doneTodayList;
@@ -307,6 +353,8 @@ export function getTasksPageState() {
     add,
     toggleComplete,
     postponeTask,
+    deferUntil,
+    clearDoAfter,
     removeTask,
     openEdit,
     closeEdit,
