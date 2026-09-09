@@ -105,9 +105,9 @@
   <div class="w-full max-w-md flex flex-col h-full">
     <div class="flex justify-between items-center px-5 pt-4 pb-4">
       {#if task && !allDone}
-        <div class="join rounded-full bg-base-200" data-testid="schedule-join">
+        <div class="flex items-center rounded-full bg-base-200" data-testid="schedule-join">
           <button
-            class="join-item flex items-center py-2 px-2.5 text-base-content/40 disabled:opacity-50"
+            class="flex items-center py-2 px-2.5 text-base-content/40 disabled:opacity-50"
             onclick={() => (showDatePicker = true)}
             disabled={busy}
             aria-label="Pick a date"
@@ -116,7 +116,7 @@
           </button>
           <div class="w-px self-stretch bg-base-content/10"></div>
           <button
-            class="join-item flex items-center gap-1.5 py-2 px-3 text-[13px] font-medium disabled:opacity-50 {plusOffset >
+            class="flex items-center gap-1.5 py-2 px-3 text-[13px] font-medium disabled:opacity-50 {plusOffset >
             0
               ? 'text-base-content'
               : 'text-base-content/40'}"
@@ -133,7 +133,7 @@
           </button>
           <div class="w-px self-stretch bg-base-content/10"></div>
           <button
-            class="join-item flex items-center py-2 px-2.5 text-[13px] font-semibold text-base-content/40 disabled:opacity-50"
+            class="flex items-center py-2 px-2.5 text-[13px] font-semibold text-base-content/40 disabled:opacity-50"
             onclick={() => (plusOffset += 1)}
             disabled={busy}
             aria-label="One more day"
@@ -143,7 +143,7 @@
           {#if plusOffset > 0}
             <div class="w-px self-stretch bg-base-content/10"></div>
             <button
-              class="join-item flex items-center py-2 px-2.5 text-base-content/40 disabled:opacity-50"
+              class="flex items-center py-2 px-2.5 text-base-content/40 disabled:opacity-50"
               onclick={() => (plusOffset = 0)}
               disabled={busy}
               aria-label="Back to tomorrow"
@@ -225,9 +225,9 @@
     {#if task && !allDone}
       <div class="px-10 pb-12">
         <div class="flex justify-center gap-3">
-          <div class="join rounded-full bg-base-200">
+          <div class="flex items-center rounded-full bg-base-200">
             <button
-              class="join-item flex items-center rounded-full py-3.5 pl-5 pr-4 text-base-content disabled:opacity-50"
+              class="flex items-center py-3.5 pl-5 pr-4 text-base-content disabled:opacity-50"
               onclick={() => (showTimePicker = true)}
               disabled={busy}
               aria-label="Pick a time"
@@ -236,7 +236,7 @@
             </button>
             <div class="w-px self-stretch bg-base-content/10"></div>
             <button
-              class="join-item flex items-center gap-2 rounded-full py-3.5 pl-4 pr-6 text-base-content font-medium disabled:opacity-50"
+              class="flex items-center gap-2 py-3.5 pl-4 pr-6 text-base-content font-medium disabled:opacity-50"
               onclick={handleSkip}
               disabled={busy}
             >
