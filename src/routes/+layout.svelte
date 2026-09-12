@@ -26,9 +26,18 @@
     }
   }
 
+  async function lockPortrait() {
+    try {
+      await screen.orientation?.lock?.('portrait');
+    } catch {
+      return;
+    }
+  }
+
   onMount(() => {
     initTheme();
     syncAndRefresh();
+    lockPortrait();
     const interval = setInterval(syncAndRefresh, 5 * 60 * 1000);
     const stopTicker = startMinuteTicker();
     document.addEventListener('visibilitychange', handleVisibilityChange);
