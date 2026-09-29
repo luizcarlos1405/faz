@@ -1,6 +1,7 @@
 # BUG-012: Focus overlay hides toasts, making Undo unreachable in focus mode
 
-- **Status:** NEEDS FIX
+- **Status:** FIXED (commit `fix(ui): raise toasts above focus overlay and FAB`;
+  container raised to `z-[200]`, above both the focus overlay and the FAB)
 - **Severity:** Minor (undo/feedback unavailable during focus sessions; defer itself works)
 - **Area:** components layering (shell)
 - **Files:** `src/lib/components/focus-mode.svelte` (z-index), `src/lib/components/toast-container.svelte` (`z-40`), `src/routes/(app)/tasks/+page.svelte` (FAB `z-50`)

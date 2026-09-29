@@ -5,7 +5,7 @@
 
 {#if toast.toasts.length > 0}
   <div
-    class="fixed bottom-20 left-0 right-0 z-40 flex flex-col items-center gap-2 px-4 pointer-events-none"
+    class="fixed bottom-20 left-0 right-0 z-[200] flex flex-col items-center gap-2 px-4 pointer-events-none"
     aria-live="polite"
   >
     {#each toast.toasts as t (t.id)}

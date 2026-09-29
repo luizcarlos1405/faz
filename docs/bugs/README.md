@@ -24,7 +24,7 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 | [009](./009-bylistorder-createdat-tiebreak.md)                        | createdAt string tie-break mis-sorts mixed precisions      | IGNORE    | Minor    |
 | [010](./010-duplicate-generation-on-moved-occurrence.md)              | Moved FIXED_DAYS occurrence duplicated on next run         | FIXED     | High     |
 | [011](./011-mixed-direction-mango-sorts-oldest-first.md)              | Mixed-direction mango sorts silently return oldest-first   | NEEDS FIX | Minor    |
-| [012](./012-focus-overlay-hides-toasts.md)                            | Focus overlay hides toasts, Undo unreachable in focus mode | NEEDS FIX | Minor    |
+| [012](./012-focus-overlay-hides-toasts.md)                            | Focus overlay hides toasts, Undo unreachable in focus mode | FIXED     | Minor    |
 
 ## Picking up a bug
 
