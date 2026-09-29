@@ -40,11 +40,11 @@ export function formatWeekdayDate(
   });
 }
 
-export function formatTime(instantIso: string, timeZone: string): string {
-  return Temporal.Instant.from(instantIso)
-    .toZonedDateTimeISO(timeZone)
-    .toPlainTime()
-    .toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
+export function formatTimeOfDay(time: string): string {
+  return Temporal.PlainTime.from(time).toLocaleString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export function formatClock(hour: number, minute: number): string {

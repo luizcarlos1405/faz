@@ -47,7 +47,7 @@ import {
   type WizardRecurrenceInput,
 } from '$lib/engines/recurrence-wizard';
 import { isAfterDoneRecurrence } from '$lib/engines/care-engine';
-import { doAfterFromTime, withDoAfter, withDoAt } from '$lib/engines/defer-engine';
+import { toTimeOfDay, withDoAfterTime, withDoAt } from '$lib/engines/defer-engine';
 import { runSchedulerNow } from '$lib/scheduler';
 import { bumpTaskRefresh } from '$lib/scheduler-refresh.svelte';
 import { snapshotTask } from '$lib/utils/task-undo';
@@ -133,7 +133,7 @@ function taskSummary(t: TaskDoc) {
     title: t.title,
     status: t.status,
     doAt: t.doAt,
-    doAfter: t.doAfter,
+    doAfterTime: t.doAfterTime,
     goalId: t.goalId,
     careId: t.careId,
   };
@@ -146,12 +146,6 @@ function parseTime(v: unknown): { hour: number; minute: number } | null {
   const match = TIME_RE.exec(v.trim());
   if (!match) return null;
   return { hour: Number(match[1]), minute: Number(match[2]) };
-}
-
-function doAfterFor(doAt: string, time: { hour: number; minute: number }): string {
-  const today = Temporal.Now.plainDateISO();
-  const anchor = doAt > today.toString() ? Temporal.PlainDate.from(doAt) : today;
-  return doAfterFromTime(anchor, time.hour, time.minute, Temporal.Now.timeZoneId());
 }
 
 async function getOrFail<T>(
@@ -396,7 +390,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
         return fail('Create task failed', 'doAfterTime must be HH:MM (24h).');
       const task = await createTask({ title, doAt: args.doAt, goalId, originInboxItemId });
       const time = parseTime(args.doAfterTime);
-      if (time) await updateTask(withDoAfter(task, doAfterFor(task.doAt, time)));
+      if (time) await updateTask(withDoAfterTime(task, toTimeOfDay(time.hour, time.minute)));
       if (goalId)
         await recalcGoalStatus(goalId).catch((e) =>
           console.error('[ai/tools] recalc goal status failed', e),
@@ -415,10 +409,14 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
         return fail('Update task failed', 'doAfterTime must be HH:MM (24h).');
       let next = isIsoDate(args.doAt) ? withDoAt(task, args.doAt) : task;
       const time = parseTime(args.doAfterTime);
-      if (time) next = withDoAfter(next, doAfterFor(next.doAt, time));
-      else if (args.clearDoAfter === true) next = withDoAfter(next, null);
+      if (time) next = withDoAfterTime(next, toTimeOfDay(time.hour, time.minute));
+      else if (args.clearDoAfterTime === true) next = withDoAfterTime(next, null);
       await updateTask(next);
-      return ok(`Updated task: ${next.title}`, { id, title: next.title, doAfter: next.doAfter });
+      return ok(`Updated task: ${next.title}`, {
+        id,
+        title: next.title,
+        doAfterTime: next.doAfterTime,
+      });
     }
 
     case 'complete_task': {

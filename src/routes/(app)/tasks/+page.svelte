@@ -11,17 +11,17 @@
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
   import Microscope from 'lucide-svelte/icons/microscope';
   import Clock from 'lucide-svelte/icons/clock';
+  import Target from 'lucide-svelte/icons/target';
+  import Heart from 'lucide-svelte/icons/heart';
   import SwipeableItem from '$lib/components/swipeable-item.svelte';
   import TaskEditModal from '$lib/components/task-edit-modal.svelte';
   import { orderableChildren } from '$lib/attachments/orderableChildren';
-  import { formatFriendlyDate, formatTime } from '$lib/utils/format-date';
+  import { formatFriendlyDate, formatTimeOfDay } from '$lib/utils/format-date';
   import { flip } from 'svelte/animate';
   import { tick } from 'svelte';
-  import { Temporal } from '@js-temporal/polyfill';
   import type { TaskDoc } from '$lib/types';
 
   const ctrl = getTasksPageState();
-  const timeZone = Temporal.Now.timeZoneId();
   let isDragging = $state(false);
   let taskList: HTMLUListElement | undefined = $state();
 
@@ -80,13 +80,18 @@
         <div>{task.title}</div>
         <div class="text-xs text-base-content/50 truncate flex items-center gap-1">
           <span>{formatFriendlyDate(task.doAt)}</span>
-          {#if showTime && task.doAfter}
+          {#if showTime && task.doAfterTime}
             <span>&middot;</span>
             <Clock class="size-3 shrink-0" />
-            <span>after {formatTime(task.doAfter, timeZone)}</span>
+            <span>after {formatTimeOfDay(task.doAfterTime)}</span>
           {/if}
           {#if origin}
             <span>&middot;</span>
+            {#if origin.type === 'goal'}
+              <Target class="size-3 shrink-0" />
+            {:else}
+              <Heart class="size-3 shrink-0" />
+            {/if}
             <span class="truncate">{origin.title}</span>
           {/if}
         </div>
@@ -210,9 +215,17 @@
               }}
             >
               <div class="line-through">{task.title}</div>
-              <div class="text-xs text-base-content/50 truncate">
-                {formatFriendlyDate(task.doAt)}
-                {#if origin}&ensp;&middot;&ensp;{origin.title}{/if}
+              <div class="text-xs text-base-content/50 truncate flex items-center gap-1">
+                <span>{formatFriendlyDate(task.doAt)}</span>
+                {#if origin}
+                  <span>&middot;</span>
+                  {#if origin.type === 'goal'}
+                    <Target class="size-3 shrink-0" />
+                  {:else}
+                    <Heart class="size-3 shrink-0" />
+                  {/if}
+                  <span class="truncate">{origin.title}</span>
+                {/if}
               </div>
             </div>
           </li>

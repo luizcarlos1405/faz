@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { nanoid } from 'nanoid';
 import { getDb, FIND_LIMIT_ALL } from './database';
 import { nextOrder, byListOrder, computeInsertBeforeDone } from '$lib/engines/ordering';
-import { withDoAt, withDoAfter } from '$lib/engines/defer-engine';
+import { withDoAt, withDoAfterTime } from '$lib/engines/defer-engine';
 import { completedOnLocalDate } from '$lib/utils/completed-date';
 import { DOC_TYPE, TASK_STATUS, type TaskDoc } from '$lib/types';
 
@@ -229,9 +229,9 @@ export async function rescheduleTask(id: string, doAt: string): Promise<TaskDoc>
   return updateTask(withDoAt(doc, doAt));
 }
 
-export async function deferTask(id: string, doAfter: string | null): Promise<TaskDoc> {
+export async function deferTask(id: string, doAfterTime: string | null): Promise<TaskDoc> {
   const doc = await getTask(id);
-  return updateTask(withDoAfter(doc, doAfter));
+  return updateTask(withDoAfterTime(doc, doAfterTime));
 }
 
 export async function reorderGoalTasks(goalId: string, taskIds: string[]): Promise<void> {

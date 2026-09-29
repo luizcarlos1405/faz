@@ -79,14 +79,12 @@ describe('buildSystemContext', () => {
           title: 'Call mom',
           doAt: '2026-06-29',
           status: 'TODO',
-          doAfter: '2026-06-29T18:00:00Z',
+          doAfterTime: '18:00',
         },
       ],
     };
     const out = buildSystemContext(ctx);
-    expect(out).toContain(
-      'Call mom (id t1, due 2026-06-29, TODO, hidden until 2026-06-29T18:00:00Z)',
-    );
+    expect(out).toContain('Call mom (id t1, due 2026-06-29, TODO, hidden until 18:00)');
   });
 
   it('explains the hide-until time in the base prompt', () => {

@@ -4,7 +4,7 @@
   import WheelSelect from './wheel-select.svelte';
   import TaskSummary from './task-summary.svelte';
   import { getNow } from '$lib/scheduler-refresh.svelte';
-  import { doAfterFromTime, isFutureTime, nextRoundedTime } from '$lib/engines/defer-engine';
+  import { isFutureTime, nextRoundedTime, toTimeOfDay } from '$lib/engines/defer-engine';
   import { formatClock } from '$lib/utils/format-date';
   import type { OriginInfo, TaskDoc } from '$lib/types';
 
@@ -38,9 +38,10 @@
   let minute = $derived<string | number>(seed.minute);
 
   const today = $derived(getNow().toZonedDateTimeISO(timeZone).toPlainDate());
-  const anchor = $derived(date && date > today.toString() ? Temporal.PlainDate.from(date) : today);
-  const candidate = $derived(doAfterFromTime(anchor, Number(hour), Number(minute), timeZone));
-  const valid = $derived(isFutureTime(candidate, getNow()));
+  const candidate = $derived(toTimeOfDay(Number(hour), Number(minute)));
+  const valid = $derived(
+    date && date > today.toString() ? true : isFutureTime(candidate, getNow(), timeZone),
+  );
 
   function twoDigits(v: string | number): string {
     return String(v).padStart(2, '0');

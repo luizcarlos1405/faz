@@ -26,7 +26,7 @@ import { getToastState } from '$lib/components/toast-state.svelte';
 import { reorderItems } from '$lib/utils/reorderItems';
 import { snapshotTask } from '$lib/utils/task-undo';
 import { partitionGoalsByPause } from '$lib/engines/goal-engine';
-import { withDoAfter, withDoAt } from '$lib/engines/defer-engine';
+import { withDoAfterTime, withDoAt } from '$lib/engines/defer-engine';
 import { TASK_STATUS, GOAL_STATUS, type GoalDoc, type TaskDoc } from '$lib/types';
 
 function getToday(): string {
@@ -212,12 +212,12 @@ export function getGoalDetailState(goalId: string) {
     editingTask = null;
   }
 
-  async function saveEdit(title: string, doAt: string, doAfter?: string | null) {
+  async function saveEdit(title: string, doAt: string, doAfterTime?: string | null) {
     if (!editingTask) return;
     const task = await getTask(editingTask._id);
     task.title = title.trim();
     let next = withDoAt(task, doAt);
-    if (doAfter !== undefined) next = withDoAfter(next, doAfter);
+    if (doAfterTime !== undefined) next = withDoAfterTime(next, doAfterTime);
     await updateTask(next);
     editingTask = null;
     await load();

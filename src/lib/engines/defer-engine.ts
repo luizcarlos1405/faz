@@ -2,19 +2,31 @@ import { Temporal } from '@js-temporal/polyfill';
 import type { TaskDoc } from '$lib/types';
 import { byListOrder } from './ordering';
 
-function parseInstant(value: string | undefined): Temporal.Instant | null {
+const TIME_OF_DAY_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export function parseTimeOfDay(value: string | undefined): { hour: number; minute: number } | null {
   if (!value) return null;
-  try {
-    return Temporal.Instant.from(value);
-  } catch {
-    return null;
-  }
+  const match = TIME_OF_DAY_RE.exec(value);
+  if (!match) return null;
+  return { hour: Number(match[1]), minute: Number(match[2]) };
 }
 
-export function isDeferred(task: Pick<TaskDoc, 'doAfter'>, now: Temporal.Instant): boolean {
-  const doAfter = parseInstant(task.doAfter);
-  if (!doAfter) return false;
-  return Temporal.Instant.compare(now, doAfter) < 0;
+function minutesOfDay(time: { hour: number; minute: number }): number {
+  return time.hour * 60 + time.minute;
+}
+
+export function toTimeOfDay(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+export function isDeferred(
+  task: Pick<TaskDoc, 'doAfterTime'>,
+  now: Temporal.Instant,
+  timeZone: string,
+): boolean {
+  const time = parseTimeOfDay(task.doAfterTime);
+  if (!time) return false;
+  return minutesOfDay(time) > minutesOfDay(now.toZonedDateTimeISO(timeZone));
 }
 
 export function partitionDeferred<T extends TaskDoc>(
@@ -23,21 +35,16 @@ export function partitionDeferred<T extends TaskDoc>(
   timeZone: string,
 ): { ready: T[]; laterToday: T[]; future: T[] } {
   const today = now.toZonedDateTimeISO(timeZone).toPlainDate();
+  const nowMinutes = minutesOfDay(now.toZonedDateTimeISO(timeZone));
   const ready: T[] = [];
   const laterToday: T[] = [];
   const future: T[] = [];
   for (const task of tasks) {
-    const doAfter = parseInstant(task.doAfter);
+    const time = parseTimeOfDay(task.doAfterTime);
     if (Temporal.PlainDate.compare(Temporal.PlainDate.from(task.doAt), today) > 0) {
       future.push(task);
-    } else if (doAfter && Temporal.Instant.compare(now, doAfter) < 0) {
-      if (
-        Temporal.PlainDate.compare(doAfter.toZonedDateTimeISO(timeZone).toPlainDate(), today) > 0
-      ) {
-        future.push(task);
-      } else {
-        laterToday.push(task);
-      }
+    } else if (time && minutesOfDay(time) > nowMinutes) {
+      laterToday.push(task);
     } else {
       ready.push(task);
     }
@@ -45,10 +52,7 @@ export function partitionDeferred<T extends TaskDoc>(
   return {
     ready: ready.toSorted(byListOrder((t) => t.tasksListOrder)),
     laterToday: laterToday.toSorted((a, b) => {
-      const cmp = Temporal.Instant.compare(
-        Temporal.Instant.from(a.doAfter!),
-        Temporal.Instant.from(b.doAfter!),
-      );
+      const cmp = (a.doAfterTime ?? '').localeCompare(b.doAfterTime ?? '');
       if (cmp !== 0) return cmp;
       return byListOrder<T>((t) => t.tasksListOrder)(a, b);
     }),
@@ -63,27 +67,10 @@ export function partitionDeferred<T extends TaskDoc>(
   };
 }
 
-export function doAfterFromTime(
-  date: Temporal.PlainDate,
-  hour: number,
-  minute: number,
-  timeZone: string,
-): string {
-  return date
-    .toZonedDateTime({ timeZone, plainTime: Temporal.PlainTime.from({ hour, minute }) })
-    .toInstant()
-    .toString();
-}
-
-export function isFutureTime(candidate: string, now: Temporal.Instant): boolean {
-  const instant = parseInstant(candidate);
-  if (!instant) return false;
-  return Temporal.Instant.compare(instant, now) > 0;
-}
-
-export function timeOfDay(doAfter: string, timeZone: string): { hour: number; minute: number } {
-  const time = Temporal.Instant.from(doAfter).toZonedDateTimeISO(timeZone);
-  return { hour: time.hour, minute: time.minute };
+export function isFutureTime(time: string, now: Temporal.Instant, timeZone: string): boolean {
+  const parsed = parseTimeOfDay(time);
+  if (!parsed) return false;
+  return minutesOfDay(parsed) > minutesOfDay(now.toZonedDateTimeISO(timeZone));
 }
 
 export function nextRoundedTime(
@@ -105,18 +92,18 @@ export function nextRoundedTime(
 }
 
 export function withDoAt<T extends TaskDoc>(task: T, doAt: string): T {
-  if (task.doAt === doAt) return { ...task };
-  const next: T = { ...task, doAt };
-  delete next.doAfter;
-  return next;
+  return { ...task, doAt };
 }
 
-export function withDoAfter<T extends TaskDoc>(task: T, doAfter: string | null | undefined): T {
+export function withDoAfterTime<T extends TaskDoc>(
+  task: T,
+  doAfterTime: string | null | undefined,
+): T {
   const next: T = { ...task };
-  if (doAfter) {
-    next.doAfter = doAfter;
+  if (doAfterTime) {
+    next.doAfterTime = doAfterTime;
   } else {
-    delete next.doAfter;
+    delete next.doAfterTime;
   }
   return next;
 }

@@ -284,7 +284,7 @@ export const TOOL_SPECS: ToolSpec[] = [
     name: 'update_task',
     kind: 'update',
     description:
-      'Update a task title, due date or hide-until time. Changing doAt clears any hide-until time unless doAfterTime is given too. Use complete_task to mark done and uncomplete_task to reopen.',
+      "Update a task title, due date or hide-until time. The hide-until time (doAfterTime, HH:MM) applies on the task's due day. Use complete_task to mark done and uncomplete_task to reopen.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -292,7 +292,7 @@ export const TOOL_SPECS: ToolSpec[] = [
         title: { type: 'string' },
         doAt: dateSchema,
         doAfterTime: timeSchema,
-        clearDoAfter: {
+        clearDoAfterTime: {
           type: 'boolean',
           description: 'Remove the hide-until time so the task shows all day.',
         },

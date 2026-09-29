@@ -4,6 +4,7 @@ import { createGoal, updateGoal } from './db/goal-repo';
 import { createTask, completeTask, updateTask, deferTask } from './db/task-repo';
 import { createCare, updateCare } from './db/care-repo';
 import { runSchedulerNow } from './scheduler';
+import { toTimeOfDay } from './engines/defer-engine';
 import { GOAL_STATUS, RECURRENCE_TYPE, INTERVAL_SUBTYPE, FIXED_DAYS_SUBTYPE } from './types';
 
 function daysAgo(n: number): string {
@@ -138,7 +139,10 @@ export async function addSampleData() {
   await createTask({ title: 'Book haircut appointment', doAt: daysFromNow(3) });
   summary.tasks++;
   const deferred = await createTask({ title: 'Call the dentist', doAt: todayStr() });
-  await deferTask(deferred._id, Temporal.Now.instant().add({ hours: 2 }).toString());
+  const later = Temporal.Now.instant()
+    .add({ hours: 2 })
+    .toZonedDateTimeISO(Temporal.Now.timeZoneId());
+  await deferTask(deferred._id, toTimeOfDay(later.hour, later.minute));
   summary.tasks++;
 
   const standaloneDone1 = await createTask({ title: 'Grocery shopping', doAt: todayStr() });

@@ -4,7 +4,7 @@ import {
   formatFriendlyDate,
   formatShortWeekday,
   formatWeekdayDate,
-  formatTime,
+  formatTimeOfDay,
   formatClock,
 } from '../format-date';
 
@@ -97,9 +97,9 @@ describe('formatWeekdayDate', () => {
   });
 });
 
-describe('formatTime', () => {
-  it('renders the wall-clock time in the given zone', () => {
-    const result = formatTime('2026-09-08T12:30:00Z', 'America/Sao_Paulo');
+describe('formatTimeOfDay', () => {
+  it('renders the wall-clock time', () => {
+    const result = formatTimeOfDay('09:30');
     expect(result).toMatch(/09:30|9:30/);
   });
 });

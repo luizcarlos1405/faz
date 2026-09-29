@@ -1,6 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import type { Database } from './database';
 import { FIND_LIMIT_ALL } from './database';
+import { toTimeOfDay } from '$lib/engines/defer-engine';
 import { DOC_TYPE, type CareDoc, type TaskDoc } from '$lib/types';
 import PouchDB from 'pouchdb-browser';
 
@@ -90,6 +91,36 @@ const migrations: Migration[] = [
           await db.put(care);
           changed = false;
         }
+      }
+    },
+  },
+  {
+    version: 3,
+    description: 'Convert doAfter instants to doAfterTime (local HH:MM)',
+    up: async (db) => {
+      const { docs } = await db.find({
+        selector: {
+          type: DOC_TYPE.TASK.value,
+          doAfter: { $gt: null },
+        },
+        limit: FIND_LIMIT_ALL,
+      });
+      const tasks = docs as (TaskDoc & { doAfter?: string })[];
+      for (const task of tasks) {
+        const legacy = task.doAfter;
+        delete task.doAfter;
+        if (legacy) {
+          try {
+            const local = Temporal.Instant.from(legacy).toZonedDateTimeISO(
+              Temporal.Now.timeZoneId(),
+            );
+            task.doAfterTime = toTimeOfDay(local.hour, local.minute);
+          } catch {
+            // malformed value: drop the field
+          }
+        }
+        task.updatedAt = Temporal.Now.instant().toString();
+        await db.put(task);
       }
     },
   },

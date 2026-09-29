@@ -16,7 +16,7 @@
     task?: TaskDoc | null;
     origin?: OriginInfo | null;
     onclose: () => void;
-    onsave: (title: string, doAt: string, doAfter: string | null) => void;
+    onsave: (title: string, doAt: string, doAfterTime: string | null) => void;
     ontransformgoal: () => void;
     ontransformcare: () => void;
     ondelete: () => void;

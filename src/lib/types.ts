@@ -152,7 +152,7 @@ export interface TaskDoc {
   type: typeof DOC_TYPE.TASK.value;
   title: string;
   doAt: string;
-  doAfter?: string;
+  doAfterTime?: string;
   status: TaskStatus;
   goalId?: string;
   stepOrder?: number;

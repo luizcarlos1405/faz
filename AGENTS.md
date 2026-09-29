@@ -45,7 +45,7 @@ Pure functions only — values in, values out:
 - No mutation of inputs — return new values
 - No DOM access, no `$state`, no side effects
 
-Core modules: `care-engine.ts` (recurrence scheduling), `goal-engine.ts` (goal status), `ordering.ts` (list ordering decisions, sort comparators), `defer-engine.ts` (`doAfter` hide-until-time: `isDeferred`, `partitionDeferred`, `doAfterFromTime`, and `withDoAt`, which clears `doAfter` whenever `doAt` changes), `format-date.ts` (date formatting), `reorderItems.ts`, `snapshotTask` in `task-undo.ts`.
+Core modules: `care-engine.ts` (recurrence scheduling), `goal-engine.ts` (goal status), `ordering.ts` (list ordering decisions, sort comparators), `defer-engine.ts` (`doAfterTime` hide-until-time, a wall-clock `HH:MM` that applies on the task's due day: `isDeferred`, `partitionDeferred`, `toTimeOfDay`, `withDoAfterTime`; changing `doAt` keeps the time), `format-date.ts` (date formatting), `reorderItems.ts`, `snapshotTask` in `task-undo.ts`.
 
 #### Shell (`db/`, `scheduler.ts`, `scheduler-refresh.svelte.ts`, `importers/*-import.ts`, `components/`, `attachments/`, route pages)
 
@@ -70,7 +70,7 @@ Domain types (`TaskDoc`, `GoalDoc`, `CareDoc`, `InboxItemDoc`, `Recurrence`, etc
 | `types.ts`                    | Bound. | All doc types and recurrence type unions                                                                                                                                                                                                                                                                                                                                                               |
 | `db/`                         | Shell  | PouchDB repos (task, goal, care, inbox, data-manager). Calls core for ordering decisions.                                                                                                                                                                                                                                                                                                              |
 | `scheduler.ts`                | Shell  | Orchestrator — gathers DB data, calls `runScheduler()`, writes results back                                                                                                                                                                                                                                                                                                                            |
-| `scheduler-refresh.svelte.ts` | Shell  | Reactive refresh signals: `bumpTaskRefresh()` (reload lists after a scheduler run) and a reactive clock (`getNow()`, `bumpClock()`, `startMinuteTicker()`). The root layout bumps the clock after every scheduler run and once a minute; the tasks page derives ready vs. deferred (`doAfter`) tasks from it with no DB I/O.                                                                           |
+| `scheduler-refresh.svelte.ts` | Shell  | Reactive refresh signals: `bumpTaskRefresh()` (reload lists after a scheduler run) and a reactive clock (`getNow()`, `bumpClock()`, `startMinuteTicker()`). The root layout bumps the clock after every scheduler run and once a minute; the tasks page derives ready vs. deferred (`doAfterTime`) tasks from it with no DB I/O.                                                                       |
 | `importers/`                  | Split  | `google-tasks.ts` = core (parsing), `google-tasks-import.ts` = shell (file I/O + DB writes)                                                                                                                                                                                                                                                                                                            |
 | `components/`                 | Shell  | UI components (`.svelte`) and `.svelte.ts` reactive state helpers                                                                                                                                                                                                                                                                                                                                      |
 | `attachments/`                | Shell  | DOM-level drag-and-drop attachment                                                                                                                                                                                                                                                                                                                                                                     |
@@ -83,7 +83,7 @@ Split into two route groups (URLs are unaffected by the grouping):
 - **`(app)/`** — everything with app chrome (TopBar + dock nav, provided by
   `(app)/+layout.svelte`): `/tasks`, `/inbox`, `/goals`, `/cares`, `/chat`
   (AI assistant) — bottom nav tabs, in dock order (Tasks first). `/tasks`
-  shows four sections: **To do**, **Later today** (tasks whose `doAfter`
+  shows four sections: **To do**, **Later today** (tasks whose `doAfterTime`
   falls later today — same rows, no drag handle), **In the future** (tasks
   postponed to a future date; excludes care-plan-generated occurrences and
   shows only the next task per goal — no drag handle) and **Done today**. Root `/`
@@ -98,7 +98,7 @@ Split into two route groups (URLs are unaffected by the grouping):
   `focus-mode.svelte` component. Focus mode's header pill offers a calendar
   (`date-picker-modal.svelte`, cally), Tomorrow / stacking `+1` target date
   and a reset; the Later button is joined with a clock that opens
-  `time-picker-modal.svelte` and sets `doAfter` (today at HH:MM). Both
+  `time-picker-modal.svelte` and sets `doAfterTime` (HH:MM). Both
   modals embed `task-summary.svelte` so task context stays visible.
 
 The root `+layout.svelte` holds only global concerns (app.css, scheduler

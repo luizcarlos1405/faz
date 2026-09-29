@@ -10,8 +10,8 @@
   import X from 'lucide-svelte/icons/x';
   import { slide } from 'svelte/transition';
   import { resolve } from '$app/paths';
-  import { formatShortWeekday, formatTime } from '$lib/utils/format-date';
-  import { doAfterFromTime, timeOfDay } from '$lib/engines/defer-engine';
+  import { formatShortWeekday, formatTimeOfDay } from '$lib/utils/format-date';
+  import { parseTimeOfDay, toTimeOfDay } from '$lib/engines/defer-engine';
   import TimePickerModal from './time-picker-modal.svelte';
   import type { OriginInfo } from '$lib/types';
 
@@ -27,20 +27,18 @@
     task: TaskDoc;
     origin?: OriginInfo | null;
     onclose: () => void;
-    onsave: (title: string, doAt: string, doAfter: string | null) => void;
+    onsave: (title: string, doAt: string, doAfterTime: string | null) => void;
     ontransformgoal: () => void;
     ontransformcare: () => void;
     ondelete: () => void;
   } = $props();
-
-  const timeZone = Temporal.Now.timeZoneId();
 
   // svelte-ignore state_referenced_locally
   let editTitle = $state(task.title);
   // svelte-ignore state_referenced_locally
   let editDate = $state(task.doAt);
   // svelte-ignore state_referenced_locally
-  let editDoAfter = $state<string | null>(task.doAfter ?? null);
+  let editDoAfterTime = $state<string | null>(task.doAfterTime ?? null);
   let showConvert = $state(false);
   let showTimePicker = $state(false);
   let tomorrowOffset = $state(0);
@@ -52,20 +50,19 @@
     const today = Temporal.Now.plainDateISO().toString();
     return editDate > today ? editDate : today;
   });
-  const timeInitial = $derived(editDoAfter ? timeOfDay(editDoAfter, timeZone) : null);
+  const timeInitial = $derived(parseTimeOfDay(editDoAfterTime ?? undefined));
 
   function handleSave() {
     if (!editTitle.trim()) return;
-    onsave(editTitle, editDate, editDoAfter);
+    onsave(editTitle, editDate, editDoAfterTime);
   }
 
   function handleTimeConfirm(hour: number, minute: number) {
     showTimePicker = false;
-    editDoAfter = doAfterFromTime(Temporal.PlainDate.from(timeAnchor), hour, minute, timeZone);
+    editDoAfterTime = toTimeOfDay(hour, minute);
   }
 
   function changeDate(date: string) {
-    if (date !== editDate) editDoAfter = null;
     editDate = date;
   }
 
@@ -137,16 +134,16 @@
         data-testid="edit-time-button"
       >
         <Clock class="size-4" />
-        {#if editDoAfter}
-          After {formatTime(editDoAfter, timeZone)}
+        {#if editDoAfterTime}
+          After {formatTimeOfDay(editDoAfterTime)}
         {:else}
           <span class="text-base-content/60">Hide until a time</span>
         {/if}
       </button>
-      {#if editDoAfter}
+      {#if editDoAfterTime}
         <button
           class="btn join-item"
-          onclick={() => (editDoAfter = null)}
+          onclick={() => (editDoAfterTime = null)}
           aria-label="Clear time"
           transition:slide={{ axis: 'x', duration: 150 }}
         >

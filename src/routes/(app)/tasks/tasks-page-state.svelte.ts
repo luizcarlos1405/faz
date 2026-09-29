@@ -22,9 +22,9 @@ import { DOC_TYPE, TASK_STATUS, type OriginInfo, type TaskDoc } from '$lib/types
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { bumpClock, getNow, getTaskRefreshVersion } from '$lib/scheduler-refresh.svelte';
 import {
-  doAfterFromTime,
   partitionDeferred,
-  withDoAfter,
+  toTimeOfDay,
+  withDoAfterTime,
   withDoAt,
 } from '$lib/engines/defer-engine';
 import { formatClock, formatWeekdayDate } from '$lib/utils/format-date';
@@ -181,7 +181,6 @@ export function getTasksPageState() {
     }
 
     const originalDoAt = fresh.doAt;
-    const originalDoAfter = fresh.doAfter;
     const today = Temporal.PlainDate.from(getToday());
     const tomorrow = today.add({ days: 1 }).toString();
     const doAt = targetDate ?? tomorrow;
@@ -197,7 +196,7 @@ export function getTasksPageState() {
         const current = await getTask(id);
         if (current) {
           current.doAt = originalDoAt;
-          await updateTask(withDoAfter(current, originalDoAfter));
+          await updateTask(current);
           await load();
         }
       },
@@ -213,27 +212,22 @@ export function getTasksPageState() {
       return;
     }
 
-    const originalDoAfter = fresh.doAfter;
-    const doAfter = doAfterFromTime(
-      Temporal.PlainDate.from(getToday()),
-      hour,
-      minute,
-      Temporal.Now.timeZoneId(),
-    );
+    const originalDoAfterTime = fresh.doAfterTime;
+    const doAfterTime = toTimeOfDay(hour, minute);
 
-    await deferTask(id, doAfter);
+    await deferTask(id, doAfterTime);
     await load();
 
     toast.notify(`Hidden until ${formatClock(hour, minute)}`, {
       label: 'Undo',
       fn: async () => {
-        await deferTask(id, originalDoAfter ?? null);
+        await deferTask(id, originalDoAfterTime ?? null);
         await load();
       },
     });
   }
 
-  async function clearDoAfter(id: string) {
+  async function clearDoAfterTime(id: string) {
     await deferTask(id, null);
     await load();
   }
@@ -267,12 +261,12 @@ export function getTasksPageState() {
     editingTask = null;
   }
 
-  async function saveEdit(title: string, doAt: string, doAfter?: string | null) {
+  async function saveEdit(title: string, doAt: string, doAfterTime?: string | null) {
     if (!editingTask) return;
     const task = await getTask(editingTask._id);
     task.title = title.trim();
     let next = withDoAt(task, doAt);
-    if (doAfter !== undefined) next = withDoAfter(next, doAfter);
+    if (doAfterTime !== undefined) next = withDoAfterTime(next, doAfterTime);
     await updateTask(next);
     editingTask = null;
     await load();
@@ -361,7 +355,7 @@ export function getTasksPageState() {
     toggleComplete,
     postponeTask,
     deferUntil,
-    clearDoAfter,
+    clearDoAfterTime,
     removeTask,
     openEdit,
     closeEdit,
