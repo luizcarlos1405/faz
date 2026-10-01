@@ -7,10 +7,9 @@
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import Clock from 'lucide-svelte/icons/clock';
-  import X from 'lucide-svelte/icons/x';
   import { slide } from 'svelte/transition';
   import { resolve } from '$app/paths';
-  import { formatShortWeekday, formatTimeOfDay } from '$lib/utils/format-date';
+  import { formatShortWeekday } from '$lib/utils/format-date';
   import { parseTimeOfDay, toTimeOfDay } from '$lib/engines/defer-engine';
   import TimePickerModal from './time-picker-modal.svelte';
   import type { OriginInfo } from '$lib/types';
@@ -60,6 +59,11 @@
   function handleTimeConfirm(hour: number, minute: number) {
     showTimePicker = false;
     editDoAfterTime = toTimeOfDay(hour, minute);
+  }
+
+  function handleTimeClear() {
+    showTimePicker = false;
+    editDoAfterTime = null;
   }
 
   function changeDate(date: string) {
@@ -115,6 +119,20 @@
         bind:value={() => editDate, changeDate}
         oninput={() => (tomorrowOffset = 0)}
       />
+      <button
+        class="btn join-item w-20 px-2"
+        onclick={() => (showTimePicker = true)}
+        data-testid="edit-time-button"
+        aria-label="Hide until a time"
+        title="Hide until a time"
+      >
+        <Clock class="size-4" />
+        {#if editDoAfterTime}
+          {editDoAfterTime}
+        {:else}
+          <span class="text-base-content/60">__:__</span>
+        {/if}
+      </button>
       <div class="indicator">
         {#if tomorrowOffset > 1}
           <span class="indicator-item indicator-start badge badge-accent"
@@ -125,31 +143,6 @@
           >Tomorrow</button
         >
       </div>
-    </div>
-
-    <div class="join w-full">
-      <button
-        class="btn join-item flex-1 justify-start font-normal"
-        onclick={() => (showTimePicker = true)}
-        data-testid="edit-time-button"
-      >
-        <Clock class="size-4" />
-        {#if editDoAfterTime}
-          After {formatTimeOfDay(editDoAfterTime)}
-        {:else}
-          <span class="text-base-content/60">Hide until a time</span>
-        {/if}
-      </button>
-      {#if editDoAfterTime}
-        <button
-          class="btn join-item"
-          onclick={() => (editDoAfterTime = null)}
-          aria-label="Clear time"
-          transition:slide={{ axis: 'x', duration: 150 }}
-        >
-          <X class="size-4" />
-        </button>
-      {/if}
     </div>
 
     <button class="btn btn-ghost btn-sm w-full" onclick={() => (showConvert = !showConvert)}>
@@ -200,5 +193,6 @@
   initial={timeInitial}
   date={timeAnchor}
   onconfirm={handleTimeConfirm}
+  onclear={handleTimeClear}
   onclose={() => (showTimePicker = false)}
 />

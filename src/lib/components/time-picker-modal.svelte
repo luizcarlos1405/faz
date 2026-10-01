@@ -15,6 +15,7 @@
     initial = null as { hour: number; minute: number } | null,
     date = null as string | null,
     onconfirm,
+    onclear = undefined as undefined | (() => void),
     onclose,
   }: {
     open: boolean;
@@ -23,6 +24,7 @@
     initial?: { hour: number; minute: number } | null;
     date?: string | null;
     onconfirm: (hour: number, minute: number) => void;
+    onclear?: () => void;
     onclose: () => void;
   } = $props();
 
@@ -53,7 +55,9 @@
 </script>
 
 <dialog class="modal" class:modal-open={open}>
-  <div class="modal-box max-w-sm p-5 flex flex-col gap-4">
+  <div
+    class="modal-box w-[19rem] [--modal-tl:1rem] [--modal-tr:1rem] [--modal-bl:1rem] [--modal-br:1rem] p-5 flex flex-col gap-4"
+  >
     {#if task}
       <TaskSummary {task} {origin} />
     {/if}
@@ -77,6 +81,9 @@
       {valid ? '' : 'Pick a time later than now'}
     </p>
     <div class="modal-action mt-0">
+      {#if onclear}
+        <button class="btn btn-ghost btn-sm mr-auto" onclick={onclear}>Clear</button>
+      {/if}
       <button class="btn btn-ghost btn-sm" onclick={onclose}>Cancel</button>
       <button class="btn btn-success btn-sm" onclick={confirm} disabled={!valid}>
         <Clock class="size-4" />
