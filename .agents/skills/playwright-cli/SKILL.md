@@ -6,11 +6,14 @@ allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*)
 
 # Browser Automation with playwright-cli
 
+**Always open the browser in headed mode** (visible window, not headless): pass
+`--headed` on every `playwright-cli open` call.
+
 ## Quick start
 
 ```bash
-# open new browser
-playwright-cli open
+# open new browser (headed — visible window)
+playwright-cli open --headed
 # navigate to a page
 playwright-cli goto https://playwright.dev
 # interact with the page using refs from the snapshot
@@ -28,9 +31,9 @@ playwright-cli close
 ### Core
 
 ```bash
-playwright-cli open
+playwright-cli open --headed
 # open and navigate right away
-playwright-cli open https://example.com/
+playwright-cli open https://example.com/ --headed
 playwright-cli goto https://playwright.dev
 playwright-cli type "search query"
 playwright-cli click e3
@@ -178,16 +181,16 @@ playwright-cli --raw localstorage-get theme
 ## Open parameters
 
 ```bash
-# Use specific browser when creating session
-playwright-cli open --browser=chrome
-playwright-cli open --browser=firefox
-playwright-cli open --browser=webkit
-playwright-cli open --browser=msedge
+# Use specific browser when creating session (always with --headed)
+playwright-cli open --headed --browser=chrome
+playwright-cli open --headed --browser=firefox
+playwright-cli open --headed --browser=webkit
+playwright-cli open --headed --browser=msedge
 
 # Use persistent profile (by default profile is in-memory)
-playwright-cli open --persistent
+playwright-cli open --headed --persistent
 # Use persistent profile with custom directory
-playwright-cli open --profile=/path/to/profile
+playwright-cli open --headed --profile=/path/to/profile
 
 # Connect to browser via extension
 playwright-cli attach --extension
@@ -200,7 +203,7 @@ playwright-cli attach --cdp=msedge
 playwright-cli attach --cdp=http://localhost:9222
 
 # Start with config file
-playwright-cli open --config=my-config.json
+playwright-cli open --headed --config=my-config.json
 
 # Close the browser
 playwright-cli close
@@ -267,9 +270,9 @@ playwright-cli click "getByTestId('submit-button')"
 
 ```bash
 # create new browser session named "mysession" with persistent profile
-playwright-cli -s=mysession open example.com --persistent
+playwright-cli -s=mysession open example.com --headed --persistent
 # same with manually specified profile directory (use when requested explicitly)
-playwright-cli -s=mysession open example.com --profile=/path/to/profile
+playwright-cli -s=mysession open example.com --headed --profile=/path/to/profile
 playwright-cli -s=mysession click e6
 playwright-cli -s=mysession close  # stop a named browser
 playwright-cli -s=mysession delete-data  # delete user data for persistent session
@@ -298,7 +301,7 @@ npm install -g @playwright/cli@latest
 ## Example: Form submission
 
 ```bash
-playwright-cli open https://example.com/form
+playwright-cli open https://example.com/form --headed
 playwright-cli snapshot
 
 playwright-cli fill e1 "user@example.com"
@@ -311,7 +314,7 @@ playwright-cli close
 ## Example: Multi-tab workflow
 
 ```bash
-playwright-cli open https://example.com
+playwright-cli open https://example.com --headed
 playwright-cli tab-new https://example.com/other
 playwright-cli tab-list
 playwright-cli tab-select 0
@@ -322,7 +325,7 @@ playwright-cli close
 ## Example: Debugging with DevTools
 
 ```bash
-playwright-cli open https://example.com
+playwright-cli open https://example.com --headed
 playwright-cli click e4
 playwright-cli fill e7 "test"
 playwright-cli console
@@ -331,7 +334,7 @@ playwright-cli close
 ```
 
 ```bash
-playwright-cli open https://example.com
+playwright-cli open https://example.com --headed
 playwright-cli tracing-start
 playwright-cli click e4
 playwright-cli fill e7 "test"
