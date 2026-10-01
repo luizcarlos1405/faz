@@ -1,7 +1,7 @@
 # BUG-012: Focus overlay hides toasts, making Undo unreachable in focus mode
 
-- **Status:** FIXED (commit `fix(ui): raise toasts above focus overlay and FAB`;
-  container raised to `z-[200]`, above both the focus overlay and the FAB)
+- **Status:** FIXED (commit `33fd1c3`; e2e regression tests in
+  `e2e/toast-undo-reachable.spec.ts`)
 - **Severity:** Minor (undo/feedback unavailable during focus sessions; defer itself works)
 - **Area:** components layering (shell)
 - **Files:** `src/lib/components/focus-mode.svelte` (z-index), `src/lib/components/toast-container.svelte` (`z-40`), `src/routes/(app)/tasks/+page.svelte` (FAB `z-50`)
@@ -42,11 +42,19 @@ Verified in browser automation: the focus defer flow's Undo button now receives 
 plain (non-forced) click while the focus overlay is up — previously the same
 interaction timed out with "subtree intercepts pointer events".
 
-## Suggested tests
+## Tests added
 
-- e2e: defer a task in focus mode, then
-  `expect(toast.getByRole('button', { name: 'Undo' })).toBeClickable()` (a plain
-  visibility assertion is not enough — Playwright reports the toast as "visible"
-  even when covered).
-- e2e: with ≥1 task on `/tasks` (FAB visible), trigger postpone, click the toast's
-  Undo by mouse at its own coordinates, assert the task returned to To do.
+`e2e/toast-undo-reachable.spec.ts`:
+
+- Focus overlay: two tasks on `/tasks` (focus stays open after deferring the first),
+  enter focus via the FAB, defer via the clock picker, then **click** the toast's Undo
+  (a plain visibility assertion is not enough — Playwright reports the toast as
+  "visible" even when covered); assert the deferred task returns as the focus task.
+  Covers the end-of-day edge (picker seed crosses midnight → confirm disabled) by
+  spinning the hour/minute wheels to 23:59.
+- FAB overlap: two tasks on `/tasks` (swipe-postpone one so the FAB — shown when a
+  ready task remains — sits exactly under the right-aligned Undo), swipe-right to
+  postpone, click Undo at its own coordinates, assert the task returned to To do.
+
+Both fail pre-fix with "subtree intercepts pointer events" (focus overlay spacer /
+FAB SVG) and pass post-fix.
