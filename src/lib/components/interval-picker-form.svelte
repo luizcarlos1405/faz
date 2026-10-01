@@ -18,7 +18,7 @@
 
   const fields = [
     { key: 'days' as const, label: 'Days' },
-    { key: 'weeks' as const, label: 'Weaks' },
+    { key: 'weeks' as const, label: 'Weeks' },
     { key: 'months' as const, label: 'Months' },
     { key: 'years' as const, label: 'Years' },
   ];

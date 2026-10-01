@@ -16,10 +16,10 @@
 
   function formatInterval(): string {
     const parts: string[] = [];
-    if (interval.years) parts.push(`${interval.years} years`);
-    if (interval.months) parts.push(`${interval.months} months`);
-    if (interval.weeks) parts.push(`${interval.weeks} weeks`);
-    if (interval.days) parts.push(`${interval.days} days`);
+    if (interval.years) parts.push(`${interval.years} year${interval.years > 1 ? 's' : ''}`);
+    if (interval.months) parts.push(`${interval.months} month${interval.months > 1 ? 's' : ''}`);
+    if (interval.weeks) parts.push(`${interval.weeks} week${interval.weeks > 1 ? 's' : ''}`);
+    if (interval.days) parts.push(`${interval.days} day${interval.days > 1 ? 's' : ''}`);
     return parts.length ? parts.join(' ') : 'Not set';
   }
 </script>

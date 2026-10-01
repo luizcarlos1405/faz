@@ -25,6 +25,7 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 | [010](./010-duplicate-generation-on-moved-occurrence.md)              | Moved FIXED_DAYS occurrence duplicated on next run         | FIXED     | High     |
 | [011](./011-mixed-direction-mango-sorts-oldest-first.md)              | Mixed-direction mango sorts silently return oldest-first   | NEEDS FIX | Minor    |
 | [012](./012-focus-overlay-hides-toasts.md)                            | Focus overlay hides toasts, Undo unreachable in focus mode | FIXED     | Minor    |
+| [013](./013-ghost-step-in-plan-wizard.md)                             | Ghost step in the task plan wizard for interval plan types | FIXED     | Minor    |
 
 ## Picking up a bug
 

@@ -157,7 +157,10 @@
     return buildRecurrence(wizardInput());
   }
 
-  const lastStep = $derived((planType as string) === PLAN_TYPE.INTERVAL_AFTER_DONE.value ? 4 : 5);
+  const startStep = $derived(isIntervalPlanType(planType) ? 3 : 4);
+  const lastStep = $derived(
+    (planType as string) === PLAN_TYPE.INTERVAL_AFTER_DONE.value ? startStep : startStep + 1,
+  );
 
   function canCreate(): boolean {
     if (!newPlanTitle.trim()) return false;
@@ -319,7 +322,7 @@
               class="select select-sm"
               bind:value={planType}
               onchange={() => {
-                planStep = Math.max(planStep, 2);
+                planStep = Math.min(Math.max(planStep, 2), lastStep);
                 if (planType === PLAN_TYPE.INTERVAL_AFTER_DONE.value) {
                   planOverdueBehavior = OVERDUE_BEHAVIOR.KEEP.value;
                 }
@@ -412,7 +415,7 @@
             {/if}
           {/if}
 
-          {#if planStep >= 4}
+          {#if planStep >= startStep}
             <label class="label" for="plan-start-date">
               <span class="label-text">Start date</span>
             </label>
@@ -424,7 +427,7 @@
             />
           {/if}
 
-          {#if planStep >= 5 && planType !== PLAN_TYPE.INTERVAL_AFTER_DONE.value}
+          {#if planStep >= lastStep && planType !== PLAN_TYPE.INTERVAL_AFTER_DONE.value}
             <label class="label" for="plan-overdue">
               <span class="label-text">If the date passes</span>
             </label>
