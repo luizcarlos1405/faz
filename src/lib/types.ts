@@ -191,6 +191,7 @@ export interface TaskPlan {
   overdueBehavior?: OverdueBehavior;
   lastDoAtDate?: string;
   lastDoneDate?: string;
+  pausedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

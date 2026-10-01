@@ -10,6 +10,7 @@ import {
   validateInterval,
   validateRecurrence,
   validateTaskPlan,
+  isPlanPaused,
 } from '../care-engine';
 import {
   DOC_TYPE,
@@ -321,6 +322,31 @@ describe('evaluateTaskPlan', () => {
   });
 });
 
+describe('isPlanPaused', () => {
+  it('returns false when pausedAt is missing', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 1 },
+      startDate: '2026-01-15',
+    });
+    expect(isPlanPaused(plan)).toBe(false);
+  });
+
+  it('returns true when pausedAt is set', () => {
+    const plan: TaskPlan = {
+      ...makePlan({
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { days: 1 },
+        startDate: '2026-01-15',
+      }),
+      pausedAt: '2026-01-10T00:00:00Z',
+    };
+    expect(isPlanPaused(plan)).toBe(true);
+  });
+});
+
 describe('runScheduler', () => {
   it('generates a task for today when a new plan starts today', () => {
     const plan: TaskPlan = {
@@ -407,6 +433,133 @@ describe('runScheduler', () => {
     const result = runScheduler([care], today, () => []);
     expect(result.tasks.length).toBe(1);
     expect(result.tasks[0].careId).toBe('care_1');
+  });
+
+  it('does not generate tasks for a paused plan (INTERVAL_FIXED)', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_paused',
+      title: 'Paused plan',
+      recurrence: {
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { days: 1 },
+        startDate: '2026-01-15',
+      },
+      pausedAt: '2026-01-10T00:00:00Z',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Work',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const result = runScheduler([care], today, () => []);
+
+    expect(result.tasks.length).toBe(0);
+    expect(result.updatedPlans.has('tp_paused')).toBe(false);
+  });
+
+  it('does not generate tasks for a paused FIXED_DAYS plan', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_paused_weekly',
+      title: 'Paused weekly',
+      recurrence: {
+        type: RECURRENCE_TYPE.FIXED_DAYS.value,
+        subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+        daysOfWeek: [1],
+        startDate: '2026-01-01',
+      },
+      pausedAt: '2026-01-10T00:00:00Z',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_2',
+      type: DOC_TYPE.CARE.value,
+      title: 'Home',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-12');
+    const result = runScheduler([care], today, () => []);
+
+    expect(result.tasks.length).toBe(0);
+  });
+
+  it('still applies overdue behavior to a paused plan', () => {
+    const plan: TaskPlan = {
+      _id: 'tp_paused_missed',
+      title: 'Paused overdue plan',
+      recurrence: {
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { days: 1 },
+        startDate: '2026-01-14',
+      },
+      overdueBehavior: OVERDUE_BEHAVIOR.MISSED.value,
+      pausedAt: '2026-01-10T00:00:00Z',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Work',
+      taskPlans: [plan],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const existing = [
+      makeTask({ _id: 'task_overdue', taskPlanId: 'tp_paused_missed', doAt: '2026-01-14' }),
+    ];
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const result = runScheduler([care], today, (planId) =>
+      planId === 'tp_paused_missed' ? existing : [],
+    );
+
+    expect(result.missedTasks.length).toBe(1);
+    expect(result.missedTasks[0]._id).toBe('task_overdue');
+    expect(result.tasks.length).toBe(0);
+  });
+
+  it('generates again once pausedAt is removed', () => {
+    const makePausedPlan = (): TaskPlan => ({
+      _id: 'tp_resumed',
+      title: 'Resumed plan',
+      recurrence: {
+        type: RECURRENCE_TYPE.INTERVAL.value,
+        subtype: INTERVAL_SUBTYPE.FIXED.value,
+        interval: { days: 1 },
+        startDate: '2026-01-15',
+      },
+      pausedAt: '2026-01-10T00:00:00Z',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    });
+    const care: CareDoc = {
+      _id: 'care_1',
+      type: DOC_TYPE.CARE.value,
+      title: 'Work',
+      taskPlans: [makePausedPlan()],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const today = Temporal.PlainDate.from('2026-01-15');
+    const pausedResult = runScheduler([care], today, () => []);
+    expect(pausedResult.tasks.length).toBe(0);
+
+    const resumedCare: CareDoc = {
+      ...care,
+      taskPlans: [{ ...makePausedPlan(), pausedAt: undefined }],
+    };
+    const resumedResult = runScheduler([resumedCare], today, () => []);
+    expect(resumedResult.tasks.length).toBe(1);
   });
 
   it('handles multiple cares with multiple plans', () => {

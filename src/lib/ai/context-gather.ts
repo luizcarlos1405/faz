@@ -3,6 +3,7 @@ import { getVisibleTasks } from '$lib/db/task-repo';
 import { getAllGoals } from '$lib/db/goal-repo';
 import { getUnprocessed } from '$lib/db/inbox-repo';
 import { getAllCares } from '$lib/db/care-repo';
+import { isPlanPaused } from '$lib/engines/care-engine';
 import type { AgentContext } from './context';
 
 const MAX_TASKS_IN_PROMPT = 30;
@@ -30,6 +31,7 @@ export async function gatherContext(): Promise<AgentContext> {
       id: c._id,
       title: c.title,
       planCount: c.taskPlans.length,
+      pausedPlanCount: c.taskPlans.filter(isPlanPaused).length,
     })),
     inboxCount: inbox.length,
   };

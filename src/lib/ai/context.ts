@@ -2,7 +2,7 @@ export interface AgentContext {
   today: string;
   tasks: { id: string; title: string; doAt: string; status: string; doAfterTime?: string }[];
   goals: { id: string; title: string; status: string }[];
-  cares: { id: string; title: string; planCount: number }[];
+  cares: { id: string; title: string; planCount: number; pausedPlanCount: number }[];
   inboxCount: number;
 }
 
@@ -58,7 +58,10 @@ export function buildSystemContext(ctx: AgentContext): string {
   const careLines =
     ctx.cares.length > 0
       ? ctx.cares
-          .map((c) => `- ${c.title} (id ${c.id}, ${c.planCount} recurring plan(s))`)
+          .map((c) => {
+            const paused = c.pausedPlanCount > 0 ? `, ${c.pausedPlanCount} paused` : '';
+            return `- ${c.title} (id ${c.id}, ${c.planCount} recurring plan(s)${paused})`;
+          })
           .join('\n')
       : '- (none)';
 

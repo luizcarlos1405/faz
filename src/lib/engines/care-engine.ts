@@ -27,6 +27,10 @@ export function isAfterDoneRecurrence(
   );
 }
 
+export function isPlanPaused(plan: TaskPlan): boolean {
+  return plan.pausedAt != null;
+}
+
 const INTERVAL_FIELDS = ['years', 'months', 'weeks', 'days'] as const;
 
 export function validateInterval(interval: DurationLike): string | null {
@@ -267,7 +271,7 @@ export function runScheduler(
 
         const filtered = existingTasks.filter((t) => !overdue.discardedTaskIds.includes(t._id));
 
-        const task = evaluateTaskPlan(plan, today, filtered);
+        const task = isPlanPaused(plan) ? null : evaluateTaskPlan(plan, today, filtered);
         if (task) {
           task.careId = care._id;
           generatedTasks.push(task);

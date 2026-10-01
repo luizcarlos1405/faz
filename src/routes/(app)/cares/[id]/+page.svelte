@@ -10,6 +10,7 @@
   import GripVertical from 'lucide-svelte/icons/grip-vertical';
   import Pencil from 'lucide-svelte/icons/pencil';
   import Check from 'lucide-svelte/icons/check';
+  import Pause from 'lucide-svelte/icons/pause';
   import { tick } from 'svelte';
   import type { Recurrence, OverdueBehavior } from '$lib/types';
   import {
@@ -25,6 +26,7 @@
     isValidRecurrence,
     isIntervalPlanType,
   } from '$lib/engines/recurrence-wizard';
+  import { isPlanPaused } from '$lib/engines/care-engine';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import { Temporal } from '@js-temporal/polyfill';
@@ -249,7 +251,15 @@
             animate:flip={{ duration: 200 }}
           >
             <a href={resolve(`/cares/${careId}/plans/${plan._id}`)} class="list-col-grow">
-              <div class="font-medium">{plan.title}</div>
+              <div class="font-medium flex items-center gap-2">
+                {plan.title}
+                {#if isPlanPaused(plan)}
+                  <span class="badge badge-ghost badge-sm gap-1">
+                    <Pause class="size-3" />
+                    Paused
+                  </span>
+                {/if}
+              </div>
               <div class="text-xs text-base-content/50">{describeRecurrence(plan.recurrence)}</div>
               {#if plan.lastDoAtDate}
                 <div class="text-xs text-base-content/40">Last generated: {plan.lastDoAtDate}</div>

@@ -98,6 +98,11 @@ const overdueBehaviorSchema = {
     'What happens when an occurrence is overdue. Defaults to KEEP. Ignored (forced to KEEP) for after-completion schedules.',
 };
 
+const pausedSchema = {
+  type: 'boolean',
+  description: 'Pause the plan: it keeps its history but stops generating new tasks.',
+};
+
 export const TOOL_SPECS: ToolSpec[] = [
   {
     name: 'list_tasks',
@@ -215,6 +220,7 @@ export const TOOL_SPECS: ToolSpec[] = [
         title: { type: 'string' },
         recurrence: recurrenceSchema,
         overdueBehavior: overdueBehaviorSchema,
+        paused: pausedSchema,
       },
       required: ['careId', 'title', 'recurrence'],
       additionalProperties: false,
@@ -223,7 +229,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   {
     name: 'update_task_plan',
     kind: 'update',
-    description: 'Update a task plan title, recurrence schedule, or overdue behavior.',
+    description: 'Update a task plan title, recurrence schedule, overdue behavior, or pause it.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -232,6 +238,7 @@ export const TOOL_SPECS: ToolSpec[] = [
         title: { type: 'string' },
         recurrence: recurrenceSchema,
         overdueBehavior: overdueBehaviorSchema,
+        paused: pausedSchema,
       },
       required: ['careId', 'planId'],
       additionalProperties: false,

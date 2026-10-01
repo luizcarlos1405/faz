@@ -225,6 +225,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
         id: tp._id,
         title: tp.title,
         schedule: describeRecurrence(tp.recurrence),
+        paused: tp.pausedAt != null,
       }));
       return ok(`Read care: ${care.title}`, {
         care: { id: care._id, title: care.title },
@@ -286,7 +287,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
           'Add plan failed',
           `Invalid overdueBehavior. Valid: ${[...OVERDUE_BEHAVIORS].join(', ')}.`,
         );
-      const updated = await addTaskPlan(careId, { title, recurrence, overdueBehavior });
+      const pausedAt = args.paused === true ? Temporal.Now.instant().toString() : undefined;
+      const updated = await addTaskPlan(careId, { title, recurrence, overdueBehavior, pausedAt });
       await runSchedulerNow();
       bumpTaskRefresh();
       const plan = updated.taskPlans[updated.taskPlans.length - 1];
@@ -294,6 +296,7 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
         careId,
         planId: plan._id,
         schedule: describeRecurrence(recurrence),
+        paused: pausedAt !== undefined,
       });
     }
 
@@ -326,6 +329,12 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
             `Invalid overdueBehavior. Valid: ${[...OVERDUE_BEHAVIORS].join(', ')}.`,
           );
         updates.overdueBehavior = ob;
+      }
+      if (args.paused !== undefined) {
+        updates.pausedAt =
+          args.paused === true
+            ? (existingPlan.pausedAt ?? Temporal.Now.instant().toString())
+            : undefined;
       }
       await updateTaskPlan(careId, planId, updates);
       await runSchedulerNow();

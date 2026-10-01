@@ -57,7 +57,7 @@ describe('buildSystemContext', () => {
       today: '2026-06-29',
       tasks: [{ id: 't1', title: 'Pay rent', doAt: '2026-06-29', status: 'TODO' }],
       goals: [{ id: 'g1', title: 'Move house', status: 'IN_PROGRESS' }],
-      cares: [{ id: 'c1', title: 'Hydrate', planCount: 1 }],
+      cares: [{ id: 'c1', title: 'Hydrate', planCount: 1, pausedPlanCount: 0 }],
       inboxCount: 3,
     };
     const out = buildSystemContext(ctx);
@@ -89,6 +89,20 @@ describe('buildSystemContext', () => {
 
   it('explains the hide-until time in the base prompt', () => {
     expect(buildBasePrompt('2026-06-29')).toContain('doAfterTime');
+  });
+
+  it('shows paused plan counts for cares that have them', () => {
+    const ctx: AgentContext = {
+      ...emptyCtx,
+      cares: [
+        { id: 'c1', title: 'Hydrate', planCount: 2, pausedPlanCount: 1 },
+        { id: 'c2', title: 'Stretch', planCount: 1, pausedPlanCount: 0 },
+      ],
+    };
+    const out = buildSystemContext(ctx);
+    expect(out).toContain('Hydrate (id c1, 2 recurring plan(s), 1 paused)');
+    expect(out).toContain('Stretch (id c2, 1 recurring plan(s))');
+    expect(out).not.toContain('0 paused');
   });
 
   it('shows (none) placeholders for empty sections', () => {

@@ -212,6 +212,15 @@ export function getTaskPlanEditState(careId: string, planId: string) {
     bumpTaskRefresh();
   }
 
+  async function setPaused(paused: boolean) {
+    const current = plan?.pausedAt;
+    const pausedAt = paused ? (current ?? Temporal.Now.instant().toString()) : undefined;
+    await updateTaskPlanRepo(careId, planId, { pausedAt });
+    await load();
+    await runSchedulerNow();
+    bumpTaskRefresh();
+  }
+
   return {
     get care() {
       return care;
@@ -229,5 +238,6 @@ export function getTaskPlanEditState(careId: string, planId: string) {
     update,
     saveAndMove,
     deletePlan,
+    setPaused,
   };
 }

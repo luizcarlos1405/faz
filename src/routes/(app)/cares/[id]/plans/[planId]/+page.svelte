@@ -7,6 +7,7 @@
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import LoaderCircle from 'lucide-svelte/icons/loader-circle';
   import type { Recurrence, OverdueBehavior } from '$lib/types';
+  import { isPlanPaused } from '$lib/engines/care-engine';
   import { goto } from '$app/navigation';
   import { getConfirmState } from '$lib/components/confirm-state.svelte';
   import PlanEditForm from './plan-edit-form.svelte';
@@ -53,6 +54,19 @@
     </div>
   {:else if ctrl.plan}
     <h1 class="text-2xl font-bold mb-4">{ctrl.plan.title}</h1>
+
+    <div class="mb-4">
+      <label class="label cursor-pointer justify-start gap-2">
+        <input
+          type="checkbox"
+          class="toggle toggle-sm"
+          checked={isPlanPaused(ctrl.plan)}
+          onchange={(e) => ctrl.setPaused(e.currentTarget.checked)}
+        />
+        <span class="label-text">Pause this task plan</span>
+      </label>
+      <p class="text-xs text-base-content/50">It stays in this list but won't add new tasks.</p>
+    </div>
 
     {#key ctrl.plan._id}
       <PlanEditForm
