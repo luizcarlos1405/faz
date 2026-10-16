@@ -3,6 +3,8 @@ pre-commit:
   commands:
     prettier:
       glob: '*.{js,ts,svelte,html,css,json,md}'
+      exclude:
+        - CLAUDE.md
       run: bunx prettier --write --ignore-unknown {staged_files}
       stage_fixed: true
     eslint:
