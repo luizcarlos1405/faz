@@ -121,6 +121,17 @@ crosses it. Geometry lives in `utils/faz-logo.ts` (pure); everything else derive
   `docs/logo-concepts/` also holds the alternatives that were considered and the original logo
   (`0-original.svg`).
 
+## Design mockups
+
+UI mockups live in `design/faz.op` ([OpenPencil](https://github.com/zseven-w/openpencil), plain
+JSON, one page per area), colored with DaisyUI-named theme variables (`light`/`dark`). They are
+reference, not spec. Faz's editor uses port **3101**: `bun run design` (headless),
+`bun run design:gui` (window), `bun run design:stop`, `bun run design:export` (PNGs of every page in
+both themes to `/tmp/faz-design`). Drive it with `op --port 3101 …`; never run `op start`/`op stop`
+or the `openpencil`/`pencil` MCP tools (they belong to another project's editor or app). Use the
+`openpencil-skill:openpencil-design` skill for the node schema; read
+[docs/design.md](./docs/design.md) first, its rules override the skill.
+
 ## Related Docs
 
 [Writing guide](./docs/WRITING.md): when working on user-facing copy
@@ -138,6 +149,9 @@ browser-level tests, read it for setup details and conventions.
 one file per bug with root cause, repro and suggested tests. When fixing a listed
 bug, follow its file and flip the status; when you discover a new bug, document it
 there.
+
+[Design mockups](./docs/design.md): when creating or editing mockups in
+`design/faz.op`, read it for the commands, color tokens and OpenPencil quirks.
 
 [DaisyUI](https://daisyui.com/llms.txt): when doing UI work.
 

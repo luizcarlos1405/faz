@@ -14,7 +14,11 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "lint": "prettier --check . && eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "design": "scripts/design.sh start",
+    "design:gui": "scripts/design.sh gui",
+    "design:stop": "scripts/design.sh stop",
+    "design:export": "scripts/design.sh export"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
