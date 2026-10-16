@@ -132,6 +132,12 @@ or the `openpencil`/`pencil` MCP tools (they belong to another project's editor 
 `openpencil-skill:openpencil-design` skill for the node schema; read
 [docs/design.md](./docs/design.md) first, its rules override the skill.
 
+## Agent skills
+
+`.claude/skills/impeccable` is the vendored [Impeccable](https://impeccable.style/) design skill
+(`/impeccable`, tracked in `skills-lock.json`). Update it with `bunx skills update impeccable`;
+don't edit or reformat it (`.claude/skills/` is excluded from prettier and eslint).
+
 ## Related Docs
 
 [Writing guide](./docs/WRITING.md): when working on user-facing copy
