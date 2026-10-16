@@ -1555,7 +1555,7 @@
                       "id": "VSWAA",
                       "name": "Warn Text",
                       "width": "fill_container",
-                      "content": "Browser requests are blocked by this provider. Use GLM or Anthropic.",
+                      "content": "Browser requests are blocked by this provider.\nUse GLM or Anthropic.",
                       "fontFamily": "Inter",
                       "fontSize": 12.0,
                       "fontWeight": "normal",
@@ -1965,7 +1965,7 @@
                           "id": "RkT4b",
                           "name": "Text",
                           "width": "fill_container",
-                          "content": "Hey! Looks like a busy week. Want help turning “Prepare Q3 report” into concrete steps?",
+                          "content": "Hey! Looks like a busy week. Want\nhelp turning “Prepare Q3 report”\ninto concrete steps?",
                           "fontFamily": "Inter",
                           "fontSize": 14.0,
                           "fontWeight": "normal",
@@ -2223,7 +2223,7 @@
                           "id": "V1RP5c",
                           "name": "Text",
                           "width": "fill_container",
-                          "content": "Start by gathering last quarter’s metrics — everything else depends on those numbers.",
+                          "content": "Start by gathering last quarter’s\nmetrics — everything else depends\non those numbers.",
                           "fontFamily": "Inter",
                           "fontSize": 14.0,
                           "fontWeight": "normal",
@@ -3389,7 +3389,7 @@
                       "id": "XegBN",
                       "name": "Subtitle",
                       "width": "fill_container",
-                      "content": "Connect a provider to chat. Keys are stored only on this device.",
+                      "content": "Connect a provider to chat. Keys are stored only on this\ndevice.",
                       "fontFamily": "Inter",
                       "fontSize": 13.0,
                       "fontWeight": "normal",
@@ -4316,7 +4316,7 @@
                                   "id": "nWEiA__VSWAA",
                                   "name": "Warn Text",
                                   "width": "fill_container",
-                                  "content": "Browser requests are blocked by this provider. Use GLM or Anthropic.",
+                                  "content": "Browser requests are blocked by this provider.\nUse GLM or Anthropic.",
                                   "fontFamily": "Inter",
                                   "fontSize": 12.0,
                                   "fontWeight": "normal",
@@ -5279,7 +5279,7 @@
                           "id": "mpBubT",
                           "name": "Text",
                           "width": "fill_container",
-                          "content": "Pick a model above. Flash models are free and fast.",
+                          "content": "Pick a model above. Flash models\nare free and fast.",
                           "fontFamily": "Inter",
                           "fontSize": 14.0,
                           "lineHeight": 1.45,
@@ -5954,7 +5954,7 @@
                           "id": "agUsrT",
                           "name": "Text",
                           "width": "fill_container",
-                          "content": "Add “Buy milk” to today, and delete the “old leftovers” task",
+                          "content": "Add “Buy milk” to today, and\ndelete the “old leftovers” task",
                           "fontFamily": "Inter",
                           "fontSize": 14.0,
                           "lineHeight": 1.45,
@@ -6296,7 +6296,7 @@
                           "id": "agAnsw",
                           "name": "Answer",
                           "width": "fill_container",
-                          "content": "Done — added Buy milk and deleted old leftovers. Tap Undo on the delete if it was a mistake.",
+                          "content": "Done — added Buy milk and deleted\nold leftovers. Tap Undo on the delete\nif it was a mistake.",
                           "fontFamily": "Inter",
                           "fontSize": 14.0,
                           "lineHeight": 1.45,
@@ -6832,7 +6832,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -6889,7 +6890,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -6979,7 +6981,8 @@
               "id": "BAaNn",
               "name": "Top Spacer",
               "width": "fill_container",
-              "height": 120.0
+              "height": 120.0,
+              "children": []
             },
             {
               "type": "frame",
@@ -7046,7 +7049,7 @@
                   "id": "LIVZd",
                   "name": "Task Title",
                   "width": "fill_container",
-                  "content": "Buy groceries for the week",
+                  "content": "Buy groceries for the\nweek",
                   "fontFamily": "Inter",
                   "fontSize": 28.0,
                   "fontWeight": "600",
@@ -7132,7 +7135,8 @@
               "name": "Bottom Spacer",
               "width": "fill_container",
               "height": 60.0,
-              "layout": "none"
+              "layout": "none",
+              "children": []
             },
             {
               "type": "frame",
@@ -7211,7 +7215,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -7400,7 +7405,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -7457,7 +7463,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -7499,7 +7506,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -7588,7 +7596,8 @@
               "id": "V6SvPD",
               "name": "Top Spacer",
               "width": "fill_container",
-              "height": 120.0
+              "height": 120.0,
+              "children": []
             },
             {
               "type": "frame",
@@ -7655,7 +7664,7 @@
                   "id": "m69i5",
                   "name": "Task Title",
                   "width": "fill_container",
-                  "content": "Buy groceries for the week",
+                  "content": "Buy groceries for the\nweek",
                   "fontFamily": "Inter",
                   "fontSize": 28.0,
                   "fontWeight": "600",
@@ -7741,7 +7750,8 @@
               "name": "Bottom Spacer",
               "width": "fill_container",
               "height": 60.0,
-              "layout": "none"
+              "layout": "none",
+              "children": []
             },
             {
               "type": "frame",
@@ -7820,7 +7830,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -8080,7 +8091,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -8351,7 +8363,8 @@
                               "height": 40.0,
                               "justifyContent": "center",
                               "alignItems": "center",
-                              "cornerRadius": 20.0
+                              "cornerRadius": 20.0,
+                              "children": []
                             },
                             {
                               "type": "frame",
@@ -8361,7 +8374,8 @@
                               "height": 40.0,
                               "justifyContent": "center",
                               "alignItems": "center",
-                              "cornerRadius": 20.0
+                              "cornerRadius": 20.0,
+                              "children": []
                             },
                             {
                               "type": "frame",
@@ -9232,7 +9246,8 @@
                               "height": 40.0,
                               "justifyContent": "center",
                               "alignItems": "center",
-                              "cornerRadius": 20.0
+                              "cornerRadius": 20.0,
+                              "children": []
                             },
                             {
                               "type": "frame",
@@ -9242,7 +9257,8 @@
                               "height": 40.0,
                               "justifyContent": "center",
                               "alignItems": "center",
-                              "cornerRadius": 20.0
+                              "cornerRadius": 20.0,
+                              "children": []
                             },
                             {
                               "type": "frame",
@@ -9252,7 +9268,8 @@
                               "height": 40.0,
                               "justifyContent": "center",
                               "alignItems": "center",
-                              "cornerRadius": 20.0
+                              "cornerRadius": 20.0,
+                              "children": []
                             }
                           ]
                         }
@@ -9434,7 +9451,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -9491,7 +9509,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -9581,7 +9600,8 @@
                   "id": "f3Noi",
                   "name": "Top Spacer",
                   "width": "fill_container",
-                  "height": 120.0
+                  "height": 120.0,
+                  "children": []
                 },
                 {
                   "type": "frame",
@@ -9648,7 +9668,7 @@
                       "id": "P53NL",
                       "name": "Task Title",
                       "width": "fill_container",
-                      "content": "Buy groceries for the week",
+                      "content": "Buy groceries for the\nweek",
                       "fontFamily": "Inter",
                       "fontSize": 28.0,
                       "fontWeight": "600",
@@ -9734,7 +9754,8 @@
                   "name": "Bottom Spacer",
                   "width": "fill_container",
                   "height": 60.0,
-                  "layout": "none"
+                  "layout": "none",
+                  "children": []
                 },
                 {
                   "type": "frame",
@@ -9813,7 +9834,8 @@
                                   "type": "solid",
                                   "color": "$base-content-flat/10"
                                 }
-                              ]
+                              ],
+                              "children": []
                             },
                             {
                               "type": "frame",
@@ -10075,7 +10097,8 @@
                           "type": "solid",
                           "color": "$base-content-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "frame",
@@ -10411,7 +10434,8 @@
                               "type": "solid",
                               "color": "$base-200"
                             }
-                          ]
+                          ],
+                          "children": []
                         }
                       ]
                     },
@@ -10591,7 +10615,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -10648,7 +10673,8 @@
                               "type": "solid",
                               "color": "$base-content-flat/10"
                             }
-                          ]
+                          ],
+                          "children": []
                         },
                         {
                           "type": "frame",
@@ -10738,7 +10764,8 @@
                   "id": "T97kVP",
                   "name": "Top Spacer",
                   "width": "fill_container",
-                  "height": 120.0
+                  "height": 120.0,
+                  "children": []
                 },
                 {
                   "type": "frame",
@@ -10805,7 +10832,7 @@
                       "id": "C3JRam",
                       "name": "Task Title",
                       "width": "fill_container",
-                      "content": "Buy groceries for the week",
+                      "content": "Buy groceries for the\nweek",
                       "fontFamily": "Inter",
                       "fontSize": 28.0,
                       "fontWeight": "600",
@@ -11158,7 +11185,8 @@
                         }
                       ]
                     }
-                  ]
+                  ],
+                  "children": []
                 },
                 {
                   "type": "rectangle",
@@ -11183,7 +11211,8 @@
                         }
                       ]
                     }
-                  ]
+                  ],
+                  "children": []
                 },
                 {
                   "type": "rectangle",
@@ -11204,7 +11233,8 @@
                         "color": "$primary"
                       }
                     ]
-                  }
+                  },
+                  "children": []
                 },
                 {
                   "type": "rectangle",
@@ -11225,7 +11255,8 @@
                         "color": "$primary"
                       }
                     ]
-                  }
+                  },
+                  "children": []
                 },
                 {
                   "type": "text",
@@ -11348,7 +11379,8 @@
                       "type": "solid",
                       "color": "$primary-flat/10"
                     }
-                  ]
+                  ],
+                  "children": []
                 }
               ]
             }
@@ -11462,7 +11494,8 @@
                   "id": "w2Ze3",
                   "name": "spacer1",
                   "width": 24.0,
-                  "height": 24.0
+                  "height": 24.0,
+                  "children": []
                 }
               ]
             },
@@ -11471,7 +11504,8 @@
               "id": "Mm9qM",
               "name": "gap1",
               "width": "fill_container",
-              "height": 60.0
+              "height": 60.0,
+              "children": []
             },
             {
               "type": "frame",
@@ -11545,7 +11579,8 @@
                             }
                           ]
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -11570,7 +11605,8 @@
                             }
                           ]
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -11591,7 +11627,8 @@
                             "color": "$primary"
                           }
                         ]
-                      }
+                      },
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -11612,7 +11649,8 @@
                             "color": "$primary"
                           }
                         ]
-                      }
+                      },
+                      "children": []
                     },
                     {
                       "type": "text",
@@ -11735,7 +11773,8 @@
                           "type": "solid",
                           "color": "$primary-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     }
                   ]
                 }
@@ -11764,7 +11803,8 @@
               "id": "cpbc4",
               "name": "filler1",
               "width": "fill_container",
-              "height": "fill_container"
+              "height": "fill_container",
+              "children": []
             },
             {
               "type": "frame",
@@ -11804,7 +11844,8 @@
               "id": "OFzB1",
               "name": "bottomPad1",
               "width": "fill_container",
-              "height": 40.0
+              "height": 40.0,
+              "children": []
             }
           ]
         },
@@ -11915,7 +11956,8 @@
                   "id": "bOcLa",
                   "name": "spacer2",
                   "width": 24.0,
-                  "height": 24.0
+                  "height": 24.0,
+                  "children": []
                 }
               ]
             },
@@ -11924,7 +11966,8 @@
               "id": "fPx0n",
               "name": "gap2",
               "width": "fill_container",
-              "height": 60.0
+              "height": 60.0,
+              "children": []
             },
             {
               "type": "frame",
@@ -11998,7 +12041,8 @@
                             }
                           ]
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -12023,7 +12067,8 @@
                             }
                           ]
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -12044,7 +12089,8 @@
                             "color": "$primary"
                           }
                         ]
-                      }
+                      },
+                      "children": []
                     },
                     {
                       "type": "rectangle",
@@ -12065,7 +12111,8 @@
                             "color": "$primary"
                           }
                         ]
-                      }
+                      },
+                      "children": []
                     },
                     {
                       "type": "text",
@@ -12188,7 +12235,8 @@
                           "type": "solid",
                           "color": "$primary-flat/10"
                         }
-                      ]
+                      ],
+                      "children": []
                     }
                   ]
                 }
@@ -12217,7 +12265,8 @@
               "id": "PDLDI",
               "name": "filler2",
               "width": "fill_container",
-              "height": "fill_container"
+              "height": "fill_container",
+              "children": []
             },
             {
               "type": "frame",
@@ -12257,7 +12306,8 @@
               "id": "fWq2F",
               "name": "bottomPad2",
               "width": "fill_container",
-              "height": 40.0
+              "height": 40.0,
+              "children": []
             }
           ]
         },
@@ -12328,7 +12378,8 @@
                           "type": "solid",
                           "color": "$base-300"
                         }
-                      ]
+                      ],
+                      "children": []
                     },
                     {
                       "type": "text",
@@ -12420,7 +12471,8 @@
                                     }
                                   ]
                                 }
-                              ]
+                              ],
+                              "children": []
                             },
                             {
                               "type": "rectangle",
@@ -12445,7 +12497,8 @@
                                     }
                                   ]
                                 }
-                              ]
+                              ],
+                              "children": []
                             },
                             {
                               "type": "rectangle",
@@ -12466,7 +12519,8 @@
                                     "color": "$primary"
                                   }
                                 ]
-                              }
+                              },
+                              "children": []
                             },
                             {
                               "type": "rectangle",
@@ -12487,7 +12541,8 @@
                                     "color": "$primary"
                                   }
                                 ]
-                              }
+                              },
+                              "children": []
                             },
                             {
                               "type": "text",
@@ -12610,7 +12665,8 @@
                                   "type": "solid",
                                   "color": "$primary-flat/10"
                                 }
-                              ]
+                              ],
+                              "children": []
                             }
                           ]
                         }
@@ -12774,7 +12830,8 @@
                       "id": "HXt9h",
                       "name": "body3",
                       "width": "fill_container",
-                      "height": "fill_container"
+                      "height": "fill_container",
+                      "children": []
                     }
                   ]
                 }
@@ -12814,7 +12871,7 @@
               "id": "kjcKM-text",
               "name": "Note text",
               "width": "fill_container",
-              "content": "WHEEL-SELECT COMPONENT\n\n• Reusable component (TYsfg) at left\n• 5 visible items, center is selected\n• Gradient fades mask edges\n• Purple indicator lines bracket selection\n• Selected item: 28px bold, primary color\n• Near items: 20px medium, muted\n• Far items: 18px regular, very muted\n\nTWO MODES:\n\n1) Numeric - arbitrary values, scroll infinitely\n2) Predefined - cycles through fixed set\n\nDAISYUI: bg-base-100, bg-primary tokens.\nSelection highlight at primary/10.\nWorks in modal-bottom or inline.",
+              "content": "WHEEL-SELECT COMPONENT\n\n• Reusable component (TYsfg) at left\n• 5 visible items, center is selected\n• Gradient fades mask edges\n• Purple indicator lines bracket selection\n• Selected item: 28px bold, primary color\n• Near items: 20px medium, muted\n• Far items: 18px regular, very muted\n\nTWO MODES:\n\n1) Numeric - arbitrary values, scroll\ninfinitely\n2) Predefined - cycles through fixed set\n\nDAISYUI: bg-base-100, bg-primary tokens.\nSelection highlight at primary/10.\nWorks in modal-bottom or inline.",
               "fontFamily": "Inter",
               "fontSize": 13.0,
               "lineHeight": 1.4,

@@ -1,7 +1,11 @@
 # Design mockups (OpenPencil)
 
-Mockups live in `design/faz.op`, an [OpenPencil](https://github.com/zseven-w/openpencil) document
-(plain JSON, one page per area). They are reference, not spec: the code is the source of truth.
+Mockups are [OpenPencil](https://github.com/zseven-w/openpencil) documents in `design/` (plain
+JSON, one page per area). They are reference, not spec: the code is the source of truth.
+
+- `design/faz.op` — mockups of the current app (DaisyUI look), described below.
+
+### `design/faz.op`
 
 | Page             | Covers                                                          |
 | ---------------- | --------------------------------------------------------------- |
@@ -21,21 +25,28 @@ agent skill is a user-level Claude Code plugin: `op install --target claude`, th
 `~/.claude/plugins/cache/openpencil-skill/openpencil-skill/<version>` to
 `~/.claude/plugins/marketplaces/openpencil-skill`.
 
-Mockups use Inter. Install it system-wide (NixOS: `fonts.packages = [ pkgs.inter ];`), otherwise
-OpenPencil falls back to another font and text widths differ from the app.
+Fonts ship with the repo: `design/fonts/` holds static TTFs (Inter, Archivo, Archivo
+ExtraCondensed) and a self-contained `fonts.conf`; the scripts point OpenPencil at it through
+`FONTCONFIG_FILE`, so nothing needs installing. Add a family as static TTFs, one file per weight
+and style, in `design/fonts/files/<Family>/` (variable fonts render 600/700 wrongly). A family
+missing from that folder falls back to Roboto.
 
 ## Commands
 
 Faz's editor runs on port **3101**. Other projects (e.g. Lopy) use OpenPencil on port 3100.
 
-- `bun run design` — headless editor on `design/faz.op`. Every edit is written to the file
-  immediately.
-- `bun run design:gui` — editor window (live canvas) on the same port. It does not autosave:
-  save in the app before closing. Only one OpenPencil window can exist per desktop; opening a
-  second one replaces the document in the first, so the script refuses while one is open.
+- `bun run design [file]` — headless editor on `design/faz.op` (or the given file). Every edit
+  is written to the file immediately.
+- `bun run design:gui [file]` — editor window (live canvas) on the same port. It does not
+  autosave: save in the app before closing. Only one OpenPencil window can exist per desktop;
+  opening a second one replaces the document in the first, so the script refuses while one is
+  open.
+- `bun run design:wrap` — pre-breaks wrapped text in the running editor so exports draw it right
+  (see quirks). Run it after editing text, before saving or exporting.
 - `bun run design:stop` — kills the editor on port 3101.
-- `bun run design:export [dir]` — renders every page in the `light` and `dark` themes to
-  `/tmp/faz-design` (default) from a temporary copy, so the design file is not touched.
+- `bun run design:export [dir]` — renders every page of every `design/*.op` in the `light` and
+  `dark` themes to `/tmp/faz-design/<file>/<theme>/page<N>/` (default dir) from temporary
+  copies, so the design files are not touched.
 
 Drive the editor with `op --port 3101 <command>` (`op --port 3101 tools` lists all 166 tools).
 
@@ -57,7 +68,7 @@ disagrees with this list, this list wins:
 
 ## Colors and tokens
 
-Use variables, never hex, so mockups follow the theme. Names mirror DaisyUI (Tailwind class
+These are `design/faz.op`'s tokens. Use variables, never hex, so mockups follow the theme. Names mirror DaisyUI (Tailwind class
 without the `bg-`/`text-` prefix) and the theme axis `theme` has the variants `light` and `dark`:
 
 - `base-100/200/300`, `base-content`, `primary`, `secondary`, `accent`, `neutral`, `info`,
@@ -79,7 +90,10 @@ Provider brand colors, modal scrims and the sticky note are the only intentional
 - `enabled: false` does not hide a node. Use `visible: false`, which still takes layout space.
 - Translucent fills on shapes and frames render lighter than their alpha (alpha is applied
   twice): a `#00000066` scrim looks like 16%, not 40%. Text alpha is correct.
-- Text in Inter (especially weight 600) can draw a few pixels past its box instead of wrapping.
+- Exports break wrapped lines with OpenPencil's built-in Roboto metrics, whatever the font, while
+  layout measures the real font. Wider fonts (Inter, Archivo) then run past their box. Explicit
+  line breaks are honoured, so `bun run design:wrap` (`design/tools/opwrap.py`) inserts them for
+  every fixed-width text node; it is idempotent.
 - Avoid live component instances (`ref`): their size is ignored in layout. The migrated mockups
   use detached copies.
 - `descendants` overrides must use fill arrays (`[{ "type": "solid", "color": … }]`); one bare

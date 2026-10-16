@@ -18,6 +18,7 @@
     "design": "scripts/design.sh start",
     "design:gui": "scripts/design.sh gui",
     "design:stop": "scripts/design.sh stop",
+    "design:wrap": "scripts/design.sh wrap",
     "design:export": "scripts/design.sh export"
   },
   "devDependencies": {
