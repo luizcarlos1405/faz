@@ -1,0 +1,429 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: var(--font-sans, Inter, system-ui, sans-serif);
+        color: var(--foreground, #222);
+        margin: 0;
+      }
+      .wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      section {
+        display: grid;
+        grid-template-columns: 112px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--border, #ddd);
+        border-radius: var(--radius, 12px);
+        background: var(--card, transparent);
+      }
+      section.cur {
+        border-style: dashed;
+      }
+      .hero img {
+        display: block;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+      }
+      h2 {
+        margin: 0 0 4px;
+        font-size: 17px;
+      }
+      h2 small {
+        font-weight: 500;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: var(--muted, #eee);
+        color: var(--muted-foreground, #666);
+        vertical-align: middle;
+      }
+      p {
+        margin: 0 0 6px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .note {
+        color: var(--muted-foreground, #777);
+        font-size: 12px;
+      }
+      .sw {
+        display: flex;
+        gap: 4px;
+      }
+      .sw i {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: 1px solid rgba(128, 128, 128, 0.35);
+      }
+      .demo {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 190px;
+      }
+      .sizes {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+      }
+      .sizes img {
+        display: block;
+      }
+      .mask {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: block;
+      }
+      .mask img {
+        transform: scale(1.25);
+        transform-origin: center;
+      }
+      .tb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid;
+        border-radius: 8px;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      .tb b {
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+      .gl {
+        width: 24px;
+        height: 24px;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+      }
+      .home {
+        padding: 22px 16px;
+        border-radius: var(--radius, 12px);
+        background: linear-gradient(160deg, #3b4a5c, #8a6f63 60%, #d9b69a);
+        display: flex;
+        justify-content: space-around;
+      }
+      .app {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: #fff;
+        font-size: 12px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .app img {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+      }
+      @media (max-width: 620px) {
+        section {
+          grid-template-columns: 72px 1fr;
+        }
+        .hero img {
+          width: 72px;
+          height: 72px;
+        }
+        .demo {
+          grid-column: 1/-1;
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="home">
+        <div class="app"><img src="1-feito.svg" /><span>Faz</span></div>
+        <div class="app"><img src="2-broto.svg" /><span>Faz</span></div>
+        <div class="app"><img src="3-aurora.svg" /><span>Faz</span></div>
+        <div class="app"><img src="4-efe.svg" /><span>Faz</span></div>
+        <div class="app"><img src="5-ciclo.svg" /><span>Faz</span></div>
+      </div>
+      <section class="cur">
+        <div class="hero">
+          <img src="../../src/lib/assets/favicon.svg" width="112" height="112" />
+        </div>
+        <div class="txt">
+          <h2>Today’s logo <small>current</small></h2>
+          <p>A dot over a soft smile. Friendly, but it doesn’t say “tasks”.</p>
+          <p class="note">Terracotta and white.</p>
+          <div class="sw">
+            <i style="background: #d2896f"></i><i style="background: #ffffff"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="../../src/lib/assets/favicon.svg" width="56" /><img
+              src="../../src/lib/assets/favicon.svg"
+              width="32"
+            /><img src="../../src/lib/assets/favicon.svg" width="16" /><span class="mask"
+              ><img src="../../src/lib/assets/favicon.svg" width="56"
+            /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #c0705a;
+                -webkit-mask-image: url(../../static/logo.svg);
+                mask-image: url(../../static/logo.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #e8a48a;
+                -webkit-mask-image: url(../../static/logo.svg);
+                mask-image: url(../../static/logo.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+      <section class="">
+        <div class="hero"><img src="1-feito.svg" width="112" height="112" /></div>
+        <div class="txt">
+          <h2>Feito</h2>
+          <p>
+            “Done.” A little figure whose body is a check mark. It keeps the dot-and-smile character
+            of the current logo but adds a clear “task done” meaning.
+          </p>
+          <p class="note">Keeps today’s terracotta, so it’s the smallest change.</p>
+          <div class="sw">
+            <i style="background: #d2896f"></i><i style="background: #ffffff"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="1-feito.svg" width="56" /><img src="1-feito.svg" width="32" /><img
+              src="1-feito.svg"
+              width="16"
+            /><span class="mask"><img src="1-feito.svg" width="56" /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #c0705a;
+                -webkit-mask-image: url(glyphs/1-feito.svg);
+                mask-image: url(glyphs/1-feito.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #e8a48a;
+                -webkit-mask-image: url(glyphs/1-feito.svg);
+                mask-image: url(glyphs/1-feito.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+      <section class="">
+        <div class="hero"><img src="2-broto.svg" width="112" height="112" /></div>
+        <div class="txt">
+          <h2>Broto</h2>
+          <p>
+            A sprout whose two leaves form a check mark. It nods to Cares and Goals: small habits
+            that grow. Calm and alive, and never bossy.
+          </p>
+          <p class="note">Sage and cream: soft, organic, easy on the eyes.</p>
+          <div class="sw">
+            <i style="background: #5f8a6a"></i><i style="background: #f6f1e7"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="2-broto.svg" width="56" /><img src="2-broto.svg" width="32" /><img
+              src="2-broto.svg"
+              width="16"
+            /><span class="mask"><img src="2-broto.svg" width="56" /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #5f8a6a;
+                -webkit-mask-image: url(glyphs/2-broto.svg);
+                mask-image: url(glyphs/2-broto.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #8fbf98;
+                -webkit-mask-image: url(glyphs/2-broto.svg);
+                mask-image: url(glyphs/2-broto.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+      <section class="">
+        <div class="hero"><img src="3-aurora.svg" width="112" height="112" /></div>
+        <div class="txt">
+          <h2>Aurora</h2>
+          <p>
+            A sun rising over a short list. Each day starts fresh with what’s on your plate. It
+            matches the Today, Later today and Done today sections.
+          </p>
+          <p class="note">Sand, sunrise orange and ink. The only multicolour mark.</p>
+          <div class="sw">
+            <i style="background: #f3e4cf"></i><i style="background: #e0794e"></i
+            ><i style="background: #2f2f2f"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="3-aurora.svg" width="56" /><img src="3-aurora.svg" width="32" /><img
+              src="3-aurora.svg"
+              width="16"
+            /><span class="mask"><img src="3-aurora.svg" width="56" /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #e0794e;
+                -webkit-mask-image: url(glyphs/3-aurora.svg);
+                mask-image: url(glyphs/3-aurora.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #e0794e;
+                -webkit-mask-image: url(glyphs/3-aurora.svg);
+                mask-image: url(glyphs/3-aurora.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+      <section class="">
+        <div class="hero"><img src="4-efe.svg" width="112" height="112" /></div>
+        <div class="txt">
+          <h2>Efe</h2>
+          <p>
+            A lowercase “f” for Faz whose crossbar is a check mark. A monogram that doubles as a
+            wordmark initial.
+          </p>
+          <p class="note">Uses the app’s #2f2f2f theme colour with a terracotta accent.</p>
+          <div class="sw">
+            <i style="background: #2f2f2f"></i><i style="background: #f4efe6"></i
+            ><i style="background: #e39a7c"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="4-efe.svg" width="56" /><img src="4-efe.svg" width="32" /><img
+              src="4-efe.svg"
+              width="16"
+            /><span class="mask"><img src="4-efe.svg" width="56" /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #d2896f;
+                -webkit-mask-image: url(glyphs/4-efe.svg);
+                mask-image: url(glyphs/4-efe.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #d2896f;
+                -webkit-mask-image: url(glyphs/4-efe.svg);
+                mask-image: url(glyphs/4-efe.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+      <section class="">
+        <div class="hero"><img src="5-ciclo.svg" width="112" height="112" /></div>
+        <div class="txt">
+          <h2>Ciclo</h2>
+          <p>
+            A ring that’s almost closed, with the next dot coming around. It suggests recurring care
+            plans, progress, and focus on what’s next.
+          </p>
+          <p class="note">Deep blue and amber. Calm, and stands out on a home screen.</p>
+          <div class="sw">
+            <i style="background: #2e4a62"></i><i style="background: #f4efe6"></i
+            ><i style="background: #f2b36b"></i>
+          </div>
+        </div>
+        <div class="demo">
+          <div class="sizes">
+            <img src="5-ciclo.svg" width="56" /><img src="5-ciclo.svg" width="32" /><img
+              src="5-ciclo.svg"
+              width="16"
+            /><span class="mask"><img src="5-ciclo.svg" width="56" /></span>
+          </div>
+          <div class="tb" style="background: #ffffff; color: #1f2937; border-color: #e5e7eb">
+            <span
+              class="gl"
+              style="
+                background: #2e4a62;
+                -webkit-mask-image: url(glyphs/5-ciclo.svg);
+                mask-image: url(glyphs/5-ciclo.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+          <div class="tb" style="background: #1d232a; color: #e5e7eb; border-color: #2a323c">
+            <span
+              class="gl"
+              style="
+                background: #8fb4d6;
+                -webkit-mask-image: url(glyphs/5-ciclo.svg);
+                mask-image: url(glyphs/5-ciclo.svg);
+              "
+            ></span
+            ><b>Faz</b>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
