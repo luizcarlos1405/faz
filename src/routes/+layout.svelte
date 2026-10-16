@@ -1,5 +1,4 @@
 <script lang="ts">
-  import favicon from '$lib/assets/favicon.svg';
   import '../app.css';
   import { onMount } from 'svelte';
   import type { Snippet } from 'svelte';
@@ -67,7 +66,6 @@
   {#if webManifestHref}
     <link rel="manifest" href={webManifestHref} />
   {/if}
-  <link rel="icon" href={favicon} />
   <title>Faz</title>
 </svelte:head>
 

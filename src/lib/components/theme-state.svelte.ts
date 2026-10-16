@@ -62,7 +62,7 @@ function toHex(cssColor: string): string {
 }
 
 function updateFavicon(): void {
-  const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  const link = document.querySelector<HTMLLinkElement>('link[rel="icon"][type="image/svg+xml"]');
   if (!link) return;
 
   const styles = getComputedStyle(document.documentElement);

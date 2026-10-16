@@ -113,12 +113,13 @@ crosses it. Geometry lives in `utils/faz-logo.ts` (pure); everything else derive
   `currentColor` (`base-content`), the tick is `stroke-primary`. The `draw` prop (bumped on each
   tap in the top bar) replays the tick draw-in. The theme picker shows it per theme.
 - **Favicon**: `theme-state.svelte.ts` rebuilds it from the active theme (`base-100` tile,
-  `base-content` f, `primary` tick) on load and theme change; `src/lib/assets/favicon.svg` is the
-  static fallback.
+  `base-content` f, `primary` tick) on load and theme change; `static/favicon.svg` (linked in `app.html`,
+  with `favicon.ico` for older browsers) is the static fallback shown before hydration.
 - **Install icons** (`static/icon-*.png`, `apple-touch-icon.png`, `favicon.ico`): fixed brand
   colors (`BRAND_COLORS`: ink `#2f2f2f`, cream, terracotta), rendered from
   `docs/logo-concepts/4-efe.svg` with `rsvg-convert`; maskable variants are full-bleed.
-  `docs/logo-concepts/` also holds the alternatives that were considered.
+  `docs/logo-concepts/` also holds the alternatives that were considered and the original logo
+  (`0-original.svg`).
 
 ## Related Docs
 
