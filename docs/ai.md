@@ -264,8 +264,9 @@ Run with `bun run test src/lib/ai`.
 
 ## Design mockups
 
-`src/lib/ai/chat-designs.pen` holds the Pencil mockups the feature was designed against (chat
-screens, model picker, agent-mode action log, delete undo). Treat them as reference, not spec —
+The "AI chat" page of `design/faz.op` (OpenPencil, see [design.md](./design.md)) holds the
+mockups the feature was designed against (chat screens, model picker, agent-mode action log,
+delete undo). Treat them as reference, not spec —
 the code is the source of truth.
 
 ## Commit history
