@@ -5,7 +5,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['build/', '.svelte-kit/', 'dist/', '.claude/skills/'],
+    ignores: ['build/', '.svelte-kit/', 'dist/', '.agents/skills/impeccable/'],
   },
   ...js.configs['flat/recommended'],
   {

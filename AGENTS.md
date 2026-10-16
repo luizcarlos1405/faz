@@ -132,11 +132,16 @@ or the `openpencil`/`pencil` MCP tools (they belong to another project's editor 
 `openpencil-skill:openpencil-design` skill for the node schema; read
 [docs/design.md](./docs/design.md) first, its rules override the skill.
 
-## Agent skills
+## Agent config (single source)
 
-`.claude/skills/impeccable` is the vendored [Impeccable](https://impeccable.style/) design skill
-(`/impeccable`, tracked in `skills-lock.json`). Update it with `bunx skills update impeccable`;
-don't edit or reformat it (`.claude/skills/` is excluded from prettier and eslint).
+Shared by every coding agent, never duplicated: symlink instead.
+
+- `AGENTS.md` is the only instructions file; `CLAUDE.md` is a symlink to it.
+- `.agents/skills/` is the only skills folder; `.claude/skills` is a symlink to it. Add skills there
+  (`bunx skills add <repo>` installs there by default; avoid `-a claude-code` and `--copy`).
+- `impeccable` is vendored from [Impeccable](https://impeccable.style/) (`/impeccable`, tracked in
+  `skills-lock.json`). Update with `bunx skills update impeccable`; don't edit or reformat it (it is
+  excluded from prettier and eslint). `playwright-cli` is ours.
 
 ## Related Docs
 
