@@ -104,6 +104,22 @@ Split into two route groups (URLs are unaffected by the grouping):
 The root `+layout.svelte` holds only global concerns (app.css, scheduler
 sync, PWA registration, toasts, confirm modal).
 
+### Logo
+
+The mark is "Efe": a lowercase f whose crossbar is a check, with a cut in the f where the tick
+crosses it. Geometry lives in `utils/faz-logo.ts` (pure); everything else derives from it.
+
+- **In-app** (`components/faz-logo.svelte`): inline SVG that follows the DaisyUI theme — the f is
+  `currentColor` (`base-content`), the tick is `stroke-primary`. The `draw` prop (bumped on each
+  tap in the top bar) replays the tick draw-in. The theme picker shows it per theme.
+- **Favicon**: `theme-state.svelte.ts` rebuilds it from the active theme (`base-100` tile,
+  `base-content` f, `primary` tick) on load and theme change; `src/lib/assets/favicon.svg` is the
+  static fallback.
+- **Install icons** (`static/icon-*.png`, `apple-touch-icon.png`, `favicon.ico`): fixed brand
+  colors (`BRAND_COLORS`: ink `#2f2f2f`, cream, terracotta), rendered from
+  `docs/logo-concepts/4-efe.svg` with `rsvg-convert`; maskable variants are full-bleed.
+  `docs/logo-concepts/` also holds the alternatives that were considered.
+
 ## Related Docs
 
 [Writing guide](./docs/WRITING.md): when working on user-facing copy

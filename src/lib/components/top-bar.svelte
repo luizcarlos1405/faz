@@ -6,6 +6,7 @@
   import Database from 'lucide-svelte/icons/database';
   import KeyRound from 'lucide-svelte/icons/key-round';
   import DataModal from './data-modal.svelte';
+  import FazLogo from './faz-logo.svelte';
   import ErrorLogModal from './error-log-modal.svelte';
   import { getPageMenuState } from './page-menu-state.svelte';
   import { applyTheme, getThemeState } from './theme-state.svelte';
@@ -17,8 +18,10 @@
   let showErrorLog = $state(false);
   let themeTab = $state<'all' | 'dark' | 'light'>('all');
   let logoClicks: number[] = [];
+  let logoDraw = $state(1);
 
   function handleLogoClick() {
+    logoDraw += 1;
     const now = Date.now();
     logoClicks = [...logoClicks, now].filter((t) => now - t <= 5000);
     if (logoClicks.length >= 8) {
@@ -95,10 +98,7 @@
       onclick={handleLogoClick}
       class="flex items-center gap-2 bg-transparent border-0 p-0 cursor-pointer"
     >
-      <div
-        class="h-6 w-6 bg-primary"
-        style="mask-image: url('/logo.svg'); -webkit-mask-image: url('/logo.svg'); mask-size: contain; -webkit-mask-size: contain; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-position: center; -webkit-mask-position: center;"
-      ></div>
+      <FazLogo class="h-7 w-7" draw={logoDraw} />
       <span class="text-xl font-bold tracking-tight">Faz</span>
     </button>
   </div>
@@ -174,6 +174,13 @@
           class:btn-outline={themeState.current !== theme}
           onclick={() => selectTheme(theme)}
         >
+          <span data-theme={theme} class="contents">
+            <span
+              class="size-5 shrink-0 rounded-md bg-base-100 text-base-content border border-base-content/10 p-0.5"
+            >
+              <FazLogo class="size-full" />
+            </span>
+          </span>
           {theme}
           {#if themeTab === 'all'}
             <span class="badge badge-xs ml-auto">

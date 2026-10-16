@@ -1,53 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="90mm"
-   height="90mm"
-   viewBox="0 0 90 90"
-   version="1.1"
-   id="svg1"
-   xml:space="preserve"
-   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
-   sodipodi:docname="logo.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
-     id="namedview1"
-     pagecolor="#505050"
-     bordercolor="#eeeeee"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#505050"
-     inkscape:document-units="mm"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="97.934287"
-     inkscape:cy="89.449005"
-     inkscape:window-width="1920"
-     inkscape:window-height="1026"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="g1"
-     showguides="false" /><defs
-     id="defs1" /><g
-     inkscape:label="Camada 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(-135.39616,-348.07877)"><g
-       id="g1"
-       transform="translate(20.372921,-20.637478)"><g
-         id="g3-7"
-         transform="matrix(1.3885334,0,0,1.3885334,-85.010491,-121.6482)"><circle
-           style="opacity:1;fill:#ffffff;stroke-width:0.264583"
-           id="path2-9"
-           cx="176.46945"
-           cy="369.08148"
-           r="5.8568702" /></g><path
-         id="path8"
-         style="fill:#ffffff;stroke:#ffffff;stroke-width:4.95132;stroke-linecap:round;stroke-linejoin:round"
-         d="m 196.79259,407.12997 c 0,23.14189 -16.46221,41.90206 -36.76936,41.90206 -20.30714,0 -36.76935,-18.76017 -36.76935,-41.90206 0,-23.14188 16.46221,21.22671 36.76935,21.22671 20.30715,0 36.76936,-44.36859 36.76936,-21.22671 z"
-         sodipodi:nodetypes="sssss" /></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="126 88 300 340">
+  <mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+    <rect width="512" height="512" fill="#fff"/>
+    <path d="M164 264 L222 312 L330 226" fill="none" stroke="#000" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+  <path d="M244 404 V200 Q244 126 320 126 Q342 126 358 134" fill="none" stroke="#000" stroke-width="56" stroke-linecap="round" mask="url(#gap)"/>
+  <path d="M164 264 L222 312 L330 226" fill="none" stroke="#000" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
