@@ -26,6 +26,7 @@ tests, and interactions with other bugs. Statuses are `NEEDS FIX`, `FIXED` or `I
 | [011](./011-mixed-direction-mango-sorts-oldest-first.md)              | Mixed-direction mango sorts silently return oldest-first   | NEEDS FIX | Minor    |
 | [012](./012-focus-overlay-hides-toasts.md)                            | Focus overlay hides toasts, Undo unreachable in focus mode | FIXED     | Minor    |
 | [013](./013-ghost-step-in-plan-wizard.md)                             | Ghost step in the task plan wizard for interval plan types | FIXED     | Minor    |
+| [014](./014-runaway-recurring-plan-chain.md)                          | Recurring plan chain encodes years of future occurrences   | FIXED     | High     |
 
 ## Picking up a bug
 

@@ -2,7 +2,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import type { Database } from './database';
 import { FIND_LIMIT_ALL } from './database';
 import { toTimeOfDay } from '$lib/engines/defer-engine';
-import { DOC_TYPE, type CareDoc, type TaskDoc } from '$lib/types';
+import { recoverRunawayPlan } from '$lib/engines/care-engine';
+import { DOC_TYPE, type CareDoc, type TaskDoc, type TaskPlan } from '$lib/types';
 import PouchDB from 'pouchdb-browser';
 
 interface MigrationStateDoc {
@@ -121,6 +122,44 @@ const migrations: Migration[] = [
         }
         task.updatedAt = Temporal.Now.instant().toString();
         await db.put(task);
+      }
+    },
+  },
+  {
+    version: 4,
+    description:
+      'Scrub runaway chain tasks: at most one open task per INTERVAL plan, one per date for FIXED_DAYS',
+    up: async (db) => {
+      const { docs } = await db.find({
+        selector: { type: DOC_TYPE.CARE.value },
+        limit: FIND_LIMIT_ALL,
+      });
+      const cares = docs as CareDoc[];
+      for (const care of cares) {
+        let careChanged = false;
+        const updatedPlans = new Map<string, TaskPlan>();
+        for (const plan of care.taskPlans) {
+          const { docs: taskDocs } = await db.find({
+            selector: { type: DOC_TYPE.TASK.value, taskPlanId: plan._id },
+            limit: FIND_LIMIT_ALL,
+          });
+          const recovery = recoverRunawayPlan(plan, taskDocs as TaskDoc[]);
+          if (!recovery) continue;
+          for (const task of recovery.remove) {
+            if (task._rev) {
+              await db.remove(task._id, task._rev);
+            }
+          }
+          if (recovery.updatedPlan) {
+            updatedPlans.set(plan._id, recovery.updatedPlan);
+            careChanged = true;
+          }
+        }
+        if (careChanged) {
+          care.taskPlans = care.taskPlans.map((plan) => updatedPlans.get(plan._id) ?? plan);
+          care.updatedAt = Temporal.Now.instant().toString();
+          await db.put(care);
+        }
       }
     },
   },

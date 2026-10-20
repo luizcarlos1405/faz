@@ -172,7 +172,7 @@ export function evaluateIntervalFixed(
     candidate = next;
   }
 
-  if (hasTaskForDate(existingTasks, plan._id, candidate.toString())) return null;
+  if (!shouldGenerateForDate(plan, existingTasks, candidate.toString())) return null;
 
   return makeTask(plan, candidate.toString());
 }
@@ -323,6 +323,44 @@ export function applyOverdueBehavior(
   }
 
   return { missedTasks: [], discardedTaskIds: [] };
+}
+
+export interface PlanRecovery {
+  keep: TaskDoc[];
+  remove: TaskDoc[];
+  updatedPlan?: TaskPlan;
+}
+
+export function recoverRunawayPlan(plan: TaskPlan, tasks: TaskDoc[]): PlanRecovery | null {
+  const r = plan.recurrence;
+  const open = tasks
+    .filter((t) => t.taskPlanId === plan._id && t.status === TASK_STATUS.TODO.value)
+    .toSorted((a, b) => a.doAt.localeCompare(b.doAt) || a.createdAt.localeCompare(b.createdAt));
+
+  if (r.type === RECURRENCE_TYPE.INTERVAL.value) {
+    if (open.length === 0) return null;
+    const [first, ...rest] = open;
+    if (rest.length === 0 && plan.lastDoAtDate === first.doAt) return null;
+    return { keep: [first], remove: rest, updatedPlan: { ...plan, lastDoAtDate: first.doAt } };
+  }
+
+  if (r.type === RECURRENCE_TYPE.FIXED_DAYS.value) {
+    const keep: TaskDoc[] = [];
+    const remove: TaskDoc[] = [];
+    const seen = new Set<string>();
+    for (const t of open) {
+      if (seen.has(t.doAt)) {
+        remove.push(t);
+      } else {
+        seen.add(t.doAt);
+        keep.push(t);
+      }
+    }
+    if (remove.length === 0) return null;
+    return { keep, remove };
+  }
+
+  return null;
 }
 
 function addDuration(date: Temporal.PlainDate, duration: DurationLike): Temporal.PlainDate {

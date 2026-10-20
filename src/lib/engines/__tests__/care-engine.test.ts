@@ -7,6 +7,7 @@ import {
   evaluateTaskPlan,
   runScheduler,
   applyOverdueBehavior,
+  recoverRunawayPlan,
   validateInterval,
   validateRecurrence,
   validateTaskPlan,
@@ -1478,6 +1479,171 @@ describe('INTERVAL FIXED candidate-date guard', () => {
     const today = Temporal.PlainDate.from('2026-09-02');
     const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-02' })];
     expect(evaluateTaskPlan(plan, today, moved)).toBeNull();
+  });
+
+  it('does not regenerate the lastDoAtDate occurrence after it was moved', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-01');
+    const moved = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-09-04' })];
+    expect(evaluateIntervalFixed(plan, today, moved)).toBeNull();
+  });
+
+  it('lastDoAtDate guard is scoped to candidate dates only, not future anchors', () => {
+    const plan = makeDailyPlan();
+    const today = Temporal.PlainDate.from('2026-09-05');
+    const result = evaluateIntervalFixed(plan, today, []);
+    expect(result).not.toBeNull();
+    expect(result!.doAt).toBe('2026-09-05');
+  });
+});
+
+describe('recoverRunawayPlan', () => {
+  function makeAfterDonePlan(): TaskPlan {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.AFTER_DONE.value,
+      interval: { days: 4 },
+      startDate: '2026-02-26',
+    });
+    plan.lastDoneDate = '2026-10-12';
+    return plan;
+  }
+
+  function makeFixedPlan(): TaskPlan {
+    return makePlan({
+      type: RECURRENCE_TYPE.INTERVAL.value,
+      subtype: INTERVAL_SUBTYPE.FIXED.value,
+      interval: { days: 7 },
+      startDate: '2026-01-01',
+    });
+  }
+
+  it('keeps the earliest open task and removes the runaway chain', () => {
+    const plan = makeAfterDonePlan();
+    const open = [
+      makeTask({
+        _id: 'task_b',
+        taskPlanId: 'tp_test',
+        doAt: '2026-10-20',
+        createdAt: '2026-04-18T10:00:00Z',
+      }),
+      makeTask({
+        _id: 'task_a',
+        taskPlanId: 'tp_test',
+        doAt: '2026-10-16',
+        createdAt: '2026-04-18T09:00:00Z',
+      }),
+      makeTask({
+        _id: 'task_z',
+        taskPlanId: 'tp_test',
+        doAt: '2036-09-13',
+        createdAt: '2026-05-01T09:00:00Z',
+      }),
+    ];
+    const recovery = recoverRunawayPlan(plan, open)!;
+
+    expect(recovery.keep.map((t) => t._id)).toEqual(['task_a']);
+    expect(recovery.remove.map((t) => t._id)).toEqual(['task_b', 'task_z']);
+    expect(recovery.updatedPlan!.lastDoAtDate).toBe('2026-10-16');
+    expect(recovery.updatedPlan!.lastDoneDate).toBe('2026-10-12');
+    expect(recovery.updatedPlan).not.toBe(plan);
+  });
+
+  it('does not mutate the input tasks or plan', () => {
+    const plan = makeFixedPlan();
+    plan.lastDoAtDate = '2030-01-01';
+    const open = [
+      makeTask({ _id: 'task_1', taskPlanId: 'tp_test', doAt: '2026-10-16' }),
+      makeTask({ _id: 'task_2', taskPlanId: 'tp_test', doAt: '2036-09-13' }),
+    ];
+    const input = [...open];
+    recoverRunawayPlan(plan, open)!;
+
+    expect(open).toEqual(input);
+    expect(plan.lastDoAtDate).toBe('2030-01-01');
+  });
+
+  it('returns null when the plan is already clean: one open task, lastDoAtDate matches', () => {
+    const plan = makeAfterDonePlan();
+    plan.lastDoAtDate = '2026-10-16';
+    const single = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-10-16' })];
+    expect(recoverRunawayPlan(plan, single)).toBeNull();
+  });
+
+  it('normalizes lastDoAtDate when one open task remains but lastDoAtDate is stale', () => {
+    const plan = makeAfterDonePlan();
+    plan.lastDoAtDate = '2036-09-13';
+    const single = [makeTask({ taskPlanId: 'tp_test', doAt: '2026-10-16' })];
+    const recovery = recoverRunawayPlan(plan, single)!;
+
+    expect(recovery.remove).toHaveLength(0);
+    expect(recovery.updatedPlan!.lastDoAtDate).toBe('2026-10-16');
+  });
+
+  it('leaves plans with no open tasks untouched (DONE/MISSED only)', () => {
+    const plan = makeAfterDonePlan();
+    const closed = [
+      makeTask({ _id: 'task_1', taskPlanId: 'tp_test', status: TASK_STATUS.DONE.value }),
+      makeTask({ _id: 'task_2', taskPlanId: 'tp_test', status: TASK_STATUS.MISSED.value }),
+    ];
+    expect(recoverRunawayPlan(plan, closed)).toBeNull();
+    expect(recoverRunawayPlan(plan, [])).toBeNull();
+  });
+
+  it('still scrubs paused plans', () => {
+    const plan = makeAfterDonePlan();
+    plan.pausedAt = '2026-07-01T00:00:00Z';
+    const open = [
+      makeTask({ _id: 'task_1', taskPlanId: 'tp_test', doAt: '2026-10-16' }),
+      makeTask({ _id: 'task_2', taskPlanId: 'tp_test', doAt: '2036-09-13' }),
+    ];
+    const recovery = recoverRunawayPlan(plan, open)!;
+    expect(recovery.remove.map((t) => t._id)).toEqual(['task_2']);
+  });
+
+  it('dedupes FIXED_DAYS open tasks on the same date, keeping the earliest created', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [7, 4, 2],
+      startDate: '2026-10-01',
+    });
+    const open = [
+      makeTask({
+        _id: 'task_late',
+        taskPlanId: 'tp_test',
+        doAt: '2026-10-20',
+        createdAt: '2026-10-17T10:00:00Z',
+      }),
+      makeTask({
+        _id: 'task_early',
+        taskPlanId: 'tp_test',
+        doAt: '2026-10-20',
+        createdAt: '2026-10-16T09:00:00Z',
+      }),
+      makeTask({ _id: 'task_next', taskPlanId: 'tp_test', doAt: '2026-10-22' }),
+      makeTask({ _id: 'task_other', taskPlanId: 'tp_other', doAt: '2026-10-20' }),
+    ];
+    const recovery = recoverRunawayPlan(plan, open)!;
+
+    expect(recovery.keep.map((t) => t._id)).toEqual(['task_early', 'task_next']);
+    expect(recovery.remove.map((t) => t._id)).toEqual(['task_late']);
+    expect(recovery.updatedPlan).toBeUndefined();
+  });
+
+  it('returns null for FIXED_DAYS plans with distinct open dates', () => {
+    const plan = makePlan({
+      type: RECURRENCE_TYPE.FIXED_DAYS.value,
+      subtype: FIXED_DAYS_SUBTYPE.WEEKDAYS.value,
+      daysOfWeek: [7, 4, 2],
+      startDate: '2026-10-01',
+    });
+    const open = [
+      makeTask({ _id: 'task_1', taskPlanId: 'tp_test', doAt: '2026-10-20' }),
+      makeTask({ _id: 'task_2', taskPlanId: 'tp_test', doAt: '2026-10-22' }),
+      makeTask({ _id: 'task_3', taskPlanId: 'tp_test', doAt: '2026-10-25' }),
+    ];
+    expect(recoverRunawayPlan(plan, open)).toBeNull();
   });
 });
 
